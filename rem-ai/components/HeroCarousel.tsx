@@ -3,19 +3,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, BookOpen, Star, Layers } from 'lucide-react';
 import Link from 'next/link';
+import { MangaResponse } from '@/types/mangadex';
 
-// 1. Añadimos 'description' a la interfaz
-interface Manga {
-  id: string;
-  title: string;
-  author: string;
-  coverUrl: string;
-  status?: string;
-  tags?: string[];
-  description?: string; // Nueva propiedad
-}
-
-export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga[] }) {
+export default function HeroCarousel({ featuredMangas }: { featuredMangas: MangaResponse[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -45,6 +35,9 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
     return labels[status || ''] || status || 'En curso';
   };
 
+  // Si no hay mangas, no renderizamos nada
+  if (!featuredMangas || featuredMangas.length === 0) return null;
+
   return (
     <section className="relative h-[70vh] w-full mb-12 overflow-hidden group">
       <AnimatePresence mode="wait">
@@ -55,7 +48,7 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
         >
           <div 
             className="absolute inset-0 bg-cover bg-center opacity-40 blur-sm scale-105"
-            style={{ backgroundImage: `url('https://images2.alphacoders.com/136/thumb-1920-1364850.png')` }}
+            style={{ backgroundImage: `url('${featuredMangas[activeIndex].coverUrl}')` }}
           />
           
           <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
@@ -66,10 +59,14 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
             </div>
             
             <div className="flex flex-col justify-center max-w-2xl">
-              <h1 className="text-6xl font-black mb-2 tracking-tight">{featuredMangas[activeIndex].title}</h1>
-              <p className="text-xl text-neutral-300 mb-4">{featuredMangas[activeIndex].author}</p>
+              <h1 className="text-6xl font-black mb-1 tracking-tight">
+                {featuredMangas[activeIndex].title}
+              </h1>
               
-              {/* Sinopsis breve */}
+              <p className="text-lg font-medium text-sky-400/90 mb-4 italic tracking-wide">
+                {featuredMangas[activeIndex].author}
+              </p>
+
               <p className="text-neutral-400 text-lg mb-6 line-clamp-3">
                 {featuredMangas[activeIndex].description || "Sin descripción disponible."}
               </p>
@@ -94,7 +91,6 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
         </motion.div>
       </AnimatePresence>
 
-      {/* Controles y botones igual que antes... */}
       <button onClick={() => changeSlide(activeIndex === 0 ? featuredMangas.length - 1 : activeIndex - 1)} className="absolute left-4 top-1/2 p-2 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition rounded-full z-10">
         <ChevronLeft size={32} />
       </button>

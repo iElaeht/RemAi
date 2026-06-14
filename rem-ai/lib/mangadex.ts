@@ -1,71 +1,88 @@
-// lib/mangadex.ts
+import { MangaResponse } from '@/types/mangadex';
 
 const MANGADEX_API_URL = 'https://api.mangadex.org';
 const MANGADEX_COVERS_URL = 'https://uploads.mangadex.org';
 
-export interface MangaResponse {
+interface MangaDexManga {
   id: string;
-  title: string;
-  author: string;
-  coverUrl: string;
-  latestChapter?: string;
-  status: string;      // Nuevo
-  tags: string[];      // Nuevo
+  attributes: {
+    title: Record<string, string>;
+    description: Record<string, string>;
+    status: string;
+    tags: Array<{ attributes: { name: { en: string } } }>;
+  };
+  relationships: Array<{
+    type: string;
+    attributes?: { name?: string; fileName?: string };
+  }>;
 }
 
-export async function getPopularManga(): Promise<MangaResponse[]> {
+/**
+ * Limpia el texto de enlaces Markdown [text](url) y limpia espacios sobrantes
+ */
+function cleanDescription(desc: string): string {
+  if (!desc) return 'Sin descripción disponible.';
+  // 1. Quita enlaces tipo [texto](url) dejando solo el texto
+  // 2. Quita posibles saltos de línea extra para que el componente no se rompa
+  return desc
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    .replace(/\n/g, ' ')
+    .trim();
+}
+
+async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
+  query.append('contentRating[]', 'safe');
+  ['cover_art', 'author'].forEach(val => query.append('includes[]', val));
+
   try {
-    const response = await fetch(
-      `${MANGADEX_API_URL}/manga?limit=12&includedTagsMode=AND&excludedTagsMode=OR&availableTranslatedLanguage[]=es&availableTranslatedLanguage[]=es-la&order[followedCount]=desc&includes[]=cover_art&includes[]=author`,
-      { next: { revalidate: 0 } }
-    );
-
-    if (!response.ok) throw new Error('Error al conectar con MangaDex');
+    const res = await fetch(`${MANGADEX_API_URL}/manga?${query.toString()}`, { next: { revalidate: 3600 } });
+    if (!res.ok) return [];
     
-    const json = await response.json();
+    const json = await res.json();
+    const data = (json.data || []) as MangaDexManga[];
 
-    return json.data.map((manga: { id: string; attributes: Record<string, unknown>; relationships: Array<Record<string, unknown>> }) => {
-      const attributes = manga.attributes as Record<string, unknown>;
-      
-      // 1. Extraer Título
-      const titleObj = attributes.title as Record<string, string>;
-      const title = titleObj?.en || Object.values(titleObj || {})[0] || 'Título Desconocido';
-      
-      // 2. Extraer Estado nativo (ongoing, completed, hiatus, cancelled)
-      const status = (attributes.status as string) || 'ongoing';
+    const statusMap: Record<string, string> = {
+      'ongoing': 'En emisión', 'completed': 'Finalizado', 'hiatus': 'En pausa', 'cancelled': 'Cancelado'
+    };
 
-      // 3. Extraer e identificar los Géneros (Tags)
-      const tagsArray = (attributes.tags as Array<{ attributes?: { name?: { en?: string } } }>) || [];
-      const tags = tagsArray
-        .map((t) => t.attributes?.name?.en || '')
-        .filter((name) => name !== '');
+    return data.map((manga): MangaResponse => {
+      const attrs = manga.attributes;
 
-      // 4. Extraer Autor
-      const authorRel = manga.relationships.find((r) => r.type === 'author');
-      const authorAttributes = authorRel?.attributes as Record<string, string> | undefined;
-      const author = authorAttributes?.name || 'Autor Desconocido';
-
-      // 5. Extraer Archivo de Portada
-      const coverRel = manga.relationships.find((r) => r.type === 'cover_art');
-      const coverAttributes = coverRel?.attributes as Record<string, string> | undefined;
-      const fileName = coverAttributes?.fileName;
-      
-      const coverUrl = fileName 
-        ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${fileName}.256.jpg`
-        : 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=500';
+      // Lógica de prioridad: Español -> Español-Latino -> Inglés -> Fallback
+      const title = attrs.title.es || attrs.title['es-la'] || attrs.title.en || Object.values(attrs.title)[0] || 'Sin título';
+      const rawDesc = attrs.description.es || attrs.description['es-la'] || attrs.description.en || '';
 
       return {
         id: manga.id,
-        title,
-        author,
-        coverUrl,
-        status,
-        tags,
-        latestChapter: 'N/A'
+        title: title,
+        author: manga.relationships.find(r => r.type === 'author')?.attributes?.name || 'Autor desconocido',
+        description: cleanDescription(rawDesc),
+        coverUrl: manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName 
+          ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName}.512.jpg` 
+          : '/placeholder.jpg',
+        status: statusMap[attrs.status] || 'En curso',
+        tags: attrs.tags.map(t => t.attributes.name.en),
       };
     });
-  } catch (error) {
-    console.error('MangaDex Fetch Error:', error);
-    return [];
+  } catch (e) {
+    console.error("Error fetching mangas:", e);
+    return []; 
   }
+}
+
+export async function getMainManga(): Promise<MangaResponse[]> {
+  const query = new URLSearchParams();
+  query.append('limit', '15');
+  query.append('order[rating]', 'desc');
+  query.append('availableTranslatedLanguage[]', 'es'); 
+  return fetchMangas(query);
+}
+
+export async function getFilterManga(genreTag: string): Promise<MangaResponse[]> {
+  const query = new URLSearchParams();
+  query.append('limit', '10');
+  query.append('includedTags[]', genreTag);
+  query.append('availableTranslatedLanguage[]', 'es');
+  query.append('order[rating]', 'desc');
+  return fetchMangas(query);
 }

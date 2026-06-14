@@ -1,6 +1,6 @@
 "use client"; // Importante para manejar eventos de mouse
 import Image from 'next/image';
-import { MangaResponse } from '@/lib/mangadex';
+import { MangaResponse } from '@/types/mangadex';
 
 interface HomeMangaCardProps {
   manga: MangaResponse;

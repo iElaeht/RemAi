@@ -7,13 +7,12 @@ interface MangaCardProps {
   id: string;
   title: string;
   coverUrl: string;
-  latestChapter?: string;
   author?: string;
   status?: string; 
   tags?: string[];  
 }
 
-export default function MangaCard({ id, title, coverUrl, latestChapter, author, status, tags }: MangaCardProps) {
+export default function MangaCard({ id, title, coverUrl, author, status, tags }: MangaCardProps) {
   // Mapeo amigable para el estado en español
   const statusMap: Record<string, { label: string; className: string }> = {
     ongoing: { label: 'En emisión', className: 'text-emerald-500 bg-emerald-500/10' },
@@ -39,13 +38,6 @@ export default function MangaCard({ id, title, coverUrl, latestChapter, author, 
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           priority={false}
         />
-        
-        {/* Badge para el último capítulo */}
-        {latestChapter && (
-          <div className="absolute bottom-2 left-2 rounded-md bg-neutral-950/80 backdrop-blur-md px-2 py-0.5 text-[10px] font-medium text-neutral-200 border border-neutral-800">
-            Cap. {latestChapter}
-          </div>
-        )}
       </div>
 
       {/* Textos Informativos Detallados */}
