@@ -37,8 +37,18 @@ export default function HomePage() {
         }}
         className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-20 transition-all duration-300"
       >
-        <div className="text-3xl font-black text-white tracking-tight">
-          Rem<span className="text-sky-400">Ai</span>
+        <div className="flex items-center gap-3">
+          {/* Imagen de Rem integrada */}
+          <div className="text-3xl font-black text-white tracking-tight">
+            Rem<span className="text-sky-400">Ai</span>
+          </div>
+          <div className="relative w-10 h-10">
+            <img 
+              src="/images/navbar/rem-navbar.png" 
+              alt="Rem" 
+              className="h-full w-full object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]" 
+            />
+          </div>
         </div>
         
         <div className="flex items-center gap-4">

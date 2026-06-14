@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
-import { Bookmark, Sparkles, ChevronDown, Menu, X } from 'lucide-react';
+import { Bookmark, Sparkles, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -20,10 +20,16 @@ export default function Navbar() {
   return (
     <nav className="w-full border-b border-blue-900/50 bg-[#0a0f1d] h-16 flex items-center justify-between px-6 md:px-12 transition-all relative">
       
-      {/* Logo */}
+      {/* Logo con imagen a la derecha */}
       <div className="flex items-center z-50">
-        <button onClick={() => router.push('/discover')} className="text-2xl font-black text-white">
+        <button onClick={() => router.push('/discover')} className="flex items-center text-2xl font-black text-white">
           Rem<span className="text-sky-400">Ai</span>
+          {/* Imagen a la derecha del texto */}
+          <img 
+            src="/images/navbar/rem-navbar.png" 
+            alt="Rem" 
+            className="w-8 h-8 ml-2 object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]" 
+          />
         </button>
       </div>
 

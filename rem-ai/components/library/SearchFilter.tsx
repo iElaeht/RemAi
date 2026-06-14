@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, KeyboardEvent } from 'react';
+import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { Filter, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { TAG_CATEGORIES } from '@/types/tags';
 
@@ -17,69 +17,106 @@ export default function SearchFilter({
 }: SearchFilterProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-  const [placeholder, setPlaceholder] = useState('');
-  const [index, setIndex] = useState(0);
-  const [subIndex, setSubIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const phrases = ["Buscar manga...", "Búsqueda rápida...", "Explorar géneros..."];
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (searchQuery) return;
-    const timeout = setTimeout(() => {
-      setPlaceholder(phrases[index].substring(0, subIndex));
-      if (!isDeleting && subIndex === phrases[index].length) setTimeout(() => setIsDeleting(true), 2000);
-      else if (isDeleting && subIndex === 0) { setIsDeleting(false); setIndex((prev) => (prev + 1) % phrases.length); }
-      else setSubIndex((prev) => prev + (isDeleting ? -1 : 1));
-    }, isDeleting ? 50 : 100);
-    return () => clearTimeout(timeout);
-  }, [subIndex, isDeleting, index, searchQuery]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getTagNameById = (id: string) => {
     const allCategories = TAG_CATEGORIES as Record<string, Record<string, string>>;
-    for (const cat in allCategories) {
-      if (allCategories[cat][id]) return id; // Simplificado
+    for (const category in allCategories) {
+      const tags = allCategories[category];
+      for (const tagName in tags) {
+        if (tags[tagName] === id) return tagName;
+      }
     }
     return id;
   };
 
-  const handleClearClick = () => { onClear(); setIsFilterOpen(false); };
-  const handleFilterClick = () => { onSearch(); setIsFilterOpen(false); };
+  const hasFilters = selectedTags.length > 0 || searchQuery.length > 0;
 
   return (
-    <div className="max-w-xl mx-auto mt-6 mb-8">
-      <div className="bg-[#111827] rounded-xl border border-white/10 shadow-lg overflow-hidden">
-        {/* Barra de búsqueda compacta */}
-        <div className="flex items-center px-3">
-          <Search size={18} className="text-neutral-500" />
+    <div ref={containerRef} className="max-w-2xl mx-auto mt-8 mb-12">
+      <div className={`bg-[#111827] rounded-2xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${isFilterOpen ? 'ring-1 ring-pink-500/50' : ''}`}>
+        
+        {/* BARRA DE BÚSQUEDA */}
+        <div className="flex items-center p-2">
+          <div className="pl-3 text-neutral-400"><Search size={20} /></div>
           <input 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleFilterClick()}
-            placeholder={placeholder}
-            className="w-full bg-transparent p-3 outline-none text-sm placeholder:text-neutral-600"
+            onKeyDown={(e: KeyboardEvent) => e.key === 'Enter' && onSearch()}
+            placeholder="Buscar manga..."
+            className="w-full bg-transparent p-4 outline-none text-base placeholder:text-neutral-600 text-white"
           />
-          {searchQuery && (
-            <button onClick={handleClearClick} className="text-neutral-500 hover:text-white mr-2"><X size={16} /></button>
-          )}
-          <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`transition-colors ${isFilterOpen ? 'text-pink-500' : 'text-neutral-400'}`}>
-            <Filter size={18} />
+          
+          {/* AHORA LA X ES SIEMPRE VISIBLE */}
+          <button 
+            onClick={() => setSearchQuery('')} 
+            className={`p-2 transition-colors ${searchQuery ? 'text-neutral-300 hover:text-white' : 'text-neutral-700 cursor-default'}`}
+          >
+            <X size={18} />
+          </button>
+
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)} 
+            className={`p-3 rounded-xl transition-all ${isFilterOpen ? 'bg-pink-500/20 text-pink-500' : 'text-neutral-400 hover:text-pink-500'}`}
+          >
+            <Filter size={20} />
           </button>
         </div>
 
-        {/* Panel de filtros */}
+        {/* ÁREA DE FILTROS ACTIVOS */}
+        <div className="px-4 pb-4 border-t border-white/5 pt-3">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs items-center min-h-[44px] flex-1">
+              <span className="font-bold text-neutral-500 uppercase tracking-wider self-center">Filtros:</span>
+              {!hasFilters ? (
+                <span className="text-neutral-600 italic">No hay filtros seleccionados</span>
+              ) : (
+                <>
+                  {searchQuery && <span className="text-pink-400 font-medium">{searchQuery}</span>}
+                  {selectedTags.map(tagId => (
+                    <span key={tagId} className="text-neutral-300 font-medium">• {getTagNameById(tagId)}</span>
+                  ))}
+                </>
+              )}
+            </div>
+
+            {/* BOTONES ALINEADOS A LA DERECHA */}
+            {hasFilters && (
+              <div className="flex gap-4 items-center h-[44px]">
+                <button onClick={onClear} className="text-xs text-neutral-500 hover:text-pink-500 underline transition-colors whitespace-nowrap">Limpiar filtros</button>
+                <button onClick={onSearch} className="px-4 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg hover:bg-pink-600 transition-all whitespace-nowrap">Filtrar</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* PANEL DE SELECCIÓN */}
         {isFilterOpen && (
-          <div className="border-t border-white/5 bg-[#0d1321]">
+          <div className="border-t border-white/5 bg-[#0d1321] animate-in fade-in slide-in-from-top-2">
             {Object.entries(TAG_CATEGORIES as Record<string, Record<string, string>>).map(([category, tags]) => (
-              <div key={category} className="border-b border-white/5 last:border-0">
-                <button onClick={() => setActiveGroup(activeGroup === category ? null : category)} className="w-full px-4 py-3 flex justify-between items-center hover:bg-white/5">
-                  <span className="text-[9px] uppercase font-bold tracking-widest text-neutral-500">{category}</span>
-                  {activeGroup === category ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              <div key={category} className="border-b border-white/5">
+                <button onClick={() => setActiveGroup(activeGroup === category ? null : category)} className="w-full p-4 flex justify-between items-center hover:bg-white/5">
+                  <span className="text-pink-500 text-[10px] uppercase font-bold tracking-widest">{category}</span>
+                  {activeGroup === category ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
                 {activeGroup === category && (
-                  <div className="p-3 grid grid-cols-3 gap-2">
+                  <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-2 bg-[#111827]/50">
                     {Object.entries(tags).map(([tagName, tagId]) => (
-                      <button key={tagName} onClick={() => toggleTag(category, tagName)} className={`text-[11px] py-1.5 px-2 rounded-md transition-all ${selectedTags.includes(tagId) ? 'bg-pink-500 text-white' : 'text-neutral-400 hover:bg-white/5'}`}>
+                      <button 
+                        key={tagId} 
+                        onClick={() => toggleTag(category, tagName)} 
+                        className={`text-xs p-2 rounded-lg transition-all ${selectedTags.includes(tagId) ? 'bg-pink-500 text-white' : 'text-neutral-400 hover:bg-white/5'}`}
+                      >
                         {tagName}
                       </button>
                     ))}
@@ -87,10 +124,6 @@ export default function SearchFilter({
                 )}
               </div>
             ))}
-            <div className="p-3 flex justify-between items-center border-t border-white/5">
-              <button onClick={handleClearClick} className="text-[11px] text-neutral-500 hover:text-white underline">Limpiar</button>
-              <button onClick={handleFilterClick} className="px-4 py-1.5 bg-pink-500 text-white text-[11px] font-bold rounded-md hover:bg-pink-600">Aplicar</button>
-            </div>
           </div>
         )}
       </div>

@@ -62,8 +62,6 @@ export default function LibraryPage() {
         onPageChange={(page) => {
           setCurrentPage(page);
           fetchMangas(page, searchQuery, selectedTags);
-          // Scroll suave al top al cambiar de página para mejorar la UX en móviles
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         disabled={isLoading}
       />
