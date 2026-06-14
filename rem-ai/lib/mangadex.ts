@@ -17,13 +17,8 @@ interface MangaDexManga {
   }>;
 }
 
-/**
- * Limpia el texto de enlaces Markdown [text](url) y limpia espacios sobrantes
- */
 function cleanDescription(desc: string): string {
   if (!desc) return 'Sin descripción disponible.';
-  // 1. Quita enlaces tipo [texto](url) dejando solo el texto
-  // 2. Quita posibles saltos de línea extra para que el componente no se rompa
   return desc
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
     .replace(/\n/g, ' ')
@@ -48,17 +43,22 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
     return data.map((manga): MangaResponse => {
       const attrs = manga.attributes;
 
-      // Lógica de prioridad: Español -> Español-Latino -> Inglés -> Fallback
+      // Extracción segura del título y descripción
       const title = attrs.title.es || attrs.title['es-la'] || attrs.title.en || Object.values(attrs.title)[0] || 'Sin título';
       const rawDesc = attrs.description.es || attrs.description['es-la'] || attrs.description.en || '';
+
+      // CORRECCIÓN: Acceso seguro a relaciones mediante encadenamiento opcional (?)
+      const coverFile = manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName;
+      const authorName = manga.relationships.find(r => r.type === 'author')?.attributes?.name;
 
       return {
         id: manga.id,
         title: title,
-        author: manga.relationships.find(r => r.type === 'author')?.attributes?.name || 'Autor desconocido',
+        author: authorName || 'Autor desconocido',
         description: cleanDescription(rawDesc),
-        coverUrl: manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName 
-          ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName}.512.jpg` 
+        // Construcción segura de la URL
+        coverUrl: coverFile 
+          ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}.512.jpg` 
           : '/placeholder.jpg',
         status: statusMap[attrs.status] || 'En curso',
         tags: attrs.tags.map(t => t.attributes.name.en),

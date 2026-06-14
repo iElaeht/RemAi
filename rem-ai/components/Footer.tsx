@@ -1,13 +1,16 @@
+'use client';
 import React from 'react';
 import Link from 'next/link';
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-sky-900/20 bg-neutral-950 px-6 md:px-24 py-20">
-      <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
+    <footer className="border-t border-sky-900/20 bg-neutral-950 px-6 py-12 md:px-24 md:py-20">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-5 gap-12">
         
-        {/* Columna Logo/Branding */}
-        <div className="col-span-1 md:col-span-2 space-y-4">
+        {/* Columna Branding */}
+        <div className="md:col-span-2 flex flex-col items-center md:items-start text-center md:text-left space-y-4">
           <div className="text-3xl font-black text-white">
             Rem<span className="text-sky-400">Ai</span>
           </div>
@@ -17,41 +20,31 @@ export default function Footer() {
         </div>
 
         {/* Columnas de Navegación */}
-        <div className="grid grid-cols-2 md:grid-cols-3 col-span-1 md:col-span-3 gap-8">
-          <div>
-            <h4 className="font-bold text-white mb-6">Plataforma</h4>
-            <ul className="space-y-4 text-sm text-neutral-400">
-              <li><Link href="/discover" className="hover:text-sky-400 transition">Descubrir</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Top Mangas</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Novedades</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Comunidad</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-6">Legal</h4>
-            <ul className="space-y-4 text-sm text-neutral-400">
-              <li><Link href="#" className="hover:text-sky-400 transition">Privacidad</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Términos de uso</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Cookies</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white mb-6">Soporte</h4>
-            <ul className="space-y-4 text-sm text-neutral-400">
-              <li><Link href="#" className="hover:text-sky-400 transition">Discord</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Contacto</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">FAQ</Link></li>
-            </ul>
-          </div>
+        <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center md:text-left">
+          {[
+            { title: 'Plataforma', links: [{n: 'Explorar', h: '/discover'}, {n: 'Top Mangas', h: '#'}, {n: 'Novedades', h: '#'}] },
+            { title: 'Legal', links: [{n: 'Privacidad', h: '#'}, {n: 'Términos de uso', h: '#'}] },
+            { title: 'Soporte', links: [{n: 'Discord', h: '#'}, {n: 'Contacto', h: '#'}] }
+          ].map((section) => (
+            <div key={section.title} className="flex flex-col items-center md:items-start">
+              <h4 className="font-bold text-white mb-6">{section.title}</h4>
+              <ul className="space-y-4 text-sm text-neutral-400">
+                {section.links.map((link) => (
+                  <li key={link.n}>
+                    <Link href={link.h} className="hover:text-sky-400 transition cursor-pointer">
+                      {link.n}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Línea final */}
-      <div className="pt-8 border-t border-white/5 text-center">
+      <div className="mt-16 pt-8 border-t border-white/5 text-center">
         <p className="text-neutral-600 text-xs">
-          &copy; {new Date().getFullYear()} RemAi. Desarrollado por Elaehtdev.
+          &copy; {currentYear} RemAi. Desarrollado por Elaehtdev.
         </p>
       </div>
     </footer>

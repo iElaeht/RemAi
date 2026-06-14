@@ -1,74 +1,80 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
-import { Bookmark, Sparkles } from 'lucide-react';
+import { Bookmark, Sparkles, ChevronDown, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => { if (isOpen) setIsOpen(false); };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isOpen]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
+  const menuItems = [
+    { name: 'Inicio', path: '/discover' },
+    { name: 'Biblioteca', path: '/library' }
+  ];
 
   return (
-    <nav className="relative z-50 w-full border-b border-blue-500/20 bg-gradient-to-r from-neutral-950 via-neutral-900 to-blue-950 px-6 md:px-12 lg:px-24 h-16 flex items-center justify-between transition-all">
+    <nav className="w-full border-b border-blue-900/50 bg-[#0a0f1d] h-16 flex items-center justify-between px-6 md:px-12 transition-all relative">
       
       {/* Logo */}
-      <div className="flex items-center">
-        <button onClick={() => router.push('/discover')} className="text-2xl font-black text-white hover:opacity-80 transition-opacity">
+      <div className="flex items-center z-50">
+        <button onClick={() => router.push('/discover')} className="text-2xl font-black text-white">
           Rem<span className="text-sky-400">Ai</span>
         </button>
       </div>
 
       {/* Menu Desktop */}
-      <div className="hidden md:flex items-center space-x-10 text-base font-semibold h-full">
-        {['Inicio', 'Biblioteca', 'Soporte'].map((item) => {
-          const path = item === 'Inicio' ? '/discover' : `/${item.toLowerCase()}`;
-          return (
-            <Link key={item} href={path} className={`relative h-full flex items-center transition-colors ${isActive(path) ? 'text-sky-400' : 'text-neutral-400 hover:text-white'}`}>
-              <span>{item}</span>
-              {isActive(path) && <span className="absolute bottom-0 left-0 w-full h-[3px] bg-sky-400 rounded-t-full" />}
-            </Link>
-          );
-        })}
+      <div className="hidden md:flex items-center space-x-1 h-full">
+        {menuItems.map((item) => (
+          <Link 
+            key={item.name} 
+            href={item.path} 
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${isActive(item.path) ? 'text-white bg-sky-900/50' : 'text-neutral-400 hover:text-white hover:bg-white/5'}`}
+          >
+            {item.name}
+          </Link>
+        ))}
       </div>
 
-      {/* Right Side: Colaborar, Favoritos y UserButton */}
-      <div className="flex items-center space-x-6 min-h-10">
-        <Link href="/colaborar" className="hidden md:flex items-center space-x-2 text-neutral-400 hover:text-sky-400 transition-colors">
-          <Sparkles size={20} strokeWidth={1.5} />
-          <span>Colaborar</span>
-        </Link>
-        <Link href="/favorites" className="hidden md:flex items-center space-x-2 text-neutral-400 hover:text-sky-400 transition-colors">
-          <Bookmark size={20} strokeWidth={1.5} />
-          <span>Favoritos</span>
-        </Link>
+      {/* Right Side (Acciones) */}
+      <div className="flex items-center space-x-2 z-50">
+        <div className="hidden md:flex items-center space-x-2">
+          <Link href="/colaborar" className="text-neutral-400 hover:text-white p-2 rounded-full hover:bg-white/5"><Sparkles size={18} /></Link>
+          <Link href="/favorites" className="text-neutral-400 hover:text-white p-2 rounded-full hover:bg-white/5"><Bookmark size={18} /></Link>
+        </div>
         
-        <UserButton appearance={{ elements: { avatarBox: "!h-12 !w-12 border-2 border-sky-500/30 rounded-full hover:scale-105 transition-transform" } }} />
-
-        <button onClick={() => setIsOpen(!isOpen)} className="flex md:hidden flex-col justify-center items-center w-8 h-8 space-y-1.5 z-50">
-          <span className={`block h-0.5 w-6 bg-white transition-all ${isOpen ? 'rotate-45 translate-y-2' : ''}`} />
-          <span className={`block h-0.5 w-6 bg-white transition-all ${isOpen ? 'opacity-0' : ''}`} />
-          <span className={`block h-0.5 w-6 bg-white transition-all ${isOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-        </button>
+        <div className="pl-2 md:pl-4 ml-2 border-l border-blue-900/50 flex items-center">
+          <UserButton appearance={{ elements: { avatarBox: "!h-8 !w-8" } }} />
+          {/* Botón Hamburguesa Móvil */}
+          <button className="md:hidden ml-4 text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu - Centrado */}
-      <div className={`fixed inset-x-0 top-16 bg-neutral-950 border-b border-blue-500/20 py-8 flex flex-col items-center justify-center space-y-6 md:hidden transition-all shadow-2xl ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
-        <Link href="/discover" onClick={() => setIsOpen(false)} className="text-xl font-bold text-white">Inicio</Link>
-        <Link href="/library" onClick={() => setIsOpen(false)} className="text-xl font-bold text-white">Biblioteca</Link>
-        <Link href="/colaborar" onClick={() => setIsOpen(false)} className="text-xl font-bold text-sky-400">Colaborar</Link>
-        <Link href="/favorites" onClick={() => setIsOpen(false)} className="text-xl font-bold text-sky-400">Favoritos</Link>
-      </div>
+      {/* Menu Mobile Desplegable */}
+      {isMenuOpen && (
+        <div className="absolute top-16 left-0 w-full bg-[#0a0f1d] border-b border-blue-900/50 p-6 flex flex-col gap-4 md:hidden z-40 shadow-2xl">
+          {menuItems.map((item) => (
+            <Link 
+              key={item.name} 
+              href={item.path} 
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-lg font-medium ${isActive(item.path) ? 'text-sky-400' : 'text-neutral-300'}`}
+            >
+              {item.name}
+            </Link>
+          ))}
+          <div className="border-t border-white/10 pt-4 flex gap-6">
+            <Link href="/colaborar" className="text-neutral-300 flex items-center gap-2" onClick={() => setIsMenuOpen(false)}><Sparkles size={20}/> Colaborar</Link>
+            <Link href="/favorites" className="text-neutral-300 flex items-center gap-2" onClick={() => setIsMenuOpen(false)}><Bookmark size={20}/> Favoritos</Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

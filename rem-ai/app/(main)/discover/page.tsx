@@ -1,5 +1,5 @@
 // app/(main)/discover/page.tsx
-import { TAG_MAP } from '@/types/tags';
+import { TAG_CATEGORIES } from '@/types/tags'; // Asegúrate de importar el nuevo objeto
 import EventMangaSection from '@/components/events/EventMangaSection';
 import EventCarouselPopular from '@/components/events/EventCarouselPopular';
 
@@ -12,14 +12,27 @@ export default async function DiscoverPage() {
         {/* Tendencias generales */}
         <EventMangaSection title="Tendencias" />
 
-        {/* Seguir viendo (Vacío para implementar lógica futura) */}
+        {/* Seguir viendo */}
         <EventMangaSection title="Seguir viendo" />
 
         {/* Categorías Principales */}
-        <EventMangaSection genreTag={TAG_MAP.Isekai} title="Isekai" />
-        <EventMangaSection genreTag={TAG_MAP.Comedy} title="Comedia" />
-        <EventMangaSection genreTag={TAG_MAP.Romance} title="Romance" />
-        <EventMangaSection genreTag={TAG_MAP.Drama} title="Drama" />
+        {/* Accedemos a las propiedades según la nueva estructura de TAG_CATEGORIES */}
+        <EventMangaSection 
+          genreTag={TAG_CATEGORIES.Temáticas.Isekai} 
+          title="Isekai" 
+        />
+        <EventMangaSection 
+          genreTag={TAG_CATEGORIES.Géneros.Comedy} 
+          title="Comedia" 
+        />
+        <EventMangaSection 
+          genreTag={TAG_CATEGORIES.Géneros.Romance} 
+          title="Romance" 
+        />
+        <EventMangaSection 
+          genreTag={TAG_CATEGORIES.Géneros.Drama} 
+          title="Drama" 
+        />
       </div>
     </main>
   );

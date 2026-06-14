@@ -1,10 +1,11 @@
-"use client";
+'use client';
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { MangaResponse } from "@/types/mangadex";
 import { getMainManga } from "@/lib/mangadex";
 import HomeMangaCard from "@/components/HomeMangaCard";
+import Footer from "@/components/Footer"; 
 
 export default function HomePage() {
   const [mangas, setMangas] = useState<MangaResponse[]>([]);
@@ -16,9 +17,7 @@ export default function HomePage() {
     window.addEventListener("scroll", handleScroll);
 
     async function loadMangas() {
-      // Usamos el filtro de populares que preparamos en el motor
       const data = await getMainManga(); 
-      console.log("Datos recibidos de MangaDex:", data);
       setMangas(data);
     }
     loadMangas();
@@ -29,13 +28,14 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-x-hidden select-none">
       
-      {/* Navbar */}
-      <nav 
-        className={`fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-20 transition-all duration-500 ease-in-out ${
-          isScrolled 
-            ? "bg-neutral-950/90 backdrop-blur-2xl border-b border-sky-900/50" 
-            : "bg-gradient-to-b from-black/40 to-transparent" 
-        }`}
+      {/* <- Navbar -> */}
+      <motion.nav 
+        initial={{ backgroundColor: "rgba(0,0,0,0)" }}
+        animate={{ 
+          backgroundColor: isScrolled ? "rgba(10, 10, 10, 0.8)" : "rgba(0, 0, 0, 0)",
+          backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)"
+        }}
+        className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-20 transition-all duration-300"
       >
         <div className="text-3xl font-black text-white tracking-tight">
           Rem<span className="text-sky-400">Ai</span>
@@ -49,16 +49,16 @@ export default function HomePage() {
             href="/sign-up" 
             className={`px-5 py-2 text-sm font-bold rounded-lg transition-all duration-300 border backdrop-blur-sm ${
               isScrolled 
-                ? "bg-sky-500 text-white border-transparent shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:bg-sky-400" 
+                ? "bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20" 
                 : "bg-white/10 text-white border-white/20 hover:bg-white/20"
             }`}
           >
             Unirse
           </Link>
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* Hero Section */}
+      {/* <- Hero Section -> */}
       <header className="relative h-screen flex items-center px-6 md:px-24">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2000')] bg-cover bg-center">
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-red-950/20" />
@@ -70,7 +70,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Sección Carrusel */}
+      {/* <- Sección Carrusel -> */}
       <section className="py-16 -mt-32 relative z-20">
         <h2 className="px-6 md:px-24 text-2xl font-bold mb-8 flex items-center gap-3">
           <div className="w-1 h-8 bg-red-500 rounded-full" /> Top Mangas Rem
@@ -83,7 +83,6 @@ export default function HomePage() {
             animate={{ x: "-50%" }}
             transition={{ duration: 60, ease: "linear", repeat: Infinity }}
           >
-            {/* Si mangas.length es 0, no renderizamos nada para evitar errores */}
             {mangas.length > 0 && [...mangas, ...mangas].map((manga, index) => (
               <div key={index} className="w-[200px] shrink-0" onContextMenu={(e) => e.preventDefault()}>
                 <HomeMangaCard manga={manga} />
@@ -93,20 +92,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-sky-900/20 bg-neutral-950 px-6 md:px-24 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
-          <div className="col-span-1 md:col-span-2 space-y-4">
-            <div className="text-3xl font-black text-white">Rem<span className="text-sky-400">Ai</span></div>
-            <p className="text-neutral-500 text-sm max-w-xs leading-relaxed">
-              La plataforma definitiva para amantes del manga. Inteligencia artificial aplicada a la lectura, optimización de imágenes y una biblioteca siempre actualizada.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 col-span-1 md:col-span-3 gap-8">
-             {/* Links footer */}
-          </div>
-        </div>
-      </footer>
+      {/* <- Footer -> */}
+      <Footer />
+      
     </div>
   );
 }
