@@ -12,4 +12,4 @@ export default async function EventCarouselPopular() {
   // Pasamos los datos al componente visual
   // Nota: Si quieres solo 6, puedes hacer popularMangas.slice(0, 6)
   return <HeroCarousel featuredMangas={popularMangas.slice(0, 6)} />;
-}
+} 
