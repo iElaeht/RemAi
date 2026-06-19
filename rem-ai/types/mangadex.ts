@@ -7,4 +7,5 @@ export interface MangaResponse {
   status: string;
   tags: string[];
   latestChapter?: string;
+  rating: number;
 }

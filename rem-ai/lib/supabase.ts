@@ -1,10 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// 1. Validación estricta de variables de entorno
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Esta función es la que usarás para hacer peticiones autenticadas
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Faltan las variables de entorno NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
+    "Asegúrate de configurarlas en tu archivo .env.local o en el dashboard de Vercel."
+  );
+}
+
+/**
+ * 2. Cliente para acciones que requieren autenticación (DELETE, UPDATE, INSERT)
+ * Se inyecta el token de Clerk dinámicamente.
+ * 
+ * @param clerkToken - El token JWT obtenido de Clerk
+ */
 export const getSupabaseClient = (clerkToken: string) => {
+  if (!clerkToken) {
+    console.error("getSupabaseClient: Se llamó sin un token de Clerk.");
+    throw new Error("Se requiere un token de autenticación válido para realizar esta acción.");
+  }
+  
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: {
@@ -14,5 +32,8 @@ export const getSupabaseClient = (clerkToken: string) => {
   });
 };
 
-// Mantén esta versión "sin auth" solo para lecturas públicas (ej: listar mangas iniciales)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+/**
+ * 3. Cliente para lecturas públicas.
+ * ¡OJO! Úsalo EXCLUSIVAMENTE para SELECTs públicos.
+ */
+export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);

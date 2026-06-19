@@ -1,6 +1,6 @@
 // components/events/EventCarouselPopular.tsx
 import { getMainManga } from '@/lib/mangadex';
-import HeroCarousel from '@/components/HeroCarousel'; // Tu componente visual
+import HeroCarousel from '@/components/common/HeroCarousel'; // Tu componente visual
 
 export default async function EventCarouselPopular() {
   // Pedimos la lista principal

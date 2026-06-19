@@ -1,7 +1,7 @@
 'use client';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import MangaCard from '@/components/MangaCard';
+import MangaCard from '@/components/manga/MangaCard';
 import { MangaResponse } from '@/types/mangadex';
 import { useCallback } from 'react';
 

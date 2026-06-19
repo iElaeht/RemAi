@@ -1,6 +1,6 @@
 // components/events/EventMangaSection.tsx
 import { getFilterManga, getMainManga } from '@/lib/mangadex';
-import MangaSlider from '@/components/MangaSlider';
+import MangaSlider from '@/components/common/MangaSlider';
 
 interface Props {
   genreTag?: string;

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a; /* Forcé el modo oscuro base para tu proyecto */
+  --background: #0a0a0a;
   --foreground: #ededed;
 }
 
@@ -13,13 +13,82 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: sans-serif; /* Más limpio para tu estética */
+  font-family: sans-serif;
+  /* Aseguramos que el body tenga altura mínima */
+  min-height: 100vh;
 }
 
-/* Tu clase para el carrusel */
+/* --- CLASES PERSONALIZADAS --- */
+
 .mask-fade {
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.scrollbar-hide::-webkit-scrollbar { display: none !important; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* --- SCROLLBAR GLOBAL (Color Ram) --- */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #db2777 #0a0a0a;
+}
+
+/* Estilo base del scroll (siempre visible) */
+::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #db2777 !important;
+  border-radius: 10px !important;
+  border: 2px solid #0a0a0a !important;
+  transition: background-color 0.3s ease !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #be185d !important;
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+}
+
+/* --- SCROLLBAR PARA DROPDOWNS --- */
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #0f1420 !important;
+  border-radius: 10px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #db2777 !important;
+  border-radius: 10px !important;
+  border: 1px solid #0f1420 !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #be185d !important;
+}
+
+/* --- LÓGICA DE OCULTACIÓN (ScrollManager) --- */
+/* Cuando el JS añade 'hide-scroll' al body, estas reglas toman control absoluto */
+
+body.hide-scroll {
+  scrollbar-width: none !important; /* Firefox */
+}
+
+body.hide-scroll::-webkit-scrollbar {
+  display: none !important; /* Chrome/Edge/Safari */
+  width: 0 !important;
+  height: 0 !important;
+}
