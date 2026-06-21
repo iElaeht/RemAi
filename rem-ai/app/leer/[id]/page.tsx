@@ -84,7 +84,6 @@ function ReaderContent({ id }: { id: string }) {
         lang={currentLang}
         setLang={setCurrentLang}
         loading={false}
-        currentChapterId={id}
       />
     </main>
   );
