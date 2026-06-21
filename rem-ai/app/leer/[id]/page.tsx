@@ -1,55 +1,100 @@
 'use client';
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import ReaderHeader from './components/ReaderHeader';
+import ReaderView from './components/ReaderView';
+import ChapterSidebar from '@/components/manga/ChapterSidebar';
+import { Chapter } from '@/service/mangaService';
+
+interface MangaData {
+  mangaId: string;
+  mangaTitle: string;
+  author: string;
+  chapterNum: string;
+  volume: string;
+  pages: string[];
+  baseUrl: string;
+  chapterHash: string;
+  chaptersList: Chapter[];
+}
+
+function ReaderContent({ id }: { id: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [currentLang, setCurrentLang] = useState(() => {
+    const langFromUrl = searchParams.get('lang');
+    if (langFromUrl) return langFromUrl;
+    if (typeof window !== 'undefined') return localStorage.getItem('manga_lang') || 'es';
+    return 'es';
+  });
+
+  const [data, setData] = useState<MangaData | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('manga_lang', currentLang);
+  }, [currentLang]);
+
+  useEffect(() => {
+    fetch(`/api/read/${id}?lang=${currentLang}`)
+      .then((res) => res.json())
+      .then((json) => setData(json))
+      .catch((err) => console.error("Error cargando capítulo:", err));
+  }, [id, currentLang]);
+  
+  const navigateChapter = (direction: 'prev' | 'next') => {
+    if (!data?.chaptersList) return;
+    const langChapters = data.chaptersList.filter(ch => ch.language === currentLang);
+    const currentIndex = langChapters.findIndex((ch) => ch.id === id);
+    if (currentIndex === -1) return;
+    
+    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    if (newIndex >= 0 && newIndex < langChapters.length) {
+      router.push(`/leer/${langChapters[newIndex].id}?lang=${currentLang}`);
+    }
+  };
+
+  if (!data) return <div className="text-white p-10 min-h-screen bg-[#0a0f1a]">Cargando...</div>;
+
+  return (
+    <main className="w-full bg-[#0a0f1a] min-h-screen">
+      <ReaderHeader
+        mangaTitle={data.mangaTitle}
+        author={data.author}
+        chapter={data.chapterNum}
+        volume={data.volume}
+        lang={currentLang}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+        onPrevChapter={() => navigateChapter('prev')}
+        onNextChapter={() => navigateChapter('next')}
+      />
+
+      <ReaderView 
+        pages={data.pages} 
+        baseUrl={data.baseUrl} 
+        hash={data.chapterHash} 
+        onNextChapter={() => navigateChapter('next')}
+      />
+      
+      <ChapterSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        chapters={data.chaptersList}
+        lang={currentLang}
+        setLang={setCurrentLang}
+        loading={false}
+        currentChapterId={id}
+      />
+    </main>
+  );
+}
 
 export default function LectorManga({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [images, setImages] = useState<{ url: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!id || id === 'undefined') return;
-
-    const fetchChapterData = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch(`/api/read/${id}`);
-        
-        if (!res.ok) throw new Error("Capítulo no encontrado");
-        
-        const data = await res.json();
-        
-        // Construimos las URLs completas usando la estructura de MangaDex
-        // URL base: {baseUrl}/data/{chapterHash}/{filename}
-        const imageUrls = data.pages.map((filename: string) => ({
-          url: `${data.baseUrl}/data/${data.chapterHash}/${filename}`
-        }));
-
-        setImages(imageUrls);
-      } catch (err) {
-        console.error("Error en LectorManga:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchChapterData();
-  }, [id]);
-
-  if (isLoading) return <div className="text-white p-10 text-center">Cargando páginas...</div>;
-
   return (
-    <div className="flex flex-col items-center bg-[#0a0f1d] min-h-screen py-10">
-      <h1 className="text-white mb-6">Visualizando capítulo: {id}</h1>
-      
-      {images.map((img, index) => (
-        <img 
-          key={index} 
-          src={img.url} 
-          alt={`Página ${index + 1}`} 
-          className="w-full max-w-2xl mb-2 border border-white/10"
-          loading="lazy" // Optimización para cargar imágenes a medida que haces scroll
-        />
-      ))}
-    </div>
+    <Suspense fallback={<div className="text-white p-10 min-h-screen bg-[#0a0f1a]">Cargando...</div>}>
+      <ReaderContent id={id} />
+    </Suspense>
   );
 }

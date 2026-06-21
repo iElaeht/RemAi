@@ -26,6 +26,7 @@ const langMap: Record<string, { name: string; flag: string }> = {
 export default function ChapterControls({ lang, setLang, chapters }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const availableLangs = Array.from(new Set(chapters.map((ch) => ch.language)));
   const count = chapters.filter((ch) => ch.language === lang).length;
 
@@ -40,20 +41,11 @@ export default function ChapterControls({ lang, setLang, chapters }: Props) {
 
   return (
     <div className="flex flex-col gap-6 mb-8 w-full">
-      {/* Título y Contador */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-          Capítulos disponibles
-        </h3>
-        <span className="text-[11px] font-bold text-pink-500 bg-pink-500/10 px-2.5 py-1 rounded uppercase tracking-wider">
-          {count} encontrados
-        </span>
-      </div>
-
-      {/* Selector de Idioma */}
+      
+      {/* 1. Selector de Idioma (Prioridad alta arriba) */}
       <div className="flex flex-col gap-3" ref={dropdownRef}>
         <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-          Idiomas disponibles
+          Idioma de lectura
         </h3>
         <div className="relative">
           <button
@@ -69,9 +61,9 @@ export default function ChapterControls({ lang, setLang, chapters }: Props) {
             </span>
           </button>
 
-          {/* Menú Desplegable */}
+          {/* Menú Desplegable de Idiomas */}
           {isOpen && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-[#0f1420] border border-white/10 rounded-lg shadow-2xl z-50 py-1 overflow-hidden custom-scroll max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 w-full mt-2 bg-[#0f1420] border border-white/10 rounded-lg shadow-2xl z-50 py-1 overflow-hidden max-h-60 overflow-y-auto">
               {availableLangs.map((l) => (
                 <button
                   key={l}
@@ -91,6 +83,18 @@ export default function ChapterControls({ lang, setLang, chapters }: Props) {
           )}
         </div>
       </div>
+
+      {/* 2. Contador de Capítulos (Posicionado debajo del idioma) */}
+      <div className="flex justify-between items-center py-2 border-y border-white/5">
+        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+          Capítulos encontrados
+        </h3>
+        <span className="text-[11px] font-bold text-pink-500 bg-pink-500/10 px-2.5 py-1 rounded uppercase tracking-wider">
+          {count}
+        </span>
+      </div>
+
+      {/* 3. Volúmenes (Se renderizan inmediatamente después en el componente Sidebar) */}
     </div>
   );
 }

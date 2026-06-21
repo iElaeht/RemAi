@@ -19,7 +19,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
  */
 export const getSupabaseClient = (clerkToken: string) => {
   if (!clerkToken) {
-    console.error("getSupabaseClient: Se llamó sin un token de Clerk.");
     throw new Error("Se requiere un token de autenticación válido para realizar esta acción.");
   }
   

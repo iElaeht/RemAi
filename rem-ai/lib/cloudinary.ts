@@ -15,7 +15,7 @@ export const uploadToCloudinary = async (file: File) => {
   const data = await res.json(); // Añade esto
   
   if (!res.ok) {
-    console.error("Error completo de Cloudinary:", data); // Esto te dirá el motivo exacto (ej. preset inválido)
+    console.error("Error completo de Cloudinary:", data);
     throw new Error("Error al subir a Cloudinary");
   }
   
