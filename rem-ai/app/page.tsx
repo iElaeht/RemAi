@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -31,8 +31,10 @@ export default function HomePage() {
       <motion.nav
         className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-20 transition-all duration-300"
         animate={{
-            backgroundColor: isScrolled ? "rgba(10, 10, 10, 0.8)" : "rgba(0, 0, 0, 0)",
-            backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
+          backgroundColor: isScrolled
+            ? "rgba(10, 10, 10, 0.8)"
+            : "rgba(0, 0, 0, 0)",
+          backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
         }}
       >
         <div className="flex items-center gap-3">
@@ -51,25 +53,35 @@ export default function HomePage() {
         </Link>
       </motion.nav>
 
-      {/* <- Hero Section -> */}
-      <header className="relative h-[80vh] flex items-center px-6 md:px-24">
+      {/* <- Hero Section Minimalista -> */}
+      <header className="relative h-[85vh] flex items-center px-6 md:px-24">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2000')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/90 to-black/20" />
         </div>
 
-        <div className="relative z-10 space-y-8 max-w-2xl mt-20">
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
-            Mangas Rem, <br/> <span className="text-sky-400">sin límites</span>.
+        <div className="relative z-10 space-y-6 max-w-2xl mt-20">
+          <h1 className="text-7xl md:text-9xl font-extrabold tracking-tighter text-white leading-[0.85]">
+            Mangas <br />
+            <span className="text-neutral-500">Rem.</span>
           </h1>
-          <p className="text-xl text-neutral-400 max-w-lg">
-            Buscas Mangas? Encontraras los mejores mangas de todos los tiempos.
+
+          <p className="text-lg text-neutral-400 max-w-md font-light tracking-wide">
+            Explora, descubre y sumérgete en una curaduría seleccionada de los
+            mejores mangas. La elegancia de leer sin distracciones.
           </p>
-          <div className="flex gap-4">
-            <Link 
-              href="/discover" 
-              className="px-8 py-4 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(14,165,233,0.3)]"
+
+          <div className="flex pt-6">
+            <Link
+              href="/discover"
+              className="group relative px-6 py-3 border border-neutral-700 hover:border-white text-white transition-all duration-300 flex items-center gap-3"
             >
-              Comenzar a leer <ArrowRight size={20} />
+              <span className="text-sm font-medium uppercase tracking-widest">
+                Comenzar a leer
+              </span>
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Link>
           </div>
         </div>
@@ -89,7 +101,10 @@ export default function HomePage() {
           >
             {mangas.length > 0 &&
               [...mangas, ...mangas].map((manga, index) => (
-                <div key={`${manga.id}-${index}`} className="w-[200px] shrink-0">
+                <div
+                  key={`${manga.id}-${index}`}
+                  className="w-[200px] shrink-0"
+                >
                   <HomeMangaCard manga={manga} />
                 </div>
               ))}
