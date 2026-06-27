@@ -1,10 +1,11 @@
+// rem-ai/app/leer/[id]/page.tsx
 'use client';
 import { useEffect, useState, use, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReaderHeader from './components/ReaderHeader';
 import ReaderView from './components/ReaderView';
 import ChapterSidebar from '@/components/manga/ChapterSidebar';
-import { Chapter } from '@/service/mangaService';
+import { fetchAllChapters, Chapter } from '@/service/mangaService';
 
 interface MangaData {
   mangaId: string;
@@ -30,7 +31,10 @@ function ReaderContent({ id }: { id: string }) {
   });
 
   const [data, setData] = useState<MangaData | null>(null);
+  const [chaptersList, setChaptersList] = useState<Chapter[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+
 
   useEffect(() => {
     localStorage.setItem('manga_lang', currentLang);
@@ -38,22 +42,36 @@ function ReaderContent({ id }: { id: string }) {
 
   useEffect(() => {
     fetch(`/api/read/${id}?lang=${currentLang}`)
-      .then((res) => res.json())
-      .then((json) => setData(json))
-      .catch((err) => console.error("Error cargando capítulo:", err));
-  }, [id, currentLang]);
+    .then((res) => res.json())
+    .then((json) => {
+      setData(json);
+      if (json.mangaId) {
+        fetchAllChapters(json.mangaId).then((chapters) => {
+          setChaptersList(chapters);
+        });
+      }
+    })
+    .catch((err) => console.error("Error cargando:", err));
+}, [id, currentLang]);
+
+const navigateChapter = (direction: 'prev' | 'next') => {
+
+  if (!chaptersList || chaptersList.length === 0) return;
+
+  const langChapters = chaptersList.filter(ch => ch.language === currentLang);
+  const sortedChapters = [...langChapters].sort((a, b) => 
+    parseFloat(a.number || '0') - parseFloat(b.number || '0')
+  );
   
-  const navigateChapter = (direction: 'prev' | 'next') => {
-    if (!data?.chaptersList) return;
-    const langChapters = data.chaptersList.filter(ch => ch.language === currentLang);
-    const currentIndex = langChapters.findIndex((ch) => ch.id === id);
-    if (currentIndex === -1) return;
-    
-    const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-    if (newIndex >= 0 && newIndex < langChapters.length) {
-      router.push(`/leer/${langChapters[newIndex].id}?lang=${currentLang}`);
-    }
-  };
+  const currentIndex = sortedChapters.findIndex((ch) => ch.id === id);
+  if (currentIndex === -1) return;
+  
+  const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+  
+  if (newIndex >= 0 && newIndex < sortedChapters.length) {
+    router.push(`/leer/${sortedChapters[newIndex].id}?lang=${currentLang}`);
+  }
+};
 
   if (!data) return <div className="text-white p-10 min-h-screen bg-[#0a0f1a]">Cargando...</div>;
 
@@ -65,6 +83,7 @@ function ReaderContent({ id }: { id: string }) {
         chapter={data.chapterNum}
         volume={data.volume}
         lang={currentLang}
+        mangaId={data.mangaId}
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onPrevChapter={() => navigateChapter('prev')}
         onNextChapter={() => navigateChapter('next')}
@@ -80,10 +99,10 @@ function ReaderContent({ id }: { id: string }) {
       <ChapterSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        chapters={data.chaptersList}
+        chapters={chaptersList}
         lang={currentLang}
         setLang={setCurrentLang}
-        loading={false}
+        loading={chaptersList.length === 0}
       />
     </main>
   );

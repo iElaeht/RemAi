@@ -24,11 +24,21 @@ const langMap: Record<string, { name: string; flag: string }> = {
 };
 
 export default function ChapterControls({ lang, setLang, chapters }: Props) {
+  useEffect(() => {
+  console.log("Rem AI - Diagnóstico de Capítulos:", chapters);
+}, [chapters]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const availableLangs = Array.from(new Set(chapters.map((ch) => ch.language)));
-  const count = chapters.filter((ch) => ch.language === lang).length;
+
+  const safeChapters = Array.isArray(chapters) ? chapters : [];
+  const availableLangs = Array.from(new Set(safeChapters.map((ch) => ch.language)));
+  useEffect(() => {
+    if (availableLangs.length > 0 && !availableLangs.includes(lang)) {
+      setLang(availableLangs[0]);
+    }
+  }, [availableLangs, lang, setLang]);
+
+  const count = safeChapters.filter((ch) => ch.language === lang).length;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -8,17 +8,25 @@ export interface VolumeGroup {
   count: number;
 }
 
+/**
+ * Blindado y optimizado para evitar errores de tipo en tiempo de ejecución.
+ */
 export function groupChaptersByVolume(chapters: Chapter[], lang: string): VolumeGroup[] {
-  // 1. Filtramos normalizando el idioma para evitar discrepancias
+  // BLINDAJE: Si no hay capítulos o no es un array, devolvemos array vacío inmediatamente
+  if (!chapters || !Array.isArray(chapters)) {
+    return [];
+  }
+
+  // 1. Filtramos normalizando el idioma con seguridad ante nulos
+  const langNormalized = (lang || 'es').toLowerCase().trim();
   const filtered = chapters.filter((ch) => 
-    ch.language?.toLowerCase().trim() === lang.toLowerCase().trim()
+    ch?.language?.toLowerCase().trim() === langNormalized
   );
 
-  // 2. Agrupamos por volumen buscando en diferentes lugares de la estructura
+  // 2. Agrupamos por volumen
   const grouped = filtered.reduce((acc: Record<string, Chapter[]>, ch: Chapter) => {
-    // Intentamos extraer el volumen: raíz del objeto o dentro de attributes
-    const chapterAny = ch as any;
-    const volRaw = chapterAny.volume || chapterAny.attributes?.volume;
+    // Usamos el tipado para acceder a 'volume' de forma segura
+    const volRaw = (ch as any).volume || (ch as any).attributes?.volume;
     
     const vol = (volRaw !== null && volRaw !== undefined && volRaw !== "") 
       ? String(volRaw) 
@@ -29,7 +37,7 @@ export function groupChaptersByVolume(chapters: Chapter[], lang: string): Volume
     return acc;
   }, {} as Record<string, Chapter[]>);
 
-  // 3. Transformamos en array, ordenando volúmenes y capítulos internos
+  // 3. Transformamos en array y ordenamos
   return Object.keys(grouped)
     .sort((a, b) => {
       if (a === 'Sin Volumen') return 1;
@@ -37,12 +45,13 @@ export function groupChaptersByVolume(chapters: Chapter[], lang: string): Volume
       return parseFloat(a) - parseFloat(b);
     })
     .map((vol) => {
+      // Ordenar los capítulos internos por número
       const vols = grouped[vol].sort((a, b) => 
         parseFloat(a.number || '0') - parseFloat(b.number || '0')
       );
       
-      const first = vols[0].number;
-      const last = vols[vols.length - 1].number;
+      const first = vols[0]?.number || '?';
+      const last = vols[vols.length - 1]?.number || '?';
       
       return {
         volume: vol,

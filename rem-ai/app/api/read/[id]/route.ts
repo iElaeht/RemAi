@@ -1,93 +1,77 @@
 import { NextResponse } from 'next/server';
 
-// Definición de tipos para las relaciones y objetos de MangaDex
-interface Relationship {
-  id: string;
-  type: 'manga' | 'author';
-  attributes?: {
-    name?: string;
-  };
-}
+// 1. FORZAMOS DINAMISMO: Evita caché de borde y garantiza datos frescos.
+export const dynamic = 'force-dynamic';
 
+// 2. DEFINICIÓN DE TIPOS: Eliminamos el 'any' para un código robusto y mantenible.
 interface MangaDexResponse {
   result: string;
   data: {
-    id: string;
     attributes: {
-      title: { [key: string]: string };
-      name?: string;
-      translatedLanguage?: string;
-      volume?: string;
-      chapter?: string;
+      chapter: string | null;
     };
-    relationships: Relationship[];
+    relationships: {
+      id: string;
+      type: string;
+    }[];
+  };
+}
+
+interface ServerResponse {
+  baseUrl: string;
+  chapter: {
+    hash: string;
+    data: string[];
+    dataSaver: string[];
   };
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { searchParams } = new URL(request.url);
-  const lang = searchParams.get('lang') || 'es';
+  
+  // Identificación clara para MangaDex (política de buen uso)
+  const headers = { 
+    'User-Agent': 'Rem-AI-App/1.0',
+    'Accept': 'application/json' 
+  };
 
   if (!id || id === 'undefined') {
     return NextResponse.json({ error: 'ID de capítulo inválido' }, { status: 400 });
   }
 
   try {
-    // 1. Obtener capítulo y servidor
+    // 3. EJECUCIÓN PARALELA OPTIMIZADA:
+    // Solo pedimos lo esencial para la lectura. La lista de capítulos no debe bloquear la carga de imágenes.
     const [chapterRes, serverRes] = await Promise.all([
-      fetch(`https://api.mangadex.org/chapter/${id}`),
-      fetch(`https://api.mangadex.org/at-home/server/${id}`)
+      fetch(`https://api.mangadex.org/chapter/${id}`, { headers }),
+      fetch(`https://api.mangadex.org/at-home/server/${id}`, { headers })
     ]);
 
-    const chapterData = await chapterRes.json();
-    const serverData = await serverRes.json();
-
-    if (chapterData.result !== 'ok' || serverData.result !== 'ok') {
-      return NextResponse.json({ error: 'Error al conectar con MangaDex' }, { status: 404 });
+    // Validación estricta de ambas respuestas
+    if (!chapterRes.ok || !serverRes.ok) {
+      console.error(`Rem AI - Error de conexión: ${chapterRes.status} / ${serverRes.status}`);
+      return NextResponse.json({ error: 'Error al conectar con el servidor de imágenes' }, { status: 404 });
     }
 
-    // 2. Extraer ID del manga correctamente de las relaciones del capítulo
-    const mangaId = chapterData.data.relationships.find((r: Relationship) => r.type === 'manga')?.id;
+    const chapterData: MangaDexResponse = await chapterRes.json();
+    const serverData: ServerResponse = await serverRes.json();
 
-    // 3. Petición al manga incluyendo explícitamente al autor
-    const [mangaRes, chaptersRes] = await Promise.all([
-      fetch(`https://api.mangadex.org/manga/${mangaId}?includes[]=author`),
-      fetch(`https://api.mangadex.org/manga/${mangaId}/feed?limit=500&order[chapter]=asc&order[volume]=asc`)
-    ]);
+    // Extracción segura del mangaId
+    const mangaId = chapterData.data.relationships.find((r) => r.type === 'manga')?.id;
 
-    const mangaData: MangaDexResponse = await mangaRes.json();
-    const chaptersData = await chaptersRes.json();
-
-    // 4. Mapear capítulos tipado
-    const formattedChapters = chaptersData.data.map((ch: any) => ({
-      id: ch.id,
-      language: ch.attributes.translatedLanguage,
-      volume: ch.attributes.volume,
-      number: ch.attributes.chapter,
-      title: ch.attributes.title
-    }));
-
-    // Extraer autor de las relaciones del manga obtenido
-    const authorRel = mangaData.data.relationships.find((r: Relationship) => r.type === 'author');
-
-    // 5. Retorno consolidado
+    // 4. RETORNO CONSOLIDADO Y ÁGIL:
+    // Entregamos solo lo necesario para renderizar el lector instantáneamente.
     return NextResponse.json({
-      mangaId: mangaId,
+      mangaId: mangaId || null,
       baseUrl: serverData.baseUrl,
       chapterHash: serverData.chapter.hash,
       pages: serverData.chapter.data,
       dataSaver: serverData.chapter.dataSaver,
-      mangaTitle: mangaData.data.attributes.title.en || Object.values(mangaData.data.attributes.title)[0],
-      author: authorRel?.attributes?.name || "Autor Desconocido",
-      chapterNum: chapterData.data.attributes.chapter,
-      volume: chapterData.data.attributes.volume,
-      selectedLang: lang,
-      chaptersList: formattedChapters
+      chapterNum: chapterData.data.attributes.chapter || '0',
     });
 
   } catch (error) {
-    console.error("Error crítico en el lector:", error);
+    console.error("Rem AI - Error crítico en el lector:", error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }

@@ -10,7 +10,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Rem Ai',
+  title: 'Mangas Rem',
   description: 'Plataforma de Lectura de Manga',
 };
 
@@ -37,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider
       localization={customEsES}
+      afterSignOutUrl="/"
       appearance={{
         variables: { colorPrimary: '#3b82f6' },
         elements: {
