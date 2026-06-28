@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'uploads.mangadex.org',
         port: '',
-        pathname: '/covers/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',

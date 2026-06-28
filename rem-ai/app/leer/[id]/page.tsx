@@ -73,7 +73,11 @@ const navigateChapter = (direction: 'prev' | 'next') => {
   }
 };
 
-  if (!data) return <div className="text-white p-10 min-h-screen bg-[#0a0f1a]">Cargando...</div>;
+  if (!data) return (
+  <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
+    <div className="animate-pulse">Cargando...</div>
+  </div>
+);
 
   return (
     <main className="w-full bg-[#0a0f1a] min-h-screen">
@@ -111,8 +115,12 @@ const navigateChapter = (direction: 'prev' | 'next') => {
 export default function LectorManga({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
-    <Suspense fallback={<div className="text-white p-10 min-h-screen bg-[#0a0f1a]">Cargando...</div>}>
-      <ReaderContent id={id} />
-    </Suspense>
+    <Suspense fallback={
+  <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
+    <div className="animate-pulse">Cargando...</div>
+  </div>
+}>
+  <ReaderContent id={id} />
+</Suspense>
   );
 }

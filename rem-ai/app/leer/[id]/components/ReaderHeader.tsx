@@ -28,7 +28,7 @@ export default function ReaderHeader({
   const router = useRouter();
   
   return (
-    <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-3">
+    <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* IZQUIERDA: Home/Manga Info */}
