@@ -65,7 +65,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
             {/* Contenedor envolvente */}
             <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
               <img
-                src={`${baseUrl}/data/${hash}/${page}`}
+                src={`/api/proxy?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
                 // select-none asegurado aquí también por redundancia
                 className={`
                   shadow-2xl transition-all duration-300 ease-in-out select-none
