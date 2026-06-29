@@ -36,6 +36,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
   };
 
   return (
+    // Añadimos select-none aquí para bloquear la selección en toda la pantalla
     <div className="relative w-full h-screen bg-[#0a0f1a] flex flex-col overflow-hidden select-none">
       
       {/* Carrusel de Imágenes */}
@@ -44,55 +45,41 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
         onScroll={handleScroll}
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
       >
-        {pages.map((page: string, idx: number) => {
-          // BLINDAJE: Construcción segura de la URL
-          const imageUrl = (baseUrl && hash && page) 
-            ? `/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`
-            : null;
-
-          return (
-            <div 
-              key={idx} id={`page-${idx}`}
-              className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
-              onClick={(e) => {
-                if (isZoomed) return;
-                const rect = e.currentTarget.getBoundingClientRect();
-                const isRight = e.clientX > rect.left + rect.width / 2;
-                
-                if (isRight) {
-                  if (idx === pages.length - 1) onNextChapter?.();
-                  else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                } else {
-                  document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                }
-              }}
-            >
-              {/* Contenedor envolvente */}
-              <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
-                {imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    className={`
-                      shadow-2xl transition-all duration-300 ease-in-out select-none
-                      ${isZoomed 
-                        ? 'w-full h-auto cursor-zoom-out' 
-                        : 'h-full w-auto cursor-zoom-in'
-                      }
-                      object-contain
-                    `}
-                    alt={`Página ${idx + 1}`}
-                    draggable="false"
-                  />
-                ) : (
-                  // Loader visual si la URL no es válida
-                  <div className="h-[95vh] w-full flex items-center justify-center text-gray-500">
-                    Cargando página...
-                  </div>
-                )}
-              </div>
+        {pages.map((page: string, idx: number) => (
+          <div 
+            key={idx} id={`page-${idx}`}
+            className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
+            onClick={(e) => {
+              if (isZoomed) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const isRight = e.clientX > rect.left + rect.width / 2;
+              
+              if (isRight) {
+                if (idx === pages.length - 1) onNextChapter?.();
+                else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+              } else {
+                document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+              }
+            }}
+          >
+            {/* Contenedor envolvente */}
+            <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
+              <img
+                src={`/api/proxy?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+                className={`
+                  shadow-2xl transition-all duration-300 ease-in-out select-none
+                  ${isZoomed 
+                    ? 'w-full h-auto cursor-zoom-out' 
+                    : 'h-full w-auto cursor-zoom-in'
+                  }
+                  object-contain
+                `}
+                alt={`Página ${idx + 1}`}
+                draggable="false"
+              />
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
       {/* --- UI INFERIOR --- */}
