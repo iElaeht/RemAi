@@ -42,9 +42,9 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       <div 
         ref={containerRef}
         onScroll={handleScroll}
-        // En escritorio (isZoomed), permitimos overflow. En mobile, evitamos el scroll accidental al hacer zoom
+        // Usamos pan-x pan-y para permitir scroll, pero dejamos que el navegador gestione gestos de zoom sobre las imágenes
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
-        style={{ touchAction: isZoomed ? 'auto' : 'pan-x pan-y' }}
+        style={{ touchAction: 'pan-x pan-y' }}
       >
         {pages.map((page: string, idx: number) => {
           const imageUrl = (baseUrl && hash && page) 
@@ -73,9 +73,8 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    // AÑADIDO: touch-action: none permite que el navegador tome control total 
-                    // del gesto de pellizco sobre la imagen sin arrastrar el carrusel
-                    style={{ touchAction: 'none' }}
+                    // Quitamos touch-action: none. Al dejarlo vacío, permitimos que el navegador 
+                    // use su zoom nativo sobre la imagen sin interferir con el scroll del carrusel.
                     className={`
                       shadow-2xl transition-all duration-300 ease-in-out select-none
                       ${isZoomed 
@@ -101,7 +100,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       {/* --- UI INFERIOR --- */}
       <div className="w-full h-10 flex flex-col items-center justify-center bg-[#0a0f1a] gap-0.5 shrink-0 z-50">
         <span className="text-gray-500 text-[10px] font-medium tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages.length} | {isZoomed ? 'Modo Zoom Activo' : 'Presiona [Z] o Pellizca para Zoom'}
+          Página {currentPage} / {pages.length} | {isZoomed ? 'Modo Zoom Activo' : 'Usa [Z] o pellizca para hacer Zoom'}
         </span>
         <div className="w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-pink-500 rounded-full transition-all duration-100" style={{ width: `${progress}%` }} />
