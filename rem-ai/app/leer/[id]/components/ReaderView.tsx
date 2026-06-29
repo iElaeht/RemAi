@@ -65,7 +65,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
             {/* Contenedor envolvente */}
             <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
               <img
-                src={`/api/proxy?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+                src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
                 className={`
                   shadow-2xl transition-all duration-300 ease-in-out select-none
                   ${isZoomed 
@@ -75,6 +75,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                   object-contain
                 `}
                 alt={`Página ${idx + 1}`}
+                // draggable="false" evita que el usuario pueda "arrastrar" la imagen como archivo
                 draggable="false"
               />
             </div>
