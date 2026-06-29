@@ -9,6 +9,7 @@ interface MangaDexResponse {
   data: {
     attributes: {
       chapter: string | null;
+      volume: string | null;
     };
     relationships: {
       id: string;
@@ -68,6 +69,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       pages: serverData.chapter.data,
       dataSaver: serverData.chapter.dataSaver,
       chapterNum: chapterData.data.attributes.chapter || '0',
+      volume: chapterData.data.attributes.volume || '0',
     });
 
   } catch (error) {

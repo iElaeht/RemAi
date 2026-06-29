@@ -1,3 +1,4 @@
+// utils/mangaUtils.ts
 import { Chapter } from "@/service/mangaService";
 
 export interface VolumeGroup {
