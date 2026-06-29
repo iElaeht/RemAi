@@ -37,7 +37,6 @@ export default function MangaCard({ id, title, coverUrl, author, status, tags }:
           sizes="(max-width: 768px) 50vw, (max-width: 1000px) 33vw, (max-width: 1200px) 20vw, 15vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           priority={false}
-          unoptimized
         />
       </div>
 
