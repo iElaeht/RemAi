@@ -19,13 +19,36 @@ interface MangaDexManga {
 }
 
 // Función auxiliar para obtener el rating real de MangaDex
+
 async function fetchMangaRating(mangaId: string): Promise<number> {
   try {
-    const res = await fetch(`${MANGADEX_API_URL}/statistics/manga/${mangaId}`, { next: { revalidate: 3600 } });
+    // Usamos el endpoint correcto según tu captura
+    const res = await fetch(`https://api.mangadex.org/statistics/manga/${mangaId}`);
+    if (!res.ok) return 0;
+    
     const json = await res.json();
-    return json.statistics?.[mangaId]?.rating?.average || 0;
-  } catch {
+    
+    // Acceso corregido: eliminamos el ".md" que no existe
+    const rating = json.statistics?.[mangaId]?.rating?.average;
+    return typeof rating === 'number' ? rating : 0;
+  } catch (e) {
+    console.error("Error al obtener rating:", e);
     return 0;
+  }
+}
+
+export async function getMangaById(id: string): Promise<MangaResponse | null> {
+  try {
+    const res = await fetch(`https://api.mangadex.org/manga/${id}?includes[]=cover_art&includes[]=author`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    
+    const json = await res.json();
+    const rating = await fetchMangaRating(id); // Ahora este valor sí llegará bien
+    
+    // Asumimos que mapMangaData ya está definido en tu archivo
+    return mapMangaData(json.data, rating);
+  } catch (e) {
+    return null;
   }
 }
 
@@ -82,23 +105,6 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
   } catch (e) {
     console.error("Error fetching mangas:", e);
     return []; 
-  }
-}
-
-export async function getMangaById(id: string): Promise<MangaResponse | null> {
-  const query = new URLSearchParams();
-  ['cover_art', 'author'].forEach(val => query.append('includes[]', val));
-
-  try {
-    const res = await fetch(`${MANGADEX_API_URL}/manga/${id}?${query.toString()}`, { next: { revalidate: 3600 } });
-    if (!res.ok) return null;
-    
-    const json = await res.json();
-    const rating = await fetchMangaRating(id); // Rating dinámico y real
-    return mapMangaData(json.data as MangaDexManga, rating);
-  } catch (e) {
-    console.error(`Error fetching manga ${id}:`, e);
-    return null;
   }
 }
 

@@ -1,3 +1,4 @@
+// app/api/mangas/route.ts
 import { NextResponse } from 'next/server';
 
 // Forzamos dinamismo para obtener datos frescos siempre

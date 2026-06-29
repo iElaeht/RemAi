@@ -12,6 +12,7 @@ export default async function MangaPage({
 }) {
   const { id } = await params;
 
+  // getMangaById ya incluye el rating en el objeto devuelto
   const [manga, commentsResponse] = await Promise.all([
     getMangaById(id),
     supabasePublic
@@ -28,10 +29,10 @@ export default async function MangaPage({
   return (
     <main className="min-h-screen bg-[#0b1120] flex flex-col gap-12 pb-20 animate-in fade-in duration-500">
       
-      {/* Sección Manga - Se mantiene igual */}
+      {/* Sección Manga - El rating ya viaja dentro del objeto 'manga' */}
       <MangaView manga={manga} />
 
-      {/* Sección Comentarios - Aquí aplicamos la nueva "carta" */}
+      {/* Sección Comentarios */}
       <section className="px-6 lg:px-32">
         <div className="max-w-5xl mx-auto">
             <Comments mangaId={id} initialComments={initialComments} />
