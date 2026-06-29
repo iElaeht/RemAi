@@ -25,7 +25,6 @@ const langMap: Record<string, { name: string; flag: string }> = {
 
 export default function ChapterControls({ lang, setLang, chapters }: Props) {
   useEffect(() => {
-  console.log("Rem AI - Diagnóstico de Capítulos:", chapters);
 }, [chapters]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
