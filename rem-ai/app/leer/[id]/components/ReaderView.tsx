@@ -12,8 +12,10 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isPinching, setIsPinching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Efecto para tecla [Z] en escritorio
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'z') {
@@ -42,10 +44,16 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       <div 
         ref={containerRef}
         onScroll={handleScroll}
-        // touch-action: pan-x es vital: permite el scroll horizontal del carrusel
-        // pero le dice al navegador que no interfiera con otros gestos complejos (como el zoom nativo)
-        className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
-        style={{ touchAction: 'pan-x pan-y' }} 
+        // Lógica de blindaje: Si estamos en modo isZoomed o isPinching, desactivamos el snap y el scroll forzado
+        className={`flex-1 w-full flex flex-row ${
+          isZoomed || isPinching 
+            ? 'overflow-auto' 
+            : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'
+        } scroll-smooth no-scrollbar`}
+        // touch-action pinch-zoom es vital para que el navegador sepa que puede escalar
+        style={{ touchAction: 'pan-x pinch-zoom' }}
+        onTouchStart={(e) => { if (e.touches.length > 1) setIsPinching(true); }}
+        onTouchEnd={() => setIsPinching(false)}
       >
         {pages.map((page: string, idx: number) => {
           const imageUrl = (baseUrl && hash && page) 
@@ -69,24 +77,18 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                 }
               }}
             >
-              {/* Contenedor envolvente */}
               <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    // AÑADIDO: touch-action: pinch-zoom habilita específicamente el gesto nativo
-                    // sin bloquear el resto de la interacción del componente.
-                    style={{ touchAction: 'pinch-zoom' }}
                     className={`
                       shadow-2xl transition-all duration-300 ease-in-out select-none
-                      ${isZoomed 
-                        ? 'w-full h-auto cursor-zoom-out' 
-                        : 'h-full w-auto cursor-zoom-in'
-                      }
+                      ${isZoomed ? 'w-full h-auto cursor-zoom-out' : 'h-full w-auto cursor-zoom-in'}
                       object-contain
                     `}
                     alt={`Página ${idx + 1}`}
                     draggable="false"
+                    style={{ WebkitUserDrag: 'none' }}
                   />
                 ) : (
                   <div className="h-[95vh] w-full flex items-center justify-center text-gray-500">
@@ -102,7 +104,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       {/* --- UI INFERIOR --- */}
       <div className="w-full h-10 flex flex-col items-center justify-center bg-[#0a0f1a] gap-0.5 shrink-0 z-50">
         <span className="text-gray-500 text-[10px] font-medium tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages.length} | [Z] escritorio o Pellizca en móvil
+          Página {currentPage} / {pages.length} | {isZoomed ? 'Modo Zoom Activo' : 'Presiona [Z] o Pellizca para Zoom'}
         </span>
         <div className="w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-pink-500 rounded-full transition-all duration-100" style={{ width: `${progress}%` }} />
