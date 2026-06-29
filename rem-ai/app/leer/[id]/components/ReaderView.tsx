@@ -88,7 +88,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                     `}
                     alt={`Página ${idx + 1}`}
                     draggable="false"
-                    style={{ WebkitUserDrag: 'none' }}
+                    style={{ WebkitUserDrag: 'none' } as React.CSSProperties}
                   />
                 ) : (
                   <div className="h-[95vh] w-full flex items-center justify-center text-gray-500">
