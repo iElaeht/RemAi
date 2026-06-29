@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(buffer, {
       headers: { 
         'Content-Type': response.headers.get('Content-Type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400', // Cachea la imagen por 24 horas en el navegador
+        'Cache-Control': 'public, max-age=86400',
       }
     });
   } catch (error) {
