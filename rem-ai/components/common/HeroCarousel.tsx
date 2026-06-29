@@ -54,6 +54,7 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
               src={featuredMangas[activeIndex].coverUrl} 
               className="w-full h-full object-cover" 
               alt={featuredMangas[activeIndex].title}
+              unoptimized={true}
               />
             </div>
             
