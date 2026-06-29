@@ -1,3 +1,4 @@
+// lib/mangadex.ts
 import { MangaResponse } from '@/types/mangadex';
 
 const MANGADEX_API_URL = 'https://api.mangadex.org';

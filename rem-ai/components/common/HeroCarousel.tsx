@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import mangadexLoader from '@/utils/imageLoader';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight, BookOpen, Star, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { MangaResponse } from '@/types/mangadex';
@@ -47,7 +49,15 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
           {/* Contenido principal: Flex-col en móvil, Flex-row en md */}
           <div className="relative h-full flex flex-col md:flex-row items-center justify-center px-6 md:px-24 gap-6 md:gap-12">
             <div className="w-32 md:w-[250px] aspect-[2/3] shadow-2xl rounded-lg overflow-hidden border border-white/10 shrink-0">
-              <img src={featuredMangas[activeIndex].coverUrl} className="w-full h-full object-cover" alt={featuredMangas[activeIndex].title} />
+              <Image
+              loader={mangadexLoader}
+              width={300}
+              height={450}
+              src={featuredMangas[activeIndex].coverUrl} 
+              className="w-full h-full object-cover" 
+              alt={featuredMangas[activeIndex].title}
+              unoptimized
+              />
             </div>
             
             <div className="flex flex-col text-center md:text-left max-w-xl">
