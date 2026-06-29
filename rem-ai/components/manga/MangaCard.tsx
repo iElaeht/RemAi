@@ -2,7 +2,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import mangadexLoader from '../../utils/imageLoader';
 interface MangaCardProps {
   id: string;
   title: string;
@@ -31,14 +30,12 @@ export default function MangaCard({ id, title, coverUrl, author, status, tags }:
       {/* Contenedor de la Imagen con Aspect Ratio de Manga */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-neutral-900 shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         <Image
-          loader={mangadexLoader}
           src={coverUrl}
           alt={`Portada de ${title}`}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1000px) 33vw, (max-width: 1200px) 20vw, 15vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           priority={false}
-          unoptimized
         />
       </div>
 
