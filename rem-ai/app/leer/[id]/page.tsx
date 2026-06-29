@@ -45,7 +45,6 @@ function ReaderContent({ id }: { id: string }) {
     .then((res) => res.json())
     .then((json) => {
       setData(json);
-      console.log("Datos recibidos de MangaDex:", json);
       if (json.mangaId) {
         fetchAllChapters(json.mangaId).then((chapters) => {
           setChaptersList(chapters);

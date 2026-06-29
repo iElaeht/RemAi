@@ -7,15 +7,15 @@ import ChapterSidebar from "./ChapterSidebar";
 import { MangaResponse } from "@/types/mangadex";
 import { List, BookOpen, Tag, User, X, Star } from "lucide-react";
 
-
 export default function MangaView({ manga }: { manga: MangaResponse }) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("manga_lang") || "es";
+    if (typeof window !== "undefined")
+      return localStorage.getItem("manga_lang") || "es";
     return "es";
   });
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
 
   const firstChapter = useMemo(() => {
     if (chapters.length === 0) return null;
-    const priority = ['es-la', 'es', 'en'];
+    const priority = ["es-la", "es", "en"];
     for (const l of priority) {
       const found = chapters.find((ch) => ch.language.toLowerCase() === l);
       if (found) return found;
@@ -58,37 +58,55 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl" />
 
           <div className="relative flex flex-col md:flex-row items-center md:items-start gap-12">
-            
             {/* PORTADA Y RATING */}
             <div className="flex flex-col gap-4">
-              <div className="relative w-64 shrink-0 cursor-pointer group" onClick={() => setIsModalOpen(true)}>
+              <div
+                className="relative w-64 shrink-0 cursor-pointer group"
+                onClick={() => setIsModalOpen(true)}
+              >
                 <div className="absolute inset-0 bg-pink-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
-                <img src={manga.coverUrl} alt={manga.title} className="w-full rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03]" />
+                <img
+                  src={manga.coverUrl}
+                  alt={manga.title}
+                  className="w-full rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+                />
               </div>
-              
+
               {/* RATING DINÁMICO */}
               <div className="flex flex-col items-center gap-1 bg-white/5 p-3 rounded-xl border border-white/10">
                 <div className="flex text-yellow-400 gap-0.5">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill={i < Math.round(rating / 2) ? "currentColor" : "none"} />
+                    <Star
+                      key={i}
+                      size={16}
+                      fill={
+                        i < Math.round(rating / 2) ? "currentColor" : "none"
+                      }
+                    />
                   ))}
                 </div>
-                <span className="text-sm font-bold text-white">{rating > 0 ? rating.toFixed(1) : "N/A"} <span className="text-gray-400">/ 10</span></span>
+                <span className="text-sm font-bold text-white">
+                  {rating > 0 ? rating.toFixed(1) : "N/A"}{" "}
+                  <span className="text-gray-400">/ 10</span>
+                </span>
               </div>
             </div>
 
             {/* CONTENIDO */}
             <div className="flex flex-col items-center md:items-start gap-6 w-full text-center md:text-left">
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none">{manga.title}</h1>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none">
+                {manga.title}
+              </h1>
               <div className="flex items-center justify-center md:justify-start gap-2 text-neutral-400 text-lg font-medium">
-                <User size={18} /> <span>{manga.author || "Autor Desconocido"}</span>
+                <User size={18} />{" "}
+                <span>{manga.author || "Autor Desconocido"}</span>
               </div>
 
               {/* TAGS DINÁMICOS */}
               <div className="flex flex-wrap justify-center md:justify-start gap-2">
                 {manga.tags?.map((tag) => (
-                  <button 
-                    key={tag} 
+                  <button
+                    key={tag}
                     onClick={() => handleTagClick(tag)}
                     className="flex items-center gap-1.5 text-[11px] uppercase font-bold px-4 py-1.5 bg-white/5 border border-white/10 hover:bg-white/20 rounded-full text-blue-200 transition-all active:scale-95"
                   >
@@ -99,7 +117,9 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
 
               {/* DESCRIPCIÓN CON ETIQUETA */}
               <div className="py-2 border-t border-white/5 border-b border-white/5 w-full">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">Descripción</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">
+                  Descripción
+                </span>
                 <p className="text-gray-300 text-base md:text-lg leading-relaxed text-justify font-light">
                   {manga.description}
                 </p>
@@ -108,11 +128,32 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
               {/* BOTONES */}
               <div className="flex flex-col items-center gap-4 mt-2 w-full md:w-auto">
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                  <button onClick={() => setIsSidebarOpen(true)} className="flex items-center justify-center gap-3 bg-white/5 border border-white/10 hover:bg-white/10 px-8 py-3.5 rounded-xl transition-all text-white backdrop-blur-sm active:scale-95 w-full md:w-auto">
-                    <List size={20} /> <span className="font-semibold">Índice</span>
+                  <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="flex items-center justify-center gap-3 bg-white/5 border border-white/10 hover:bg-white/10 px-8 py-3.5 rounded-xl transition-all text-white backdrop-blur-sm active:scale-95 w-full md:w-auto"
+                  >
+                    <List size={20} />{" "}
+                    <span className="font-semibold">Índice</span>
                   </button>
-                  <button onClick={() => firstChapter && router.push(`/leer/${firstChapter.id}?lang=${firstChapter.language}`)} disabled={loading || chapters.length === 0} className="flex items-center justify-center gap-3 bg-pink-600 text-white px-10 py-3.5 rounded-xl font-bold hover:bg-pink-500 transition-all disabled:opacity-50 active:scale-95 w-full md:w-auto">
-                    {loading ? "Loading" : chapters.length === 0 ? "Sin capítulos" : <><BookOpen size={20} /> Leer</>}
+                  <button
+                    onClick={() =>
+                      firstChapter &&
+                      router.push(
+                        `/leer/${firstChapter.id}?lang=${firstChapter.language}`,
+                      )
+                    }
+                    disabled={loading || chapters.length === 0}
+                    className="flex items-center justify-center gap-3 bg-pink-600 text-white px-10 py-3.5 rounded-xl font-bold hover:bg-pink-500 transition-all disabled:opacity-50 active:scale-95 w-full md:w-auto"
+                  >
+                    {loading ? (
+                      "Loading"
+                    ) : chapters.length === 0 ? (
+                      "Sin capítulos"
+                    ) : (
+                      <>
+                        <BookOpen size={20} /> Leer
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -122,12 +163,28 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
 
         {/* MODAL Y SIDEBAR */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsModalOpen(false)}>
-            <button className="absolute top-8 right-8 text-white hover:text-pink-500"><X size={40} /></button>
-            <img src={manga.coverUrl} alt="Preview" className="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl animate-in zoom-in-95 duration-300" />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <button className="absolute top-8 right-8 text-white hover:text-pink-500">
+              <X size={40} />
+            </button>
+            <img
+              src={manga.coverUrl}
+              alt="Preview"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+            />
           </div>
         )}
-        <ChapterSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} chapters={chapters} lang={lang} setLang={setLang} loading={loading} />
+        <ChapterSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          chapters={chapters}
+          lang={lang}
+          setLang={setLang}
+          loading={loading}
+        />
       </div>
     </div>
   );
