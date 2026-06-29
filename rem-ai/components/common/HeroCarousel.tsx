@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mangadexLoader from '@/utils/imageLoader';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, BookOpen, Star, Layers } from 'lucide-react';
 import Link from 'next/link';
