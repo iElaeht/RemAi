@@ -1,4 +1,4 @@
-// app/api/chapter/route.ts
+// 
 import { NextResponse } from 'next/server';
 
 // 1. FORZAMOS DINAMISMO: Evita que Vercel guarde resultados antiguos en caché.

@@ -82,7 +82,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ 
       results: formattedResults, 
-      totalPages: Math.ceil((data.total || 0) / limit),
+      totalPages: Math.min(Math.ceil((data.total || 0) / limit), Math.ceil(10000 / limit)),
       limitReached: isLimitReached,
       message: limitMessage
     });
