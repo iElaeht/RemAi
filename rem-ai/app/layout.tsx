@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport} from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { esES } from '@clerk/localizations';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   title: 'Mangas Rem',
   description: 'Plataforma de Lectura de Manga',
 };
-
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5, // Permite que el usuario haga zoom hasta 5x
+  userScalable: true, // ¡ESTO ES LO QUE HABILITA EL GESTO!
+};
 const customEsES = {
   ...esES,
   formFieldInputPlaceholder__signUpPassword: 'Crear una contraseña',

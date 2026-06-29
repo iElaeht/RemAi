@@ -45,7 +45,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
         // touch-action: pan-x es vital: permite el scroll horizontal del carrusel
         // pero le dice al navegador que no interfiera con otros gestos complejos (como el zoom nativo)
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
-        style={{ touchAction: 'pan-x' }} 
+        style={{ touchAction: 'pan-x pan-y' }} 
       >
         {pages.map((page: string, idx: number) => {
           const imageUrl = (baseUrl && hash && page) 
