@@ -42,11 +42,10 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       <div 
         ref={containerRef}
         onScroll={handleScroll}
-        // Usamos pan-x pan-y para permitir scroll, pero dejamos que el navegador gestione gestos de zoom sobre las imágenes
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
-        style={{ touchAction: 'pan-x pan-y' }}
       >
         {pages.map((page: string, idx: number) => {
+          // BLINDAJE: Construcción segura de la URL
           const imageUrl = (baseUrl && hash && page) 
             ? `/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`
             : null;
@@ -73,8 +72,6 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    // Quitamos touch-action: none. Al dejarlo vacío, permitimos que el navegador 
-                    // use su zoom nativo sobre la imagen sin interferir con el scroll del carrusel.
                     className={`
                       shadow-2xl transition-all duration-300 ease-in-out select-none
                       ${isZoomed 
@@ -87,6 +84,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
                     draggable="false"
                   />
                 ) : (
+                  // Loader visual si la URL no es válida
                   <div className="h-[95vh] w-full flex items-center justify-center text-gray-500">
                     Cargando página...
                   </div>
@@ -100,7 +98,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       {/* --- UI INFERIOR --- */}
       <div className="w-full h-10 flex flex-col items-center justify-center bg-[#0a0f1a] gap-0.5 shrink-0 z-50">
         <span className="text-gray-500 text-[10px] font-medium tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages.length} | {isZoomed ? 'Modo Zoom Activo' : 'Usa [Z] o pellizca para hacer Zoom'}
+          Página {currentPage} / {pages.length} | Presiona [Z] para {isZoomed ? 'Normal' : 'Zoom'}
         </span>
         <div className="w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-pink-500 rounded-full transition-all duration-100" style={{ width: `${progress}%` }} />
