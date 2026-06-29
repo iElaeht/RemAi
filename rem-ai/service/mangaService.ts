@@ -1,11 +1,13 @@
 // services/mangaService.ts
 
-// Definimos la estructura básica de lo que recibimos de nuestra propia API
 export interface Chapter {
   id: string;
   number: string;
   language: string;
-  volume: string | null | undefined;
+  volume?: string | null; 
+  attributes?: {
+    volume?: string | null;
+  };
 }
 
 export const fetchAllChapters = async (mangaId: string): Promise<Chapter[]> => {
