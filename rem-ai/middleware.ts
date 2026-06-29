@@ -2,15 +2,14 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // 1. Definimos explícitamente qué rutas se pueden ver SIN iniciar sesión
 const isPublicRoute = createRouteMatcher([
-"/",
+  "/",
   "/discover",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
+  "/sign-in",
+  "/sign-up",
   "/library",
   "/manga/(.*)",
   "/leer/(.*)",
-  "/api/manga/(.*)",
-  "/api/proxy/(.*)",
+  "/api/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
