@@ -37,7 +37,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
 
   return (
     // Añadimos select-none aquí para bloquear la selección en toda la pantalla
-    <div className="relative w-full h-screen bg-[#0a0f1a] flex flex-col overflow-hidden select-none">
+    <div className="relative w-full min-h-screen bg-[#0a0f1a] flex flex-col select-none">
       
       {/* Carrusel de Imágenes */}
       <div 
