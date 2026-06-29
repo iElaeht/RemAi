@@ -36,58 +36,72 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
   };
 
   return (
-    // Añadimos select-none aquí para bloquear la selección en toda la pantalla
     <div className="relative w-full h-screen bg-[#0a0f1a] flex flex-col overflow-hidden select-none">
       
       {/* Carrusel de Imágenes */}
       <div 
         ref={containerRef}
         onScroll={handleScroll}
+        // En escritorio (isZoomed), permitimos overflow. En mobile, evitamos el scroll accidental al hacer zoom
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
+        style={{ touchAction: isZoomed ? 'auto' : 'pan-x pan-y' }}
       >
-        {pages.map((page: string, idx: number) => (
-          <div 
-            key={idx} id={`page-${idx}`}
-            className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
-            onClick={(e) => {
-              if (isZoomed) return;
-              const rect = e.currentTarget.getBoundingClientRect();
-              const isRight = e.clientX > rect.left + rect.width / 2;
-              
-              if (isRight) {
-                if (idx === pages.length - 1) onNextChapter?.();
-                else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-              } else {
-                document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-              }
-            }}
-          >
-            {/* Contenedor envolvente */}
-            <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
-              <img
-                src={`/api/proxy?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
-                // select-none asegurado aquí también por redundancia
-                className={`
-                  shadow-2xl transition-all duration-300 ease-in-out select-none
-                  ${isZoomed 
-                    ? 'w-full h-auto cursor-zoom-out' 
-                    : 'h-full w-auto cursor-zoom-in'
-                  }
-                  object-contain
-                `}
-                alt={`Página ${idx + 1}`}
-                // draggable="false" evita que el usuario pueda "arrastrar" la imagen como archivo
-                draggable="false"
-              />
+        {pages.map((page: string, idx: number) => {
+          const imageUrl = (baseUrl && hash && page) 
+            ? `/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`
+            : null;
+
+          return (
+            <div 
+              key={idx} id={`page-${idx}`}
+              className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
+              onClick={(e) => {
+                if (isZoomed) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const isRight = e.clientX > rect.left + rect.width / 2;
+                
+                if (isRight) {
+                  if (idx === pages.length - 1) onNextChapter?.();
+                  else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                } else {
+                  document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                }
+              }}
+            >
+              {/* Contenedor envolvente */}
+              <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    // AÑADIDO: touch-action: none permite que el navegador tome control total 
+                    // del gesto de pellizco sobre la imagen sin arrastrar el carrusel
+                    style={{ touchAction: 'none' }}
+                    className={`
+                      shadow-2xl transition-all duration-300 ease-in-out select-none
+                      ${isZoomed 
+                        ? 'w-full h-auto cursor-zoom-out' 
+                        : 'h-full w-auto cursor-zoom-in'
+                      }
+                      object-contain
+                    `}
+                    alt={`Página ${idx + 1}`}
+                    draggable="false"
+                  />
+                ) : (
+                  <div className="h-[95vh] w-full flex items-center justify-center text-gray-500">
+                    Cargando página...
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* --- UI INFERIOR --- */}
       <div className="w-full h-10 flex flex-col items-center justify-center bg-[#0a0f1a] gap-0.5 shrink-0 z-50">
         <span className="text-gray-500 text-[10px] font-medium tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages.length} | Presiona [Z] para {isZoomed ? 'Normal' : 'Zoom'}
+          Página {currentPage} / {pages.length} | {isZoomed ? 'Modo Zoom Activo' : 'Presiona [Z] o Pellizca para Zoom'}
         </span>
         <div className="w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-pink-500 rounded-full transition-all duration-100" style={{ width: `${progress}%` }} />
