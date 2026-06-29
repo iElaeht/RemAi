@@ -31,7 +31,6 @@ export default function MangaCard({ id, title, coverUrl, author, status, tags }:
       {/* Contenedor de la Imagen con Aspect Ratio de Manga */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-neutral-900 shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         <Image
-          loader={mangadexLoader}
           src={coverUrl}
           alt={`Portada de ${title}`}
           fill

@@ -50,7 +50,6 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
           <div className="relative h-full flex flex-col md:flex-row items-center justify-center px-6 md:px-24 gap-6 md:gap-12">
             <div className="w-32 md:w-[250px] aspect-[2/3] shadow-2xl rounded-lg overflow-hidden border border-white/10 shrink-0">
               <Image
-              loader={mangadexLoader}
               width={300}
               height={450}
               src={featuredMangas[activeIndex].coverUrl} 
