@@ -84,9 +84,8 @@ export const CATEGORIES = {
     "TraditionalGames": "31932a7e-5b8e-49a6-9f12-2afa39dc544c",
     "WebComic": "e197df38-d0e7-43b5-9b09-2842d0c326dd",
   }
-};
+} as const;
 
-// Mapeo plano para compatibilidad con el resto de la app
 export const TAG_DICTIONARY: Record<string, string> = Object.values(CATEGORIES).reduce(
   (acc, category) => ({ ...acc, ...category }),
   {}

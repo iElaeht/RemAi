@@ -3,36 +3,30 @@ import { TAG_DICTIONARY } from '@/data/tagDictionary';
 import EventMangaSection from '@/components/events/EventMangaSection';
 import EventCarouselPopular from '@/components/events/EventCarouselPopular';
 
+const CATEGORY_SECTIONS = [
+  { title: "Isekai", tag: TAG_DICTIONARY["Isekai"] },
+  { title: "Comedia", tag: TAG_DICTIONARY["Comedy"] },
+  { title: "Romance", tag: TAG_DICTIONARY["Romance"] },
+  { title: "Drama", tag: TAG_DICTIONARY["Drama"] },
+  { title: "Aventura", tag: TAG_DICTIONARY["Adventure"] },
+];
+
 export default async function DiscoverPage() {
   return (
-    <main className="bg-neutral-950 text-white min-h-screen pb-20">
+    <main className="bg-neutral-950 text-white min-h-screen pb-20 selection-none">
       <EventCarouselPopular />
       
       <div className="space-y-12 mt-8">
-        {/* Tendencias generales */}
         <EventMangaSection title="Tendencias" />
-
-        {/* Seguir viendo */}
         <EventMangaSection title="Seguir viendo" />
 
-        {/* Categorías Principales */}
-        {/* Accedemos a las propiedades según la nueva estructura de TAG_CATEGORIES */}
-        <EventMangaSection 
-          genreTag={TAG_DICTIONARY.CATEGORIES.Isekai} 
-          title="Isekai" 
-        />
-        <EventMangaSection 
-          genreTag={TAG_DICTIONARY.CATEGORIES.Comedy} 
-          title="Comedia" 
-        />
-        <EventMangaSection 
-          genreTag={TAG_DICTIONARY.CATEGORIES.Romance} 
-          title="Romance" 
-        />
-        <EventMangaSection 
-          genreTag={TAG_CATEGORIES.CATEGORIES.Drama}
-          title="Drama" 
-        />
+        {CATEGORY_SECTIONS.map((section) => (
+          <EventMangaSection 
+            key={section.title}
+            genreTag={section.tag} 
+            title={section.title} 
+          />
+        ))}
       </div>
     </main>
   );

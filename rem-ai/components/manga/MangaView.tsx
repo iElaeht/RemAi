@@ -56,8 +56,19 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     if (firstChapter)
       router.push(`/leer/${firstChapter.id}?lang=${firstChapter.language}`);
   };
+
+  const handleTagClick = (tag: string) => {
+    const tagId = getTagIdByName(tag);
+    const slug = tagToSlug(tag);
+
+    if (tagId) {
+      router.push(`/library/${tagId}/${slug}`);
+    } else {
+    }
+  };
+
   return (
-    <div className="bg-[#0b101d] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl">
+    <div className="bg-[#0b101d] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl select-none">
       <div className="flex flex-col md:flex-row gap-8">
         {/* PORTADA */}
         <div className="flex flex-col gap-4">
@@ -115,12 +126,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
               {manga.tags?.map((tag) => (
                 <button
                   key={tag}
-                  onClick={() =>
-                    getTagIdByName(tag) &&
-                    router.push(
-                      `/library/${getTagIdByName(tag)}/${tagToSlug(tag)}`,
-                    )
-                  }
+                  onClick={() => handleTagClick(tag)}
                   className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-gray-400 hover:text-white transition-colors"
                 >
                   <Tag size={10} /> {tag}
@@ -176,7 +182,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
       {/* Modal Imagen */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 selection-none"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
           onClick={() => setIsModalOpen(false)}
         >
           <button className="absolute top-6 right-6 text-white">

@@ -1,56 +1,67 @@
 'use client';
+import React, { useCallback, useMemo } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MangaCard from '@/components/manga/MangaCard';
 import { MangaResponse } from '@/types/mangadex';
-import { useCallback } from 'react';
 
-interface Props { title: string; mangas: MangaResponse[]; }
+interface Props { 
+  title: string; 
+  mangas: MangaResponse[]; 
+}
 
 export default function MangaSlider({ title, mangas }: Props) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
-    align: 'start'
+    align: 'start',
+    dragFree: true,
+    containScroll: 'trimSnaps' 
   });
 
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
+  const displayMangas = useMemo(() => {
+    if (mangas.length === 0) return [];
+    return mangas.length < 6 ? [...mangas, ...mangas] : mangas;
+  }, [mangas]);
+
   return (
-    <section className="py-8 relative group">
+    <section className="py-8 relative group select-none">
+      {/* Encabezado limpio */}
       <div className="flex items-center justify-between px-6 md:px-24 mb-6">
-        <h2 className="text-2xl font-bold flex items-center gap-3">
-          <div className="w-1 h-8 bg-red-500 rounded-full" /> {title}
+        <h2 className="text-xl md:text-2xl font-bold flex items-center gap-3">
+          <div className="w-1 h-8 bg-white rounded-full" /> {title}
         </h2>
-        <button className="text-sm text-neutral-400 hover:text-white border border-neutral-700 px-4 py-1.5 rounded-full transition hover:bg-neutral-800">
-          Mostrar Más
-        </button>
       </div>
 
       <div className="relative mx-6 md:mx-24">
+        {/* Botón Prev */}
         <button 
           onClick={scrollPrev} 
-          className="absolute -left-12 top-1/2 -translate-y-1/2 p-2 bg-neutral-900/80 backdrop-blur text-white rounded-full opacity-0 group-hover:opacity-100 transition z-10 hidden md:block"
+          className="absolute -left-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 hidden md:block hover:bg-neutral-800"
         >
           <ChevronLeft size={24} />
         </button>
         
-        <div className="overflow-hidden" ref={emblaRef}>
-          {/* 1. Eliminamos el 'gap-4' del padre */}
-          {/* 2. Añadimos un margen negativo al padre para compensar el padding de los hijos */}
+        {/* Lista de Mangas */}
+        <div className="overflow-hidden touch-pan-x" ref={emblaRef}>
           <div className="flex -ml-4"> 
-            {mangas.map((manga) => (
-              /* 3. Aplicamos el espaciado como 'pl-4' (padding-left) en cada hijo */
-              <div key={manga.id} className="flex-[0_0_200px] min-w-0 pl-4"> 
+            {displayMangas.map((manga, index) => (
+              <div 
+                key={`${manga.id}-${index}`} 
+                className="flex-[0_0_140px] md:flex-[0_0_200px] min-w-0 pl-4"
+              >
                 <MangaCard {...manga} />
               </div>
             ))}
           </div>
         </div>
 
+        {/* Botón Next */}
         <button 
           onClick={scrollNext} 
-          className="absolute -right-12 top-1/2 -translate-y-1/2 p-2 bg-neutral-900/80 backdrop-blur text-white rounded-full opacity-0 group-hover:opacity-100 transition z-10 hidden md:block"
+          className="absolute -right-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 hidden md:block hover:bg-neutral-800"
         >
           <ChevronRight size={24} />
         </button>
