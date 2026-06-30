@@ -29,8 +29,8 @@ export default function ReaderHeader({
   const isValidVolume = volume && volume !== "null" && volume !== "Sin Volumen" && volume !== "" && volume !== "0";
 
   return (
-    <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+    <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4 select-none">
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative ">
         
         {/* IZQUIERDA: Home/Manga Info */}
         <button 

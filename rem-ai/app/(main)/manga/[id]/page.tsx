@@ -4,6 +4,7 @@ import MangaView from "@/components/manga/MangaView";
 import Comments from "@/components/manga/comments/Comments";
 import { supabasePublic } from "@/lib/supabase";
 import { Comment } from "@/types/comment";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 export default async function MangaPage({
   params,
@@ -12,7 +13,6 @@ export default async function MangaPage({
 }) {
   const { id } = await params;
 
-  // getMangaById ya incluye el rating en el objeto devuelto
   const [manga, commentsResponse] = await Promise.all([
     getMangaById(id),
     supabasePublic
@@ -27,17 +27,17 @@ export default async function MangaPage({
   const initialComments: Comment[] = commentsResponse.data || [];
 
   return (
-    <main className="min-h-screen bg-[#0b1120] flex flex-col gap-12 pb-20 animate-in fade-in duration-500">
-      
-      {/* Sección Manga - El rating ya viaja dentro del objeto 'manga' */}
-      <MangaView manga={manga} />
+    // Usamos PageWrapper para manejar el fondo, el padding y el contenedor central
+    <PageWrapper>
+      <div className="flex flex-col gap-12 animate-in fade-in duration-500">
+        {/* Sección Manga */}
+        <MangaView manga={manga} />
 
-      {/* Sección Comentarios */}
-      <section className="px-6 lg:px-32">
-        <div className="max-w-5xl mx-auto">
-            <Comments mangaId={id} initialComments={initialComments} />
-        </div>
-      </section>
-    </main>
+        {/* Sección Comentarios */}
+        <section>
+          <Comments mangaId={id} initialComments={initialComments} />
+        </section>
+      </div>
+    </PageWrapper>
   );
 }

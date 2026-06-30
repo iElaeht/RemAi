@@ -1,6 +1,14 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
+// Componente para el estado de carga
+const LoadingSkeleton = () => (
+  <div className="flex flex-col items-center justify-center h-full w-full gap-4 animate-pulse">
+    <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+    <span className="text-gray-500 font-bold uppercase tracking-widest text-xs">Cargando capítulo...</span>
+  </div>
+);
+
 interface ReaderViewProps {
   pages: string[];
   baseUrl: string;
@@ -41,7 +49,7 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
       {/* UI SUPERIOR */}
       <div className="w-full h-16 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-sm gap-1.5 shrink-0 z-50 top-0 border-b border-white/5">
         <span className="text-gray-400 text-[10px] font-bold tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages.length} | {isZoomed ? 'MODO ZOOM' : 'LECTURA'}
+          Página {currentPage} / {pages?.length || 0} | {isZoomed ? 'MODO ZOOM' : 'LECTURA'}
         </span>
         <div className="w-1/3 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-blue-500 transition-all duration-100" style={{ width: `${progress}%` }} />
@@ -54,41 +62,46 @@ export default function ReaderView({ pages, baseUrl, hash, onNextChapter }: Read
         onScroll={handleScroll}
         className={`flex-1 w-full flex flex-row ${isZoomed ? 'overflow-auto' : 'overflow-x-auto overflow-y-hidden snap-x snap-mandatory'} scroll-smooth no-scrollbar`}
       >
-        {pages.map((page: string, idx: number) => (
-          <div 
-            key={idx} id={`page-${idx}`}
-            className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
-            onClick={(e) => {
-              if (isZoomed) return;
-              const rect = e.currentTarget.getBoundingClientRect();
-              const isRight = e.clientX > rect.left + rect.width / 2;
-              
-              if (isRight) {
-                if (idx === pages.length - 1) onNextChapter?.();
-                else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-              } else {
-                document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-              }
-            }}
-          >
-            {/* Contenedor envolvente */}
-            <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
-              <img
-                src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
-                className={`
-                  shadow-2xl transition-all duration-300 ease-in-out select-none
-                  ${isZoomed 
-                    ? 'w-full h-auto cursor-zoom-out' 
-                    : 'h-full w-auto cursor-zoom-in'
-                  }
-                  object-contain
-                `}
-                alt={`Página ${idx + 1}`}
-                draggable="false"
-              />
+        {/* Verificación directa: si hay páginas se muestran, si no, se muestra el skeleton */}
+        {pages && pages.length > 0 ? (
+          pages.map((page: string, idx: number) => (
+            <div 
+              key={idx} id={`page-${idx}`}
+              className={`min-w-full h-full flex justify-center pt-10 pb-2 snap-center transition-all ${isZoomed ? 'items-start' : 'items-center'}`}
+              onClick={(e) => {
+                if (isZoomed) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const isRight = e.clientX > rect.left + rect.width / 2;
+                
+                if (isRight) {
+                  if (idx === pages.length - 1) onNextChapter?.();
+                  else document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                } else {
+                  document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                }
+              }}
+            >
+              <div className={`relative ${isZoomed ? 'w-[90%]' : 'h-[95vh] w-auto'}`}>
+                <img
+                  src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+                  className={`
+                    shadow-2xl transition-all duration-300 ease-in-out select-none
+                    loading="lazy"
+                    ${isZoomed 
+                      ? 'w-full h-auto cursor-zoom-out' 
+                      : 'h-full w-auto cursor-zoom-in'
+                    }
+                    object-contain
+                  `}
+                  alt={`Página ${idx + 1}`}
+                  draggable="false"
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <LoadingSkeleton />
+        )}
       </div>
     </div>
   );

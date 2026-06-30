@@ -1,27 +1,54 @@
 'use client';
-import { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { Filter, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
-import { TAG_CATEGORIES } from '@/types/tags';
+import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Filter, X, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { CATEGORIES } from '@/data/tagDictionary';
+import { tagToSlug } from '@/service/tagService';
+import SystemFilters from './SystemFilters'; 
+import { SortOption, StatusOption } from '@/types/mangadex';
 
 interface SearchFilterProps {
   searchQuery: string;
   setSearchQuery: (val: string) => void;
   selectedTags: string[];
-  toggleTag: (cat: string, tag: string) => void;
+  toggleTag: (tagId: string) => void;
   onSearch: () => void;
   onClear: () => void;
+  sortBy: SortOption;
+  setSortBy: (val: SortOption) => void;
+  status: StatusOption;
+  setStatus: (val: StatusOption) => void;
 }
 
 export default function SearchFilter({ 
-  searchQuery, setSearchQuery, selectedTags, toggleTag, onSearch, onClear 
+  searchQuery, setSearchQuery, selectedTags, onSearch, onClear, sortBy, setSortBy, status, setStatus
 }: SearchFilterProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [openCategory, setOpenCategory] = useState<string | null>("Géneros");
+  const router = useRouter();
+  const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const isCategoryRoute = pathname.includes('/library/') && pathname.split('/').length > 3;
+  const isFiltering = selectedTags.length > 0 || searchQuery.length > 0 || isCategoryRoute;
+
+  // Lógica para obtener el nombre de la categoría y el tag actual desde la URL
+  const getActiveFilterInfo = () => {
+    const parts = pathname.split('/');
+    const currentTagId = parts[2]; // Asumiendo que el ID está en esta posición
+    
+    for (const [catName, tags] of Object.entries(CATEGORIES)) {
+      const tagName = Object.keys(tags).find(key => tags[key as keyof typeof tags] === currentTagId);
+      if (tagName) return { catName, tagName };
+    }
+    return null;
+  };
+
+  const activeInfo = isCategoryRoute ? getActiveFilterInfo() : null;
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsFilterOpen(false);
       }
     };
@@ -29,24 +56,20 @@ export default function SearchFilter({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const getTagNameById = (id: string) => {
-    const allCategories = TAG_CATEGORIES as Record<string, Record<string, string>>;
-    for (const category in allCategories) {
-      const tags = allCategories[category];
-      for (const tagName in tags) {
-        if (tags[tagName] === id) return tagName;
-      }
-    }
-    return id;
+  const handleTagClick = (tagId: string, tagName: string) => {
+    router.push(`/library/${tagId}/${tagToSlug(tagName)}`);
+    setIsFilterOpen(false);
   };
 
-  const hasFilters = selectedTags.length > 0 || searchQuery.length > 0;
+  const handleClear = () => {
+    onClear();
+    router.push('/library');
+  };
 
   return (
     <div ref={containerRef} className="max-w-2xl mx-auto mt-8 mb-12">
-      <div className={`bg-[#111827] rounded-2xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 ${isFilterOpen ? 'ring-1 ring-pink-500/50' : ''}`}>
+      <div className={`bg-[#111827] rounded-2xl border border-white/10 shadow-2xl overflow-hidden transition-all ${isFilterOpen ? 'ring-1 ring-pink-500/50' : ''}`}>
         
-        {/* BARRA DE BÚSQUEDA */}
         <div className="flex items-center p-2">
           <div className="pl-3 text-neutral-400"><Search size={20} /></div>
           <input 
@@ -54,14 +77,10 @@ export default function SearchFilter({
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e: KeyboardEvent) => e.key === 'Enter' && onSearch()}
             placeholder="Buscar manga..."
-            className="w-full bg-transparent p-4 outline-none text-base placeholder:text-neutral-600 text-white"
+            className="w-full bg-transparent p-4 outline-none text-white placeholder:text-neutral-600"
           />
           
-          {/* AHORA LA X ES SIEMPRE VISIBLE */}
-          <button 
-            onClick={() => setSearchQuery('')} 
-            className={`p-2 transition-colors ${searchQuery ? 'text-neutral-300 hover:text-white' : 'text-neutral-700 cursor-default'}`}
-          >
+          <button onClick={() => setSearchQuery('')} className={`p-2 transition-colors ${searchQuery ? 'text-neutral-300' : 'text-neutral-700'}`}>
             <X size={18} />
           </button>
 
@@ -73,53 +92,57 @@ export default function SearchFilter({
           </button>
         </div>
 
-        {/* ÁREA DE FILTROS ACTIVOS */}
-        <div className="px-4 pb-4 border-t border-white/5 pt-3">
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs items-center min-h-[44px] flex-1">
-              <span className="font-bold text-neutral-500 uppercase tracking-wider self-center">Filtros:</span>
-              {!hasFilters ? (
-                <span className="text-neutral-600 italic">No hay filtros seleccionados</span>
-              ) : (
-                <>
-                  {searchQuery && <span className="text-pink-400 font-medium">{searchQuery}</span>}
-                  {selectedTags.map(tagId => (
-                    <span key={tagId} className="text-neutral-300 font-medium">• {getTagNameById(tagId)}</span>
-                  ))}
-                </>
-              )}
-            </div>
-
-            {/* BOTONES ALINEADOS A LA DERECHA */}
-            {hasFilters && (
-              <div className="flex gap-4 items-center h-[44px]">
-                <button onClick={onClear} className="text-xs text-neutral-500 hover:text-pink-500 underline transition-colors whitespace-nowrap">Limpiar filtros</button>
-                <button onClick={onSearch} className="px-4 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg hover:bg-pink-600 transition-all whitespace-nowrap">Filtrar</button>
-              </div>
-            )}
+        {isFiltering && (
+          <div className="px-4 py-3 border-t border-white/5 flex justify-between items-center bg-[#0d1321]/50">
+            <span className="text-[10px] text-pink-500 font-bold uppercase tracking-wider truncate">
+              {activeInfo 
+                ? `Categoría : ${activeInfo.catName} | ${activeInfo.tagName}` 
+                : 'Búsqueda Activa'}
+            </span>
+            <button 
+              onClick={handleClear} 
+              className="text-[10px] px-3 py-1 rounded-lg bg-pink-500/10 text-pink-500 hover:bg-pink-500 hover:text-white transition-all font-bold ml-2 shrink-0"
+            >
+              Limpiar todo
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* PANEL DE SELECCIÓN */}
         {isFilterOpen && (
-          <div className="border-t border-white/5 bg-[#0d1321] animate-in fade-in slide-in-from-top-2">
-            {Object.entries(TAG_CATEGORIES as Record<string, Record<string, string>>).map(([category, tags]) => (
-              <div key={category} className="border-b border-white/5">
-                <button onClick={() => setActiveGroup(activeGroup === category ? null : category)} className="w-full p-4 flex justify-between items-center hover:bg-white/5">
-                  <span className="text-pink-500 text-[10px] uppercase font-bold tracking-widest">{category}</span>
-                  {activeGroup === category ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          <div className="border-t border-white/5 bg-[#0d1321] animate-in slide-in-from-top-2">
+            {/* 3. AQUÍ INVOCAMOS EL NUEVO COMPONENTE INTEGRADO */}
+          <SystemFilters
+          
+            sortBy={sortBy} 
+            setSortBy={setSortBy} 
+            status={status} 
+            setStatus={setStatus} 
+          />
+            {CATEGORIES && Object.entries(CATEGORIES).map(([catName, tags]) => (
+              <div key={catName} className="border-b border-white/5">
+                <button 
+                  onClick={() => setOpenCategory(openCategory === catName ? null : catName)}
+                  className="w-full p-4 flex justify-between items-center text-xs font-bold text-neutral-400 uppercase hover:text-white"
+                >
+                  {catName}
+                  {openCategory === catName ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
-                {activeGroup === category && (
-                  <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-2 bg-[#111827]/50">
-                    {Object.entries(tags).map(([tagName, tagId]) => (
-                      <button 
-                        key={tagId} 
-                        onClick={() => toggleTag(category, tagName)} 
-                        className={`text-xs p-2 rounded-lg transition-all ${selectedTags.includes(tagId) ? 'bg-pink-500 text-white' : 'text-neutral-400 hover:bg-white/5'}`}
-                      >
-                        {tagName}
-                      </button>
-                    ))}
+                
+                {openCategory === catName && (
+                  <div className="p-4 pt-0 grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {Object.entries(tags).map(([name, id]) => {
+                      const isActive = pathname.includes(id);
+                      return (
+                        <button 
+                          key={id} 
+                          onClick={() => handleTagClick(id, name)}
+                          className={`text-xs p-2 rounded-lg transition-all text-left truncate
+                            ${isActive ? 'bg-pink-500 text-white font-bold' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

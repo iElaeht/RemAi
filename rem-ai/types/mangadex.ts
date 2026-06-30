@@ -1,3 +1,5 @@
+// types/mangadex.ts
+
 export interface MangaResponse {
   id: string;
   title: string;
@@ -9,3 +11,7 @@ export interface MangaResponse {
   latestChapter?: string;
   rating: number;
 }
+
+// Tipos para los filtros
+export type SortOption = 'latestUploadedChapter' | 'rating' | 'followedCount';
+export type StatusOption = 'all' | 'ongoing' | 'completed' | 'hiatus';

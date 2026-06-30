@@ -20,12 +20,12 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="w-full border-b border-white/5 bg-[#0c101d] h-16 flex items-center justify-between px-6 md:px-12 static">
+    <nav className="w-full border-b border-white/5 bg-[#0c101d] h-16 flex items-center justify-between px-6 md:px-12 static select-none">
       {/* Lado Izquierdo */}
       <div className="flex items-center gap-6">
         <button
-          onClick={() => router.push("/discover")}
-          className="text-xl font-bold tracking-tight text-white mr-2"
+          onClick={() => router.push("/")}
+          className="text-xl font-bold tracking-tight text-white mr-2 cursor-pointer"
         >
           Mangas<span className="text-sky-400">Rem</span>
         </button>

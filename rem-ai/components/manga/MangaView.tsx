@@ -1,27 +1,32 @@
-// Components/manga/MangaView.tsx
 "use client";
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import ChapterSidebar from "./ChapterSidebar";
 import { MangaResponse } from "@/types/mangadex";
-import { List, BookOpen, Tag, User, X, Star } from "lucide-react";
+import { getTagIdByName, tagToSlug } from "@/service/tagService";
+import { List, BookOpen, Tag, User, X, Star, Clock } from "lucide-react";
 
 export default function MangaView({ manga }: { manga: MangaResponse }) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useState<string>(() => {
-    if (typeof window !== "undefined")
-      return localStorage.getItem("manga_lang") || "es";
-    return "es";
-  });
-
+  const [lang, setLang] = useState<string>(() =>
+    typeof window !== "undefined"
+      ? localStorage.getItem("manga_lang") || "es"
+      : "es",
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
 
-  // El rating viene del objeto manga (pasado desde el servidor)
   const rating = manga.rating || 0;
+  const statusLabel =
+    manga.status === "completed"
+      ? "Finalizado"
+      : manga.status === "hiatus"
+        ? "En Pausa"
+        : "En Emisión";
 
   useEffect(() => {
     localStorage.setItem("manga_lang", lang);
@@ -37,10 +42,6 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     loadData();
   }, [manga.id]);
 
-  const handleTagClick = (tag: string) => {
-    router.push(`/library?tag=${encodeURIComponent(tag)}`);
-  };
-
   const firstChapter = useMemo(() => {
     if (chapters.length === 0) return null;
     const priority = ["es-la", "es", "en"];
@@ -50,142 +51,154 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     }
     return [...chapters].sort((a, b) => Number(a.number) - Number(b.number))[0];
   }, [chapters]);
-
+  const noChaptersAvailable = chapters.length === 0 && !loading;
+  const handleReadNow = () => {
+    if (firstChapter)
+      router.push(`/leer/${firstChapter.id}?lang=${firstChapter.language}`);
+  };
   return (
-    <div className="px-6 py-12 md:py-20 animate-in fade-in duration-700">
-      <div className="container mx-auto max-w-5xl">
-        <div className="relative overflow-hidden bg-[#1e293b]/40 backdrop-blur-xl p-8 md:p-16 rounded-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl" />
-
-          <div className="relative flex flex-col md:flex-row items-center md:items-start gap-12">
-            {/* PORTADA Y RATING */}
-            <div className="flex flex-col gap-4">
-              <div
-                className="relative w-64 shrink-0 cursor-pointer group"
-                onClick={() => setIsModalOpen(true)}
-              >
-                <div className="absolute inset-0 bg-pink-600/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
-                <img
-                  src={manga.coverUrl}
-                  alt={manga.title}
-                  className="w-full rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+    <div className="bg-[#0b101d] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl">
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* PORTADA */}
+        <div className="flex flex-col gap-4">
+          <div
+            className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Image
+              src={manga.coverUrl}
+              alt={manga.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="bg-[#0f1523] p-3 rounded-xl border border-white/5 flex flex-col items-center">
+            <div className="flex text-yellow-400 gap-1 mb-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  fill={i < Math.round(rating / 2) ? "currentColor" : "none"}
                 />
-              </div>
-
-              {/* RATING DINÁMICO */}
-              <div className="flex flex-col items-center gap-1 bg-white/5 p-3 rounded-xl border border-white/10">
-                <div className="flex text-yellow-400 gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      fill={
-                        i < Math.round(rating / 2) ? "currentColor" : "none"
-                      }
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-bold text-white">
-                  {rating > 0 ? rating.toFixed(1) : "N/A"}{" "}
-                  <span className="text-gray-400">/ 10</span>
-                </span>
-              </div>
+              ))}
             </div>
-
-            {/* CONTENIDO */}
-            <div className="flex flex-col items-center md:items-start gap-6 w-full text-center md:text-left">
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none">
-                {manga.title}
-              </h1>
-              <div className="flex items-center justify-center md:justify-start gap-2 text-neutral-400 text-lg font-medium">
-                <User size={18} />{" "}
-                <span>{manga.author || "Autor Desconocido"}</span>
-              </div>
-
-              {/* TAGS DINÁMICOS */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                {manga.tags?.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => handleTagClick(tag)}
-                    className="flex items-center gap-1.5 text-[11px] uppercase font-bold px-4 py-1.5 bg-white/5 border border-white/10 hover:bg-white/20 rounded-full text-blue-200 transition-all active:scale-95"
-                  >
-                    <Tag size={12} /> {tag}
-                  </button>
-                ))}
-              </div>
-
-              {/* DESCRIPCIÓN CON ETIQUETA */}
-              <div className="py-2 border-t border-white/5 border-b border-white/5 w-full">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">
-                  Descripción
-                </span>
-                <p className="text-gray-300 text-base md:text-lg leading-relaxed text-justify font-light">
-                  {manga.description}
-                </p>
-              </div>
-
-              {/* BOTONES */}
-              <div className="flex flex-col items-center gap-4 mt-2 w-full md:w-auto">
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                  <button
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="flex items-center justify-center gap-3 bg-white/5 border border-white/10 hover:bg-white/10 px-8 py-3.5 rounded-xl transition-all text-white backdrop-blur-sm active:scale-95 w-full md:w-auto"
-                  >
-                    <List size={20} />{" "}
-                    <span className="font-semibold">Índice</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      firstChapter &&
-                      router.push(
-                        `/leer/${firstChapter.id}?lang=${firstChapter.language}`,
-                      )
-                    }
-                    disabled={loading || chapters.length === 0}
-                    className="flex items-center justify-center gap-3 bg-pink-600 text-white px-10 py-3.5 rounded-xl font-bold hover:bg-pink-500 transition-all disabled:opacity-50 active:scale-95 w-full md:w-auto"
-                  >
-                    {loading ? (
-                      "Loading"
-                    ) : chapters.length === 0 ? (
-                      "Sin capítulos"
-                    ) : (
-                      <>
-                        <BookOpen size={20} /> Leer
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <span className="text-sm font-bold text-white">
+              {rating > 0 ? rating.toFixed(1) : "0.0"}{" "}
+              <span className="text-gray-500">/ 10</span>
+            </span>
           </div>
         </div>
 
-        {/* MODAL Y SIDEBAR */}
-        {isModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300"
-            onClick={() => setIsModalOpen(false)}
-          >
-            <button className="absolute top-8 right-8 text-white hover:text-pink-500">
-              <X size={40} />
-            </button>
-            <img
-              src={manga.coverUrl}
-              alt="Preview"
-              className="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
-            />
+        {/* DETALLES */}
+        <div className="flex flex-col gap-4 w-full">
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight">
+            {manga.title}
+          </h1>
+
+          {/* AUTOR | ESTADO */}
+          <div className="flex items-center gap-3 text-neutral-400 text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <User size={16} />{" "}
+              <span>{manga.author || "Autor Desconocido"}</span>
+            </div>
+            <span className="text-white/20">|</span>
+            <Clock size={16} />{" "}
+            <span className="text-pink-500 font-semibold">{statusLabel}</span>
           </div>
-        )}
-        <ChapterSidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          chapters={chapters}
-          lang={lang}
-          setLang={setLang}
-          loading={loading}
-        />
+
+          {/* GENEROS (Estilo plano, no burbuja) */}
+          <div className="mt-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 block">
+              Generos:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {manga.tags?.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() =>
+                    getTagIdByName(tag) &&
+                    router.push(
+                      `/library/${getTagIdByName(tag)}/${tagToSlug(tag)}`,
+                    )
+                  }
+                  className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-gray-400 hover:text-white transition-colors"
+                >
+                  <Tag size={10} /> {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* DESCRIPCION */}
+          <div className="mt-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+              Descripción
+            </span>
+            <p className="text-gray-400 text-sm md:text-base leading-relaxed font-light">
+              {manga.description}
+            </p>
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 px-6 py-3 rounded-xl text-white transition-all w-full md:w-auto"
+            >
+              <List size={18} />{" "}
+              <span className="hidden md:inline font-semibold">Capítulos</span>
+              <span className="md:hidden font-semibold">Caps</span>
+            </button>
+            <button
+              onClick={handleReadNow}
+              disabled={loading || !firstChapter}
+              className="flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white px-8 py-3 rounded-xl font-bold transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                "Loading..."
+              ) : !firstChapter ? (
+                "Sin capítulos"
+              ) : (
+                <>
+                  <BookOpen size={18} /> Leer
+                </>
+              )}
+            </button>
+          </div>
+          {noChaptersAvailable && (
+            <p className="text-pink-400/80 text-[12px] font-medium animate-pulse">
+              No hay idiomas disponibles. Por favor, revisa el índice.
+            </p>
+          )}
+        </div>
       </div>
+
+      {/* Modal Imagen */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 selection-none"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <button className="absolute top-6 right-6 text-white">
+            <X size={32} />
+          </button>
+          <Image
+            src={manga.coverUrl}
+            alt="Preview"
+            width={400}
+            height={600}
+            className="rounded-lg shadow-2xl"
+          />
+        </div>
+      )}
+      <ChapterSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        chapters={chapters}
+        lang={lang}
+        setLang={setLang}
+        loading={loading}
+      />
     </div>
   );
 }

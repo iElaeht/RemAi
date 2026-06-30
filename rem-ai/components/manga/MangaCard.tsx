@@ -63,7 +63,7 @@ export default function MangaCard({ id, title, coverUrl, author, status, tags }:
         {/* Tags / Géneros - Más notorios y sin opacidad baja */}
         {tags && tags.length > 0 && (
           <p className="text-[10px] text-neutral-500 dark:text-neutral-400 line-clamp-1 font-normal">
-            {tags.slice(0, 2).join(' • ')}
+            {tags.slice(0, 2).join('  ')}
           </p>
         )}
       </div>

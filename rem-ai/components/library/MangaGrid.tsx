@@ -1,12 +1,15 @@
 'use client';
 import Image from 'next/image';
-import Link from 'next/link'; // 1. Importamos Link
+import Link from 'next/link';
+import { Star, Bookmark } from 'lucide-react';
 
 interface Manga {
   id: string;
   title: string;
   cover: string;
   genres: string[];
+  author?: string;
+  rating?: string;
 }
 
 interface MangaGridProps {
@@ -14,37 +17,57 @@ interface MangaGridProps {
   isLoading: boolean;
 }
 
+// Helpers para truncar
+const truncate = (text: string, limit: number) => 
+  text.length > limit ? text.substring(0, limit) + "..." : text;
+
 export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-16">
       {isLoading ? (
         [...Array(12)].map((_, i) => (
           <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse" />
         ))
       ) : (
         mangas.map((manga) => (
-          <div key={manga.id} className="group flex flex-col gap-2">
+          <div key={manga.id} className="group relative flex flex-col gap-3 select-none">
             
-            {/* 2. Envolvemos la imagen en un Link que apunte a la ruta dinámica */}
-            <Link href={`/manga/${manga.id}`} className="block relative aspect-[2/3] overflow-hidden rounded-xl bg-[#111827] border border-white/5 transition-all hover:border-pink-500/50">
-              <Image 
-                src={manga.cover} 
-                alt={manga.title} 
-                fill 
-                className="object-cover transition-transform duration-500 group-hover:scale-110" 
-              />
-            </Link>
+            {/* IMAGEN CON LINK */}
+            <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#111827] border border-white/5 transition-all duration-300 group-hover:border-pink-500/50 shadow-lg">
+              <Link href={`/manga/${manga.id}`}>
+                <Image 
+                  src={manga.cover} 
+                  alt={manga.title} 
+                  fill 
+                  sizes="(max-width: 768px) 50vw, 16vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                />
+              </Link>
+            </div>
 
-            {/* 3. También hacemos clicable el título por si el usuario prefiere hacer clic ahí */}
-            <div className="flex flex-col px-1">
-              <Link href={`/manga/${manga.id}`} className="hover:text-pink-500 transition-colors">
-                <h3 className="text-[13px] font-bold truncate text-white" title={manga.title}>
-                  {manga.title}
+            {/* INFO */}
+            <div className="flex flex-col px-1 gap-1">
+              <Link href={`/manga/${manga.id}`}>
+                <h3 className="text-[13px] font-bold text-white hover:text-pink-500 transition-colors" title={manga.title}>
+                  {truncate(manga.title, 20)}
                 </h3>
               </Link>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider truncate">
-                {manga.genres?.length > 0 ? manga.genres.slice(0, 2).join(' • ') : 'Sin género'}
-              </p>
+              
+              <div className="flex items-center gap-2 text-[10px] text-neutral-500 uppercase tracking-widest">
+                <span className="truncate max-w-[80px]">{truncate(manga.author || 'Desconocido', 12)}</span>
+                <span className="flex items-center gap-0.5 text-yellow-500">
+                  <Star size={10} fill="currentColor" /> {manga.rating || '0.0'}
+                </span>
+              </div>
+
+              {/* TAGS CON BOOKMARK */}
+              <div className="flex items-center gap-1 mt-1 text-[10px] text-neutral-400 selection-none">
+                <Bookmark size={10} />
+                <span className="truncate ">
+                  {manga.genres?.slice(0, 3).join(' • ') || 'Sin géneros'}
+                  {manga.genres?.length > 3 && "..."}
+                </span>
+              </div>
             </div>
           </div>
         ))
