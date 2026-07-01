@@ -97,11 +97,13 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
     
     const json = await res.json();
     const data = (json.data || []) as MangaDexManga[];
-
-    // Obtenemos los ratings para todos los mangas de la lista
-    const ratings = await Promise.all(data.map(m => fetchMangaRating(m.id)));
+    const results: MangaResponse[] = [];
+    for (const manga of data) {
+      const rating = await fetchMangaRating(manga.id);
+      results.push(mapMangaData(manga, rating));
+    }
     
-    return data.map((manga, index) => mapMangaData(manga, ratings[index]));
+    return results;
   } catch (e) {
     console.error("Error fetching mangas:", e);
     return []; 
