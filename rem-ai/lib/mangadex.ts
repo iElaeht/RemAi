@@ -47,7 +47,7 @@ export async function getMangaById(id: string): Promise<MangaResponse | null> {
     
     // Asumimos que mapMangaData ya está definido en tu archivo
     return mapMangaData(json.data, rating);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -98,10 +98,17 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
     const json = await res.json();
     const data = (json.data || []) as MangaDexManga[];
 
-    // Obtenemos los ratings para todos los mangas de la lista
-    const ratings = await Promise.all(data.map(m => fetchMangaRating(m.id)));
-    
-    return data.map((manga, index) => mapMangaData(manga, ratings[index]));
+    // --- OPTIMIZACIÓN AQUÍ ---
+    // Recolectamos todos los IDs y hacemos UNA sola petición masiva
+    const ids = data.map(m => m.id);
+    const statsRes = await fetch(`${MANGADEX_API_URL}/statistics/manga?${ids.map(id => `manga[]=${id}`).join('&')}`);
+    const statsJson = await statsRes.json();
+    const statistics = statsJson.statistics || {};
+
+    return data.map(manga => {
+      const rating = statistics[manga.id]?.rating?.average || 0;
+      return mapMangaData(manga, rating);
+    });
   } catch (e) {
     console.error("Error fetching mangas:", e);
     return []; 
