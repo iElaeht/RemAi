@@ -9,16 +9,16 @@ interface PaginationProps {
 
 export default function Pagination({ currentPage, totalPages, onPageChange, disabled }: PaginationProps) {
   
-  // Función interna para manejar el cambio y el scroll
-const handlePageChange = (page: number) => {
-  onPageChange(page);
-  setTimeout(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }, 100); 
-};
+  const handlePageChange = (page: number) => {
+    onPageChange(page);
+    // Un pequeño retraso para asegurar que el nuevo contenido renderice antes de subir
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 150); 
+  };
 
   const getVisiblePages = () => {
     const pages = [1];
@@ -37,14 +37,14 @@ const handlePageChange = (page: number) => {
   return (
     <div className="flex justify-center items-center gap-2 py-6 text-neutral-400">
       
-      {/* Botón Anterior (Rem) */}
+      {/* Botón Anterior (Rem) - Asegúrate de que este archivo sea 'rem-left.png' */}
       <button 
         disabled={currentPage === 1 || disabled} 
         onClick={() => handlePageChange(currentPage - 1)} 
-        className="transition-transform hover:scale-110 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+        className="transition-transform hover:scale-110 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
       >
         <img 
-          src="/images/nav/rem-right.png" 
+          src="/images/nav/rem-left.png" 
           alt="Anterior" 
           className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]" 
         />
@@ -62,19 +62,19 @@ const handlePageChange = (page: number) => {
                 ? 'bg-pink-500 text-white font-bold' 
                 : page < 0 
                   ? 'cursor-default' 
-                  : 'hover:bg-white/10 hover:text-white'
-            }`}
+                  : 'hover:bg-white/10 hover:text-white cursor-pointer'
+            } ${disabled ? 'cursor-not-allowed' : ''}`}
           >
             {page < 0 ? '...' : page}
           </button>
         ))}
       </div>
 
-      {/* Botón Siguiente (Ram) */}
+      {/* Botón Siguiente (Ram) - Se mantiene como 'ram-right.png' */}
       <button 
         disabled={currentPage >= totalPages || disabled} 
         onClick={() => handlePageChange(currentPage + 1)} 
-        className="transition-transform hover:scale-110 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+        className="transition-transform hover:scale-110 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
       >
         <img 
           src="/images/nav/ram-right.png" 
