@@ -1,33 +1,16 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { MangaResponse } from "@/types/mangadex";
-import { getMainManga } from "@/lib/mangadex";
+import { useState } from "react";
 import Footer from "@/components/layout/Footer";
-import { ArrowRight, BookOpen } from "lucide-react";
-import HomeSlider from "@/components/common/HomeSlider"; 
+import { ArrowRight, BookOpen, Heart, Coffee, Users } from "lucide-react";
 
 export default function HomePage() {
-  const [mangas, setMangas] = useState<MangaResponse[]>([]);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-
-    async function loadMangas() {
-      const data = await getMainManga();
-      setMangas(data);
-    }
-    loadMangas();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [isScrolled] = useState(false);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-x-hidden select-none">
-      {/* Navbar - Se mantiene igual */}
+      {/* Navbar */}
       <motion.nav
         className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-16 md:h-20 transition-all duration-300"
         animate={{
@@ -46,56 +29,56 @@ export default function HomePage() {
         </Link>
       </motion.nav>
 
-      {/* Hero Section - Se mantiene igual */}
-      <header className="relative h-[70vh] md:h-[85vh] flex items-center px-6 md:px-24">
+      {/* Hero Section */}
+      <header className="relative h-[80vh] flex items-center px-6 md:px-24">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2000')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/90 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/80 to-black/20" />
         </div>
 
-        <div className="relative z-10 space-y-4 max-w-2xl mt-16">
-          <h1 className="text-5xl md:text-9xl font-extrabold tracking-tighter text-white leading-[0.9]">
-            Mangas <br />
-            <span className="text-neutral-500">Rem.</span>
+        <div className="relative z-10 space-y-6 max-w-2xl mt-16">
+          <h1 className="text-6xl md:text-9xl font-extrabold tracking-tighter text-white leading-[0.9]">
+            El arte de <br />
+            <span className="text-neutral-500">contar.</span>
           </h1>
-          <p className="text-sm md:text-lg text-neutral-400 max-w-sm font-light tracking-wide">
-            Explora una curaduría seleccionada de los mejores mangas. La elegancia de leer sin distracciones.
+          <p className="text-lg text-neutral-400 max-w-md font-light leading-relaxed">
+            Sumérgete en historias que definen generaciones. Un espacio dedicado a la pasión por el manga, diseñado para lectores que aprecian los detalles.
           </p>
-          <Link
-            href="/discover"
-            className="inline-flex px-6 py-3 border border-neutral-700 hover:border-white text-white transition-all items-center gap-3"
-          >
-            <span className="text-xs md:text-sm font-medium uppercase tracking-widest">Comenzar</span>
-            <ArrowRight size={14} />
-          </Link>
         </div>
       </header>
 
-      {/* Nueva sección: Beneficios / Experiencia */}
-      <section className="py-20 px-6 md:px-24 bg-neutral-900/30">
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Lectura sin distracciones</h2>
-          <p className="text-neutral-400 text-lg">
-            Hemos diseñado RemAi para que te centres en lo que importa: la historia. Sin publicidad intrusiva, sin interfaces cargadas, solo tú y tu manga.
-          </p>
+      {/* Sección Filosofía - Sustituyendo la parte técnica */}
+      <section className="py-24 px-6 md:px-24">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="space-y-6">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Más que páginas.</h2>
+            <p className="text-neutral-400 text-lg leading-relaxed">
+              Cada manga es una ventana a un mundo distinto. En RemAi, nos enfocamos en respetar la visión del autor, permitiendo que el arte y la narrativa fluyan sin interrupciones. Creemos que una buena historia merece el mejor escenario posible para ser descubierta.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-64 bg-neutral-900 rounded-2xl border border-neutral-800 flex items-center justify-center">
+              <Coffee size={48} className="text-neutral-700" />
+            </div>
+            <div className="h-64 bg-neutral-900 rounded-2xl border border-neutral-800 mt-8 flex items-center justify-center">
+              <Heart size={48} className="text-neutral-700" />
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { title: "Curaduría IA", desc: "Algoritmos que entienden tus gustos y te recomiendan joyas ocultas." },
-            { title: "Interfaz Fluida", desc: "Navegación minimalista diseñada para dispositivos móviles y escritorio." },
-            { title: "Acceso Instantáneo", desc: "Servidores optimizados para que cada página cargue en milisegundos." }
-          ].map((item, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.2 }}
-              className="p-8 border border-neutral-800 bg-neutral-900/50 rounded-2xl hover:border-sky-500/50 transition-colors"
-            >
-              <h3 className="text-xl font-bold mb-3 text-white">{item.title}</h3>
-              <p className="text-neutral-400 text-sm">{item.desc}</p>
-            </motion.div>
-          ))}
+      {/* Sección de comunidad */}
+      <section className="py-20 bg-neutral-900/20 border-y border-neutral-900">
+        <div className="px-6 md:px-24 flex flex-col md:flex-row justify-between items-center gap-12">
+          <div className="flex items-center gap-6">
+            <Users className="text-sky-400" size={48} />
+            <div>
+              <h3 className="text-2xl font-bold">Comunidad de lectores</h3>
+              <p className="text-neutral-400">Únete a miles de personas compartiendo su pasión por las grandes historias.</p>
+            </div>
+          </div>
+          <Link href="/discover" className="px-8 py-3 border border-neutral-700 hover:border-white transition-all rounded-full">
+            Ver nuestra colección
+          </Link>
         </div>
       </section>
 
