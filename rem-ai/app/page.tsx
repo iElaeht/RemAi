@@ -70,20 +70,33 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Sección Carrusel - AHORA CON HOME SLIDER */}
-      <section className="py-12 md:py-20 relative z-20">
-        {mangas.length > 0 ? (
-          <HomeSlider title="Tendencias ahora" mangas={mangas} />
-        ) : (
-          <div className="px-6 md:px-24">
-            <h2 className="text-xl md:text-2xl font-bold mb-6">Tendencias ahora</h2>
-            <div className="flex gap-4 md:gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="w-[150px] md:w-[200px] aspect-[2/3] bg-neutral-900 animate-pulse rounded-xl" />
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Nueva sección: Beneficios / Experiencia */}
+      <section className="py-20 px-6 md:px-24 bg-neutral-900/30">
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">Lectura sin distracciones</h2>
+          <p className="text-neutral-400 text-lg">
+            Hemos diseñado RemAi para que te centres en lo que importa: la historia. Sin publicidad intrusiva, sin interfaces cargadas, solo tú y tu manga.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { title: "Curaduría IA", desc: "Algoritmos que entienden tus gustos y te recomiendan joyas ocultas." },
+            { title: "Interfaz Fluida", desc: "Navegación minimalista diseñada para dispositivos móviles y escritorio." },
+            { title: "Acceso Instantáneo", desc: "Servidores optimizados para que cada página cargue en milisegundos." }
+          ].map((item, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.2 }}
+              className="p-8 border border-neutral-800 bg-neutral-900/50 rounded-2xl hover:border-sky-500/50 transition-colors"
+            >
+              <h3 className="text-xl font-bold mb-3 text-white">{item.title}</h3>
+              <p className="text-neutral-400 text-sm">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       <Footer />
