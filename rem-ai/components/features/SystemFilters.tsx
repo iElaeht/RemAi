@@ -1,10 +1,9 @@
-// rem-ai/components/features/SystemFilters.tsx
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ListFilter, Check } from 'lucide-react';
 import { SortOption, StatusOption } from '@/types/mangadex';
 
-// Definimos una interfaz genérica T para que acepte cualquier tipo de valor (SortOption o StatusOption)
+// --- Interfaces ---
 interface DropdownOption<T> {
   value: T;
   label: string;
@@ -14,10 +13,11 @@ interface CustomDropdownProps<T> {
   value: T;
   options: DropdownOption<T>[];
   onChange: (value: T) => void;
+  onSelect?: () => void; // Prop opcional para disparar el cierre al seleccionar
 }
 
-// Usamos <T> en el componente para mantener la seguridad de tipos
-const CustomDropdown = <T extends string>({ value, options, onChange }: CustomDropdownProps<T>) => {
+// --- Componente Dropdown Reutilizable ---
+const CustomDropdown = <T extends string>({ value, options, onChange, onSelect }: CustomDropdownProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +46,11 @@ const CustomDropdown = <T extends string>({ value, options, onChange }: CustomDr
           {options.map((opt) => (
             <button
               key={opt.value}
-              onClick={() => { onChange(opt.value); setIsOpen(false); }}
+              onClick={() => { 
+                onChange(opt.value); 
+                setIsOpen(false); 
+                onSelect?.(); // <--- Aquí disparamos el cierre del padre
+              }}
               className={`w-full text-left px-3 py-2.5 text-[11px] flex items-center justify-between transition-colors 
                 ${value === opt.value ? 'text-pink-400 bg-pink-500/10' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'}`}
             >
@@ -60,14 +64,16 @@ const CustomDropdown = <T extends string>({ value, options, onChange }: CustomDr
   );
 };
 
+// --- Componente Principal SystemFilters ---
 interface SystemFiltersProps {
   sortBy: SortOption;
   setSortBy: (val: SortOption) => void;
   status: StatusOption;
   setStatus: (val: StatusOption) => void;
+  onFilterChange?: () => void; // Prop para cerrar el menú padre
 }
 
-export default function SystemFilters({ sortBy, setSortBy, status, setStatus }: SystemFiltersProps) {
+export default function SystemFilters({ sortBy, setSortBy, status, setStatus, onFilterChange }: SystemFiltersProps) {
   return (
     <div className="px-4 pb-6 mt-4 animate-in slide-in-from-top-2 border-b border-white/5">
       <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
@@ -75,10 +81,10 @@ export default function SystemFilters({ sortBy, setSortBy, status, setStatus }: 
       </h3>
       
       <div className="grid grid-cols-2 gap-3">
-        {/* Ahora los tipos son estrictos y no hay 'any' */}
         <CustomDropdown<SortOption> 
           value={sortBy} 
           onChange={setSortBy} 
+          onSelect={onFilterChange} // Pasamos la función de cierre
           options={[
             { value: "latestUploadedChapter", label: "Más Recientes" },
             { value: "rating", label: "Mejor Valorados" },
@@ -88,6 +94,7 @@ export default function SystemFilters({ sortBy, setSortBy, status, setStatus }: 
         <CustomDropdown<StatusOption> 
           value={status} 
           onChange={setStatus} 
+          onSelect={onFilterChange} // Pasamos la función de cierre
           options={[
             { value: "all", label: "Todos los estados" },
             { value: "ongoing", label: "En Emisión" },

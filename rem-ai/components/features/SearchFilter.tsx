@@ -179,6 +179,7 @@ export default function SearchFilter({
               setSortBy={setSortBy}
               status={status}
               setStatus={setStatus}
+              onFilterChange={() => setIsFilterOpen(false)}
             />
 
             {/* Mapeo de Categorías desde el Diccionario */}
