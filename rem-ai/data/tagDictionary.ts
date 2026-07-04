@@ -1,3 +1,4 @@
+// rem-ai/data/tagDictionary.ts
 export const CATEGORIES = {
   "Géneros": {
     "Action": "391b0423-d847-456f-aff0-8b0cfc03066b",
@@ -48,7 +49,7 @@ export const CATEGORIES = {
     "Crossdressing": "9ab53f92-3eed-4e9b-903a-917c86035ee3",
     "Delinquents": "da2d50ca-3018-4cc0-ac7a-6b7d472a29ea",
     "Genderswap": "2bd2e8d0-f146-434a-9b51-fc9ff2c5fe6a",
-    "GirlsLove": "a3c67850-4684-404e-9b7f-c69850ee5da6",
+    "Girl's Love": "a3c67850-4684-404e-9b7f-c69850ee5da6",
     "Gyaru": "fad12b5e-68ba-460e-b933-9ae8318f5b65",
     "Harem": "aafb99c1-7f60-43fa-b75f-fc9502ce29c7",
     "Incest": "5bd0e105-4481-44ca-b6e7-7544da56b1a3",
