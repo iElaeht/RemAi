@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useMangas } from "@/Hooks/useMangas";
 import SearchFilter from "@/components/features/SearchFilter";
 import MangaGrid from "@/components/library/MangaGrid";
 import Pagination from "@/components/common/Pagination";
+import { SortOption, StatusOption } from "@/types/mangadex";
 
 interface LibraryContentProps {
   initialTagId?: string;
@@ -14,6 +15,7 @@ interface LibraryContentProps {
 export default function LibraryContent({ initialTagId }: LibraryContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
   const {
     mangas,
@@ -33,40 +35,31 @@ export default function LibraryContent({ initialTagId }: LibraryContentProps) {
     setStatus,
   } = useMangas();
 
-useEffect(() => {
-    // 1. Obtenemos los valores de la URL
+  const updateUrlParams = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => params.set(key, value));
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  useEffect(() => {
     const page = parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
-    
-    // 2. Sincronizamos el estado local
+    const sort = (searchParams.get("sort") ||
+      "latestUploadedChapter") as SortOption;
+    const status = (searchParams.get("status") || "all") as StatusOption;
+
     setCurrentPage(page);
     setSearchQuery(search);
+    setSortBy(sort);
+    setStatus(status);
 
-    // 3. Prioridad absoluta: Si hay un tag, lo usamos
-    if (initialTagId) {
-      if (!selectedTags.includes(initialTagId)) {
-        toggleTag(initialTagId);
-      }
-      fetchMangas(page, "", [initialTagId], sortBy, status);
-      return;
-    }
-
-    // 4. Búsqueda normal usando la página de la URL
-    fetchMangas(page, search, [], sortBy, status);
-    
-  }, [initialTagId, searchParams, sortBy, status]); // searchParams ya detecta cambios en 'page'
+    const tags = initialTagId ? [initialTagId] : [];
+    fetchMangas(page, search, tags, sort, status);
+  }, [initialTagId, searchParams]);
 
   const handleFilterSearch = () => {
-    setCurrentPage(1);
-
-    // Si hay texto en el buscador, vamos a la URL /library?search=...
-    if (searchQuery.trim()) {
-      router.push(`/library?search=${encodeURIComponent(searchQuery)}`);
-    } else {
-      // Si no hay texto, limpiamos la URL
-      router.push("/library");
-      fetchMangas(1, "", selectedTags, sortBy, status);
-    }
+    updateUrlParams({ search: searchQuery });
   };
 
   const handleClear = () => {
@@ -84,9 +77,9 @@ useEffect(() => {
         onSearch={handleFilterSearch}
         onClear={handleClear}
         sortBy={sortBy}
-        setSortBy={setSortBy}
+        setSortBy={(val) => updateUrlParams({ sort: val })}
         status={status}
-        setStatus={setStatus}
+        setStatus={(val) => updateUrlParams({ status: val })}
       />
 
       <MangaGrid mangas={mangas} isLoading={isLoading} />
@@ -97,7 +90,7 @@ useEffect(() => {
         onPageChange={(page) => {
           const params = new URLSearchParams(searchParams.toString());
           params.set("page", page.toString());
-          router.push(`/library?${params.toString()}`);
+          router.push(`${pathname}?${params.toString()}`);
         }}
         disabled={isLoading}
       />

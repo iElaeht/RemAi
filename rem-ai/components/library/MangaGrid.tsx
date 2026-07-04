@@ -1,7 +1,9 @@
+// rem-ai/components/library/MangaGrid.tsx
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 interface Manga {
   id: string;
@@ -22,6 +24,10 @@ const truncate = (text: string, limit: number) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
 export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
+  const searchParams = useSearchParams(); // 2. Obtener los parámetros actuales
+  const paramsString = searchParams.toString(); // Convertirlos a string
+  const query = paramsString ? `?${paramsString}` : ""; // Preparar el string de query
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-16">
       {isLoading ? (
@@ -32,9 +38,9 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
         mangas.map((manga) => (
           <div key={manga.id} className="group relative flex flex-col gap-3 select-none">
             
-            {/* IMAGEN CON LINK */}
             <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#111827] border border-white/5 transition-all duration-300 group-hover:border-pink-500/50 shadow-lg">
-              <Link href={`/manga/${manga.id}`}>
+              {/* 3. Añadir la query al link de la imagen */}
+              <Link href={`/manga/${manga.id}${query}`}>
                 <Image 
                   src={manga.cover} 
                   alt={manga.title} 
@@ -45,9 +51,9 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
               </Link>
             </div>
 
-            {/* INFO */}
             <div className="flex flex-col px-1 gap-1">
-              <Link href={`/manga/${manga.id}`}>
+              {/* 4. Añadir la query al link del título */}
+              <Link href={`/manga/${manga.id}${query}`}>
                 <h3 className="text-[13px] font-bold text-white hover:text-pink-500 transition-colors" title={manga.title}>
                   {truncate(manga.title, 20)}
                 </h3>

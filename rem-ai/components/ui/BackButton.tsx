@@ -7,17 +7,11 @@ export default function BackButton() {
   const pathname = usePathname();
 
   const handleBack = () => {
-    // 1. Lógica de navegación basada en el contexto actual
-    if (pathname.includes("/leer/")) {
-      // Si estamos en un capítulo, extraemos el ID para volver al manga
-      // (Asumiendo que el ID del manga está en el estado o es navegable)
-      router.back(); // El navegador suele tener el manga en el historial anterior
-    } else if (pathname.includes("/manga/")) {
-      router.push("/library");
-    } else if (pathname.includes("/library")) {
-      router.push("/discover");
-    } else {
+    if (window.history.length > 1) {
       router.back();
+    } else {
+      const defaultRoute = pathname.includes("/manga/") ? "/library" : "/discover";
+      router.push(defaultRoute);
     }
   };
 
