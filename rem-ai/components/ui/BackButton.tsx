@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useRouter, usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -7,10 +7,19 @@ export default function BackButton() {
   const pathname = usePathname();
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    // Si estamos en el lector, forzamos la salida al detalle del manga
+    if (pathname.includes("/leer/")) {
+      // Intentamos extraer el ID del manga si es posible, o simplemente forzamos home/library
+      router.push("/library"); 
+      return;
+    }
+
+    // Si hay historial previo de navegación real, retrocedemos
+    if (window.history.length > 2) {
       router.back();
     } else {
-      const defaultRoute = pathname.includes("/manga/") ? "/library" : "/discover";
+      // Fallback a rutas seguras
+      const defaultRoute = pathname.includes("/manga/") ? "/library" : "/library";
       router.push(defaultRoute);
     }
   };

@@ -1,3 +1,4 @@
+// rem-ai/app/leer/[id]/components/ReaderHeader.tsx
 'use client';
 import { ArrowLeft, Menu, ChevronLeft, ChevronRight } from 'lucide-react'; 
 import { useRouter } from 'next/navigation';
@@ -34,7 +35,7 @@ export default function ReaderHeader({
         
         {/* IZQUIERDA: Home/Manga Info */}
         <button 
-          onClick={() => router.push(`/manga/${mangaId}`)} 
+          onClick={() => router.replace(`/manga/${mangaId}`)} 
           className="flex items-center gap-3 text-gray-300 hover:text-white transition-all group z-10"
         >
           <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
