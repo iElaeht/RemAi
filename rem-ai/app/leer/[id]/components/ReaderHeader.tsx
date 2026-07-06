@@ -1,6 +1,5 @@
-// rem-ai/app/leer/[id]/components/ReaderHeader.tsx
 'use client';
-import { ArrowLeft, Menu, ChevronLeft, ChevronRight } from 'lucide-react'; 
+import { ArrowLeft, Menu, ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react'; 
 import { useRouter } from 'next/navigation';
 
 interface ReaderHeaderProps {
@@ -13,6 +12,9 @@ interface ReaderHeaderProps {
   onOpenSidebar: () => void;
   onPrevChapter: () => void;
   onNextChapter: () => void;
+  // Propiedades nuevas para el modo de lectura
+  readingMode: 'carousel' | 'vertical'; 
+  onToggleReadingMode: () => void;
 }
 
 export default function ReaderHeader({ 
@@ -24,14 +26,16 @@ export default function ReaderHeader({
   mangaId,
   onOpenSidebar,
   onPrevChapter,
-  onNextChapter 
+  onNextChapter,
+  readingMode,
+  onToggleReadingMode
 }: ReaderHeaderProps) {
   const router = useRouter();
   const isValidVolume = volume && volume !== "null" && volume !== "Sin Volumen" && volume !== "" && volume !== "0";
 
   return (
     <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4 select-none">
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative ">
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
         {/* IZQUIERDA: Home/Manga Info */}
         <button 
@@ -54,13 +58,11 @@ export default function ReaderHeader({
           </button>
           
           <div className="flex flex-col items-center px-2 sm:px-6">
-            {/* Título de Capítulo: "Capítulo" en Desktop, "Cap" en Móvil */}
             <span className="text-[10px] sm:text-xs text-blue-400 font-bold tracking-[0.2em] uppercase whitespace-nowrap">
               <span className="hidden sm:inline">Capítulo {chapter}</span>
               <span className="sm:hidden">Cap {chapter}</span>
             </span>
 
-            {/* Volumen e Idioma */}
             <span className="text-[9px] sm:text-[11px] text-gray-500 font-medium tracking-tight uppercase">
               {isValidVolume ? (
                 <>
@@ -78,13 +80,23 @@ export default function ReaderHeader({
           </button>
         </div>
 
-        {/* DERECHA: Sidebar */}
-        <button 
-          onClick={onOpenSidebar} 
-          className="p-2 text-gray-400 hover:text-white transition-all rounded-full hover:bg-white/5 z-10"
-        >
-          <Menu size={22} />
-        </button>
+        {/* DERECHA: Botón Modo Lectura y Sidebar */}
+        <div className="flex items-center gap-1 sm:gap-2 z-10">
+          <button 
+            onClick={onToggleReadingMode}
+            className="p-2 text-gray-400 hover:text-pink-500 transition-all rounded-full hover:bg-white/5"
+            title={readingMode === 'carousel' ? "Cambiar a lectura vertical" : "Cambiar a carrusel"}
+          >
+            {readingMode === 'carousel' ?<FileText size={22} />  : <BookOpen size={22} />}
+          </button>
+
+          <button 
+            onClick={onOpenSidebar} 
+            className="p-2 text-gray-400 hover:text-white transition-all rounded-full hover:bg-white/5"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </div>
     </header>
   );
