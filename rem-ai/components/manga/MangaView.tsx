@@ -64,6 +64,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     if (tagId) {
       router.push(`/library/${tagId}/${slug}`);
     } else {
+      console.warn(`Tag ${tag} no encontrado, ignorando click.`); // Útil para depuración
     }
   };
 

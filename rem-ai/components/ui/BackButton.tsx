@@ -7,21 +7,17 @@ export default function BackButton() {
   const pathname = usePathname();
 
   const handleBack = () => {
-    // Si estamos en el lector, forzamos la salida al detalle del manga
+    // 1. Si estamos en el lector, salida directa y única.
+    // Usamos replace para que no haya historia que recorrer.
     if (pathname.includes("/leer/")) {
-      // Intentamos extraer el ID del manga si es posible, o simplemente forzamos home/library
-      router.push("/library"); 
+      router.replace("/library");
       return;
     }
 
-    // Si hay historial previo de navegación real, retrocedemos
-    if (window.history.length > 2) {
-      router.back();
-    } else {
-      // Fallback a rutas seguras
-      const defaultRoute = pathname.includes("/manga/") ? "/library" : "/library";
-      router.push(defaultRoute);
-    }
+    // 2. Si estamos en cualquier otra parte, intentamos volver atrás de forma segura.
+    // Si no hay historia, simplemente vamos a la librería.
+    // Esto evita el bucle porque no forzamos una redirección si ya estamos yendo atrás.
+    router.back();
   };
 
   return (
