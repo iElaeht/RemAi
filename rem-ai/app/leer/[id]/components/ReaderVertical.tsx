@@ -47,10 +47,10 @@ export default function ReaderVertical({
               id={`page-${idx}`}
               className={`
                 w-full flex items-center justify-center shrink-0 snap-start overflow-hidden relative transition-all duration-300
-                ${isThisPageZoomed ? "fixed inset-0 z-[100] bg-[#0a0f1a] h-screen cursor-move" : "h-[100dvh] cursor-zoom-in"}
+                ${isThisPageZoomed ? "fixed inset-0 z-[100] bg-[#0a0f1a] h-screen cursor-crosshair" : "h-[100dvh] cursor-default"}
                 ${isDimmed ? "opacity-20 pointer-events-none" : "opacity-100"}
               `}
-              style={{ touchAction: isZoomed ? "none" : "auto" }}
+              style={{ touchAction: "auto" }}
               onMouseMove={(e) => !isTouch && isThisPageZoomed && handleInteraction(e.clientX, e.clientY, e.currentTarget)}
               onTouchMove={(e) => isThisPageZoomed && handleInteraction(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget)}
               onClick={(e) => {

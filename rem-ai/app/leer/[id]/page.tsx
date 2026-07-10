@@ -6,7 +6,6 @@ import ReaderHeader from "./components/ReaderHeader";
 import ReaderView from "./components/ReaderView";
 import ChapterSidebar from "@/components/manga/ChapterSidebar";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
-import ReaderVertical from './components/ReaderVertical';
 
 interface MangaData {
   mangaId: string;
@@ -115,26 +114,14 @@ function ReaderContent({ id }: { id: string }) {
       />
 
       {/* Renderizado condicional basado en el modo */}
-      {readingMode === "carousel" ? (
-        <ReaderView
-          key={data.chapterHash}
-          pages={data.pages}
-          baseUrl={data.baseUrl}
-          hash={data.chapterHash}
-          onNextChapter={() => navigateChapter("next")}
-          onPrevChapter={() => navigateChapter("prev")}
-        />
-      ) : (
-        <ReaderVertical
-          key={data.chapterHash}
-          pages={data.pages}
-          baseUrl={data.baseUrl}
-          hash={data.chapterHash}
-          onNextChapter={() => navigateChapter("next")}
-          onPrevChapter={() => navigateChapter("prev")}
-        />
-      )}
-
+      <ReaderView
+        pages={data.pages}
+        baseUrl={data.baseUrl}
+        hash={data.chapterHash}
+        mode={readingMode} 
+        onNextChapter={() => navigateChapter("next")}
+        onPrevChapter={() => navigateChapter("prev")}
+      />
       <ChapterSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}

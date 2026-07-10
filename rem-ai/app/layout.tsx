@@ -32,6 +32,12 @@ const customEsES = {
   },
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: 'yes',
+};
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const isSecurityEnabled = process.env.NEXT_PUBLIC_SECURITY_ENABLED === 'true';
 
