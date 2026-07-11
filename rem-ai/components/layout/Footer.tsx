@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
+import { Coffee, MessageSquare } from 'lucide-react'; 
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,24 +22,49 @@ export default function Footer() {
 
         {/* Columnas de Navegación */}
         <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center md:text-left">
-          {[
-            { title: 'Plataforma', links: [{n: 'Explorar', h: '/discover'}, {n: 'Top Mangas', h: '#'}, {n: 'Novedades', h: '#'}] },
-            { title: 'Legal', links: [{n: 'Privacidad', h: '#'}, {n: 'Términos de uso', h: '#'}] },
-            { title: 'Soporte', links: [{n: 'Discord', h: '#'}, {n: 'Contacto', h: '#'}] }
-          ].map((section) => (
-            <div key={section.title} className="flex flex-col items-center md:items-start">
-              <h4 className="font-bold text-white mb-6">{section.title}</h4>
-              <ul className="space-y-4 text-sm text-neutral-400">
-                {section.links.map((link) => (
-                  <li key={link.n}>
-                    <Link href={link.h} className="hover:text-sky-400 transition cursor-pointer">
-                      {link.n}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          
+          {/* Navegación Plataforma */}
+          <div className="flex flex-col items-center md:items-start">
+            <h4 className="font-bold text-white mb-6">Plataforma</h4>
+            <ul className="space-y-4 text-sm text-neutral-400">
+              <li><Link href="/discover" className="hover:text-sky-400 transition">Explorar</Link></li>
+              <li><Link href="#" className="hover:text-sky-400 transition">Top Mangas</Link></li>
+              <li><Link href="#" className="hover:text-sky-400 transition">Novedades</Link></li>
+            </ul>
+          </div>
+
+          {/* Servicios */}
+          <div className="flex flex-col items-center md:items-start">
+            <h4 className="font-bold text-white mb-6">Servicios</h4>
+            <ul className="space-y-4 text-sm text-neutral-400">
+              <li>
+                <Link href="/feedback" className="flex items-center gap-2 hover:text-sky-400 transition group">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Reportar / Sugerir</span>
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="https://ko-fi.com/elaehtdev" 
+                  target="_blank" 
+                  className="flex items-center gap-2 hover:text-sky-400 transition group"
+                >
+                  <Coffee className="w-4 h-4 group-hover:animate-bounce" />
+                  <span>Ko-fi</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="flex flex-col items-center md:items-start">
+            <h4 className="font-bold text-white mb-6">Legal</h4>
+            <ul className="space-y-4 text-sm text-neutral-400">
+              <li><Link href="/legal/privacy" className="hover:text-sky-400 transition">Privacidad</Link></li>
+              <li><Link href="/legal/terms" className="hover:text-sky-400 transition">Términos de uso</Link></li>
+            </ul>
+          </div>
+
         </div>
       </div>
 

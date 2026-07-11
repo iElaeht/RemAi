@@ -3,7 +3,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import Footer from "@/components/layout/Footer";
-import { ArrowRight, BookOpen, Heart, Coffee, Users } from "lucide-react";
+import { BookOpen, Heart, Coffee, Users } from "lucide-react";
 
 export default function HomePage() {
   const [isScrolled] = useState(false);

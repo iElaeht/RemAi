@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Heart } from "lucide-react"; // Añadí Heart para el botón de apoyo
 
 export default function Navbar() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function Navbar() {
   const menuItems = [
     { name: "Inicio", path: "/discover" },
     { name: "Biblioteca", path: "/library" },
+    { name: "Reportes", path: "/feedback" }, // Nueva ruta añadida
   ];
 
   return (
@@ -30,7 +31,6 @@ export default function Navbar() {
           Mangas<span className="text-sky-400">Rem</span>
         </button>
 
-        {/* Divisor vertical moderno */}
         <div className="h-5 w-[1px] bg-white/10" />
 
         <div className="hidden md:flex items-center gap-6">
@@ -48,48 +48,36 @@ export default function Navbar() {
 
       {/* Lado Derecho */}
       <div className="hidden md:flex items-center gap-4">
+        {/* Botón Apóyanos */}
+        <a 
+          href="https://ko-fi.com/tu-usuario" // Reemplaza con tu link real
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-neutral-400 hover:text-pink-400 transition-colors mr-2"
+        >
+          <Heart size={16} />
+          <span>Apóyanos</span>
+        </a>
+
         <div className="h-5 w-[1px] bg-white/10" />
+        
         {isLoaded &&
           (isSignedIn ? (
-            // Contenedor que agrupa el perfil
             <div className="flex items-center gap-2 bg-white/3 px-3 py-1.5 rounded-full border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "!h-9 !w-9",
-                  },
-                }}
-              />
-              <span className="text-xs font-medium text-white select-none">
-                Mi Perfil
-              </span>
+              <UserButton appearance={{ elements: { avatarBox: "!h-9 !w-9" } }} />
+              <span className="text-xs font-medium text-white select-none">Mi Perfil</span>
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <Link
-                href="/sign-in"
-                className="text-sm text-neutral-500 hover:text-white transition-colors"
-              >
-                Ingresar
-              </Link>
-
+              <Link href="/sign-in" className="text-sm text-neutral-500 hover:text-white transition-colors">Ingresar</Link>
               <div className="h-5 w-[1px] bg-white/10" />
-
-              <Link
-                href="/sign-up"
-                className="text-sm px-5 py-1.5 rounded-full bg-white/5 border border-white/10 text-white hover:bg-sky-500/10 hover:border-sky-500/30 transition-all font-medium"
-              >
-                Unirse
-              </Link>
+              <Link href="/sign-up" className="text-sm px-5 py-1.5 rounded-full bg-white/5 border border-white/10 text-white hover:bg-sky-500/10 hover:border-sky-500/30 transition-all font-medium">Unirse</Link>
             </div>
           ))}
       </div>
 
       {/* Hamburguesa */}
-      <button
-        className="md:hidden text-neutral-400"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
+      <button className="md:hidden text-neutral-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
         {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
 
@@ -106,34 +94,28 @@ export default function Navbar() {
               {item.name}
             </Link>
           ))}
+          
+          <a 
+            href="https://ko-fi.com/tu-usuario" 
+            target="_blank"
+            className="text-base text-pink-400 font-medium"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Apoyar en Ko-fi
+          </a>
 
           <div className="pt-6 border-t border-white/5 flex flex-col gap-4">
-            {isLoaded &&
-              (isSignedIn ? (
-                <div className="flex items-center gap-3 text-white">
-                  <UserButton
-                    appearance={{ elements: { avatarBox: "!h-9 !w-9" } }}
-                  />
-                  <span className="text-sm font-medium">Mi Cuenta</span>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  <Link
-                    href="/sign-in"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-neutral-400"
-                  >
-                    Ingresar
-                  </Link>
-                  <Link
-                    href="/sign-up"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-sky-400 font-bold"
-                  >
-                    Unirse
-                  </Link>
-                </div>
-              ))}
+            {isLoaded && (isSignedIn ? (
+              <div className="flex items-center gap-3 text-white">
+                <UserButton appearance={{ elements: { avatarBox: "!h-9 !w-9" } }} />
+                <span className="text-sm font-medium">Mi Cuenta</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <Link href="/sign-in" onClick={() => setIsMenuOpen(false)} className="text-neutral-400">Ingresar</Link>
+                <Link href="/sign-up" onClick={() => setIsMenuOpen(false)} className="text-sky-400 font-bold">Unirse</Link>
+              </div>
+            ))}
           </div>
         </div>
       )}

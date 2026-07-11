@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // 1. Validación estricta de variables de entorno
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!; // Usamos el operador ! para asegurar que no es undefined
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
@@ -26,6 +26,7 @@ export const getSupabaseClient = (clerkToken: string) => {
     global: {
       headers: {
         Authorization: `Bearer ${clerkToken}`,
+        apikey: supabaseAnonKey, // Añadido explícitamente para cumplir con el requerimiento de la API
       },
     },
   });
