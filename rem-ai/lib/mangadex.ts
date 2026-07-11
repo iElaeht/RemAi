@@ -1,4 +1,5 @@
 // lib/mangadex.ts
+import { TAG_DICTIONARY } from '@/data/tagDictionary';
 import { MangaResponse } from '@/types/mangadex';
 
 const MANGADEX_API_URL = 'https://api.mangadex.org';
@@ -130,4 +131,22 @@ export async function getFilterManga(genreTag: string): Promise<MangaResponse[]>
   query.append('availableTranslatedLanguage[]', 'es');
   query.append('order[rating]', 'desc');
   return fetchMangas(query);
+}
+export async function getSimilarMangas(mangaId: string, tags: string[]): Promise<MangaResponse[]> {
+  const searchTags = tags
+    .map(t => TAG_DICTIONARY[t]) 
+    .filter(id => id !== undefined) 
+    .slice(0, 2); 
+
+  const results = await Promise.all(
+    searchTags.map(tagId => getFilterManga(tagId))
+  );
+
+  const flatResults = results.flat();
+  
+  const uniqueResults = Array.from(new Map(flatResults.map(m => [m.id, m])).values())
+    .filter(m => m.id !== mangaId)
+    .slice(0, 10);
+
+  return uniqueResults;
 }

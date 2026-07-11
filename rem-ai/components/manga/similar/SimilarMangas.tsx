@@ -1,0 +1,25 @@
+import MangaSimilarCard from "./MangaSimilarCard";
+import { MangaResponse } from "@/types/mangadex";
+
+export default function SimilarMangas({ mangas }: { mangas: MangaResponse[] }) {
+  if (!mangas || mangas.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-6 py-4">
+      {/* Título con diseño decorativo */}
+      <div className="flex items-center gap-3 px-2">
+        <div className="w-1.5 h-6 bg-pink-600 rounded-full" />
+        <h2 className="text-2xl font-bold text-white tracking-tight">
+          Recomendados
+        </h2>
+      </div>
+      
+      {/* Carrusel con máscara de desvanecimiento */}
+      <div className="flex gap-4 overflow-x-auto pb-6 px-2 hide-scroll-auto">
+        {mangas.map((manga) => (
+          <MangaSimilarCard key={manga.id} manga={manga} />
+        ))}
+      </div>
+    </section>
+  );
+}

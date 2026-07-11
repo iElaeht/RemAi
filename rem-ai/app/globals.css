@@ -5,7 +5,6 @@
   --foreground: #ededed;
 }
 
-/* Base global */
 html {
   scrollbar-width: thin;
   scrollbar-color: #db2777 #0a0a0a;
@@ -21,18 +20,7 @@ body {
   overscroll-behavior-y: contain;
 }
 
-/* --- UTILIDADES DE SCROLL --- */
-
-/* Esconde scrollbars pero permite el scroll */
-.no-scrollbar {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-}
-
-/* --- SCROLLBAR PERSONALIZADO (Estilo Pink) --- */
+/* --- SCROLLBAR GLOBAL --- */
 ::-webkit-scrollbar {
   width: 8px !important;
 }
@@ -51,21 +39,66 @@ body {
   background-color: #be185d !important;
 }
 
-/* --- CLASES ESPECÍFICAS --- */
-
-.mask-fade {
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+/* --- UTILIDADES DE SCROLL --- */
+.no-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-/* Scroll interno de dropdowns */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
 .custom-scroll {
   scrollbar-width: thin;
   scrollbar-color: #db2777 #0f1420;
 }
-.custom-scroll::-webkit-scrollbar { width: 6px !important; }
-.custom-scroll::-webkit-scrollbar-track { background: #0f1420 !important; }
-.custom-scroll::-webkit-scrollbar-thumb { 
-  background-color: #db2777 !important; 
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #0f1420 !important;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #db2777 !important;
   border-radius: 10px !important;
+}
+
+/* --- CARRUSELES INTELIGENTES --- */
+.hide-scroll-auto {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.hide-scroll-auto::-webkit-scrollbar {
+  height: 8px !important;
+  display: none !important;
+}
+
+.hide-scroll-auto:hover {
+  scrollbar-color: #db2777 #0a0a0a;
+}
+
+.hide-scroll-auto:hover::-webkit-scrollbar {
+  display: block !important;
+}
+
+.hide-scroll-auto::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
+  transition: background-color 0.3s ease !important;
+  border-radius: 10px !important;
+}
+
+.hide-scroll-auto:hover::-webkit-scrollbar-thumb {
+  background-color: #db2777 !important;
+}
+
+/* --- CLASES VISUALES --- */
+.mask-fade {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
