@@ -9,6 +9,7 @@ import { getTagIdByName, tagToSlug } from "@/service/tagService";
 import { List, BookOpen, Tag, User, X, Star, Clock } from "lucide-react";
 
 export default function MangaView({ manga }: { manga: MangaResponse }) {
+
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>(() =>
@@ -32,7 +33,9 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     localStorage.setItem("manga_lang", lang);
   }, [lang]);
 
-  useEffect(() => {
+useEffect(() => {
+  // Solo cargamos si el ID existe y si estamos en el cliente
+  if (manga.id) {
     const loadData = async () => {
       setLoading(true);
       const data = await fetchAllChapters(manga.id);
@@ -40,7 +43,10 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
       setLoading(false);
     };
     loadData();
-  }, [manga.id]);
+  }
+  // Eliminamos manga.id de la dependencia si es que solo quieres cargar al montar,
+  // pero manteniéndolo como está ahora está bien.
+}, [manga.id]);
 
   const firstChapter = useMemo(() => {
     if (chapters.length === 0) return null;

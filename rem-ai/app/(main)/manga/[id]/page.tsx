@@ -5,7 +5,6 @@ import Comments from "@/components/manga/comments/Comments";
 import SimilarMangas from "@/components/manga/similar/SimilarMangas";
 import { supabasePublic } from "@/lib/supabase";
 import { Comment } from "@/types/comment";
-import PageWrapper from "@/components/layout/PageWrapper";
 
 export default async function MangaPage({
   params,
@@ -29,14 +28,16 @@ export default async function MangaPage({
   ]);
 
   const initialComments: Comment[] = commentsResponse.data || [];
-
-  return (
-    <PageWrapper>
-      <div className="flex flex-col gap-12 animate-in fade-in duration-500">
+  
+return (
+  
+    <main className="bg-[#0b1120] min-h-screen text-white p-4 md:p-6 lg:p-8">
+      <div className="max-w-[1200px] mx-auto flex flex-col gap-12 animate-in fade-in duration-500">
+        
         {/* Sección Manga */}
         <MangaView manga={manga} />
 
-        {/* Sección Mangas Similares (El nuevo carrusel) */}
+        {/* Sección Mangas Similares */}
         {similarMangas.length > 0 && (
           <section>
             <SimilarMangas mangas={similarMangas} />
@@ -47,7 +48,8 @@ export default async function MangaPage({
         <section>
           <Comments mangaId={id} initialComments={initialComments} />
         </section>
+        
       </div>
-    </PageWrapper>
+    </main>
   );
 }

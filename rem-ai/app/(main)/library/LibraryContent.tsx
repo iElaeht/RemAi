@@ -68,7 +68,7 @@ export default function LibraryContent({ initialTagId }: LibraryContentProps) {
   };
 
   return (
-    <main className="w-full">
+    <main className="bg-[#0a0f1d] min-h-screen text-white p-4 md:p-6 lg:px-24 overflow-x-hidden">
       <SearchFilter
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

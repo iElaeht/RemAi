@@ -84,7 +84,7 @@ function ReaderContent({ id }: { id: string }) {
     const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
 
     if (newIndex >= 0 && newIndex < sortedChapters.length) {
-      router.replace(
+      router.push(
         `/leer/${sortedChapters[newIndex].id}?lang=${currentLang}`,
       );
     }

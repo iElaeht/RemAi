@@ -1,6 +1,5 @@
 'use client';
-import { ArrowLeft, Menu, ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react'; 
-import { useRouter } from 'next/navigation';
+import { Menu, ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react'; 
 
 interface ReaderHeaderProps {
   mangaTitle: string;
@@ -8,11 +7,10 @@ interface ReaderHeaderProps {
   chapter: string;
   volume: string;
   lang: string;
-  mangaId: string;
+  mangaId: string; // Ya no lo usaremos para el botón, pero lo mantenemos por si lo necesitas luego
   onOpenSidebar: () => void;
   onPrevChapter: () => void;
   onNextChapter: () => void;
-  // Propiedades nuevas para el modo de lectura
   readingMode: 'carousel' | 'vertical'; 
   onToggleReadingMode: () => void;
 }
@@ -23,33 +21,23 @@ export default function ReaderHeader({
   chapter, 
   volume,
   lang,
-  mangaId,
   onOpenSidebar,
   onPrevChapter,
   onNextChapter,
   readingMode,
   onToggleReadingMode
 }: ReaderHeaderProps) {
-  const router = useRouter();
   const isValidVolume = volume && volume !== "null" && volume !== "Sin Volumen" && volume !== "" && volume !== "0";
 
   return (
     <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4 select-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
-        {/* IZQUIERDA: Home/Manga Info */}
-        <button 
-          onClick={() => router.replace(`/manga/${mangaId}`)} 
-          className="flex items-center gap-3 text-gray-300 hover:text-white transition-all group z-10"
-        >
-          <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
-            <ArrowLeft size={18} />
-          </div>
-          <div className="flex flex-col truncate max-w-[140px] sm:max-w-[300px]">
-            <span className="text-xs sm:text-sm font-bold text-white truncate">{mangaTitle}</span>
-            <span className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">{author}</span>
-          </div>
-        </button>
+        {/* IZQUIERDA: Info del Manga (Fija y sin botón) */}
+        <div className="flex flex-col truncate max-w-[140px] sm:max-w-[300px]">
+          <span className="text-xs sm:text-sm font-bold text-white truncate">{mangaTitle}</span>
+          <span className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">{author}</span>
+        </div>
 
         {/* CENTRO: Controles de Capítulo */}
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-3">
@@ -87,7 +75,7 @@ export default function ReaderHeader({
             className="p-2 text-gray-400 hover:text-pink-500 transition-all rounded-full hover:bg-white/5"
             title={readingMode === 'carousel' ? "Cambiar a lectura vertical" : "Cambiar a carrusel"}
           >
-            {readingMode === 'carousel' ?<FileText size={22} />  : <BookOpen size={22} />}
+            {readingMode === 'carousel' ? <FileText size={22} /> : <BookOpen size={22} />}
           </button>
 
           <button 
