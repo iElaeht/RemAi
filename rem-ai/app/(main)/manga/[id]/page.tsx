@@ -6,6 +6,14 @@ import SimilarMangas from "@/components/manga/similar/SimilarMangas";
 import { supabasePublic } from "@/lib/supabase";
 import { Comment } from "@/types/comment";
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const manga = await getMangaById(id);
+  
+  return {
+    title: manga ? `${manga.title} | MangasRem` : "Manga | MangasRem",
+  };
+}
 export default async function MangaPage({
   params,
 }: {

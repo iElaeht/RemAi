@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import Navbar from "@/components/layout/Navbar";
 import { getSupabaseClient } from '@/lib/supabase';
+import { useEffect } from "react";
 
 export default function FeedbackPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -15,6 +16,10 @@ export default function FeedbackPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    document.title = "Centro de Ayuda | MangasRem";
+  }, []);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;

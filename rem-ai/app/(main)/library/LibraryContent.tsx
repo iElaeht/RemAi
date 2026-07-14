@@ -58,6 +58,30 @@ export default function LibraryContent({ initialTagId }: LibraryContentProps) {
     fetchMangas(page, search, tags, sort, status);
   }, [initialTagId, searchParams]);
 
+useEffect(() => {
+  const search = searchParams.get("search");
+  const page = searchParams.get("page");
+  
+  // Obtenemos el nombre del género desde la ruta (es la última parte de la URL)
+  // Ejemplo: /library/uuid/horror -> toma 'horror'
+  const pathParts = window.location.pathname.split('/');
+  const genreFromUrl = pathParts.length > 3 ? pathParts[pathParts.length - 1] : null;
+
+  let title = "Biblioteca | MangasRem";
+
+  if (search) {
+    title = `Búsqueda: "${search}" | MangasRem`;
+  } else if (genreFromUrl) {
+    // Capitalizamos la primera letra
+    const genreName = genreFromUrl.charAt(0).toUpperCase() + genreFromUrl.slice(1);
+    title = `Género: ${genreName} | MangasRem`;
+  } else if (page && page !== "1") {
+    title = `Biblioteca (Pág. ${page}) | MangasRem`;
+  }
+
+  document.title = title;
+}, [searchParams, pathname]); // Dependencia en pathname es clave
+
   const handleFilterSearch = () => {
     updateUrlParams({ search: searchQuery });
   };

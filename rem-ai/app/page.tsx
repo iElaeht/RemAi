@@ -3,10 +3,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import Footer from "@/components/layout/Footer";
+import { useEffect } from "react";
 import { BookOpen, Heart, Coffee, Users } from "lucide-react";
 
 export default function HomePage() {
   const [isScrolled] = useState(false);
+
+  useEffect(() => {
+    document.title = "MangasRem | Sitio web oficial";
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-x-hidden select-none">

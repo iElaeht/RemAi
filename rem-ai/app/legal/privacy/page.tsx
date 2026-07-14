@@ -1,4 +1,9 @@
 import Navbar from "@/components/layout/Navbar";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Política de Privacidad | MangasRem",
+};
 
 export default function PrivacyPolicy() {
   return (

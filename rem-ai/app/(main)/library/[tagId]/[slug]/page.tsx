@@ -4,14 +4,12 @@
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
 import LibraryContent from "../../LibraryContent";
-import PageWrapper from "@/components/layout/PageWrapper";
 
 export default function TaggedLibraryPage() {
   const params = useParams();
   const tagId = params.tagId as string;
 
   return (
-    <PageWrapper>
       <Suspense
         fallback={
           <div className="flex justify-center items-center min-h-screen bg-[#0a0f1d] text-white">
@@ -21,6 +19,5 @@ export default function TaggedLibraryPage() {
       >
         <LibraryContent initialTagId={tagId} />
       </Suspense>
-    </PageWrapper>
   );
 }

@@ -22,15 +22,17 @@ interface MangaData {
 function ReaderContent({ id }: { id: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [readingMode, setReadingMode] = useState<"carousel" | "vertical">(() => {
-    if (typeof window !== "undefined") {
-      const savedMode = localStorage.getItem("reading_mode");
-      return savedMode === "carousel" || savedMode === "vertical" 
-        ? savedMode 
-        : "carousel";
-    }
-    return "carousel";
-  });
+  const [readingMode, setReadingMode] = useState<"carousel" | "vertical">(
+    () => {
+      if (typeof window !== "undefined") {
+        const savedMode = localStorage.getItem("reading_mode");
+        return savedMode === "carousel" || savedMode === "vertical"
+          ? savedMode
+          : "carousel";
+      }
+      return "carousel";
+    },
+  );
 
   const [currentLang, setCurrentLang] = useState(() => {
     const langFromUrl = searchParams.get("lang");
@@ -68,6 +70,12 @@ function ReaderContent({ id }: { id: string }) {
       .catch((err) => console.error("Error cargando:", err));
   }, [id, currentLang]);
 
+  useEffect(() => {
+    if (data) {
+      document.title = `Lectura - Cap ${data.chapterNum || "N/A"} | MangasRem`;
+    }
+  }, [data]);
+
   const navigateChapter = (direction: "prev" | "next") => {
     if (!chaptersList || chaptersList.length === 0) return;
 
@@ -84,9 +92,7 @@ function ReaderContent({ id }: { id: string }) {
     const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
 
     if (newIndex >= 0 && newIndex < sortedChapters.length) {
-      router.push(
-        `/leer/${sortedChapters[newIndex].id}?lang=${currentLang}`,
-      );
+      router.push(`/leer/${sortedChapters[newIndex].id}?lang=${currentLang}`);
     }
   };
 
@@ -118,7 +124,7 @@ function ReaderContent({ id }: { id: string }) {
         pages={data.pages}
         baseUrl={data.baseUrl}
         hash={data.chapterHash}
-        mode={readingMode} 
+        mode={readingMode}
         onNextChapter={() => navigateChapter("next")}
         onPrevChapter={() => navigateChapter("prev")}
       />

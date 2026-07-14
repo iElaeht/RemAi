@@ -1,7 +1,13 @@
-// app/(main)/discover/page.tsx
 import { TAG_DICTIONARY } from '@/data/tagDictionary';
 import EventMangaSection from '@/components/events/EventMangaSection';
 import EventCarouselPopular from '@/components/events/EventCarouselPopular';
+import { Metadata } from 'next';
+
+// Definimos los metadatos
+export const metadata: Metadata = {
+  title: "Descubrir | MangasRem",
+  description: "Explora las últimas tendencias y categorías de mangas en MangasRem.",
+};
 
 const CATEGORY_SECTIONS = [
   { title: "Isekai", tag: TAG_DICTIONARY["Isekai"] },
