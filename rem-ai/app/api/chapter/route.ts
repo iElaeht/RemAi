@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// 1. FORZAMOS DINAMISMO: Evita que Vercel guarde resultados antiguos en caché.
 export const dynamic = 'force-dynamic';
 
 interface MangaDexChapter {
@@ -22,27 +21,45 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 2. HEADERS CON IDENTIDAD DE REM AI: 
-    // Identificarse correctamente ayuda a que MangaDex no nos bloquee.
-    const url = `https://api.mangadex.org/chapter?manga=${mangaId}&limit=100&offset=${offset}&order[chapter]=asc&order[volume]=asc&includes[]=scanlation_group`;
-    
-    const res = await fetch(url, { 
+    // 1. Construcción de parámetros con filtros de contenido y lenguaje
+    const params = new URLSearchParams({
+      manga: mangaId,
+      limit: '100',
+      offset: offset,
+      'order[chapter]': 'asc',
+      'order[volume]': 'asc',
+      'includes[]': 'scanlation_group',
+    });
+
+    // Filtros para habilitar todo el contenido (H incluido)
+    ["safe", "suggestive", "erotica", "pornographic"].forEach((r) =>
+      params.append("contentRating[]", r)
+    );
+
+    // Filtros de idioma para asegurar que aparezcan capítulos traducidos
+    ["es-la","es", "en", "ja", "ko", "zh"].forEach((lang) =>
+      params.append("translatedLanguage[]", lang)
+    );
+
+    // 2. Fetch con Identidad (User-Agent)
+    const url = `https://api.mangadex.org/chapter?${params.toString()}`;
+    const res = await fetch(url, {
       headers: { 
         'User-Agent': 'Rem-AI-App/1.0',
         'Accept': 'application/json' 
       },
-      next: { revalidate: 0 } // Refuerzo para asegurar datos en tiempo real
+      next: { revalidate: 0 }
     });
-    
-    // 3. MANEJO DE ERRORES: Devolvemos el estado real para que el cliente sepa qué pasó.
+
     if (!res.ok) {
-      console.error(`Rem AI - MangaDex error: ${res.status}`);
+      console.error(`Rem AI - Error en MangaDex: ${res.status}`);
       return NextResponse.json({ error: 'Error al conectar con MangaDex' }, { status: res.status });
     }
-    
+
     const data = await res.json();
     const chapters = Array.isArray(data.data) ? data.data : [];
 
+    // 3. Mapeo de datos con blindaje (asegurando valores por defecto)
     const formattedChapters = chapters.map((ch: MangaDexChapter) => ({
       id: ch.id,
       number: ch.attributes.chapter || '0',
@@ -52,8 +69,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       data: formattedChapters,
-      total: data.total 
+      total: data.total || 0
     });
+
   } catch (error) {
     console.error("Rem AI - Error crítico en api/chapter:", error);
     return NextResponse.json({ error: 'Fallo interno al procesar capítulos' }, { status: 500 });
