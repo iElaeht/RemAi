@@ -1,3 +1,4 @@
+// api/mangas/route.ts
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -38,8 +39,13 @@ export async function GET(request: Request) {
   });
   query.append("includes[]", "author");
   query.append("includes[]", "cover_art");
-  ["safe", "suggestive", "erotica"].forEach((r) =>
+  
+  ["safe", "suggestive", "erotica","pornographic"].forEach((r) =>
     query.append("contentRating[]", r),
+  );
+
+  ["es", "en", "ja", "ko", "zh"].forEach((lang) => 
+    query.append("availableTranslatedLanguage[]", lang)
   );
 
   if (search) query.append("title", search);
