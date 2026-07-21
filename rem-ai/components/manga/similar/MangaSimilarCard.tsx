@@ -1,3 +1,4 @@
+// components/manga/similar/MangaSimilarCard.tsx
 import Link from "next/link";
 import Image from "next/image";
 import { MangaResponse } from "@/types/mangadex";
@@ -5,7 +6,8 @@ import { MangaResponse } from "@/types/mangadex";
 export default function MangaSimilarCard({ manga }: { manga: MangaResponse }) {
   return (
     <Link 
-      href={`/manga/${manga.id}`} 
+      href={`/manga/${manga.id}`}
+      prefetch={false}
       className="group relative flex flex-col gap-3 w-32 md:w-40 flex-shrink-0 transition-transform duration-300 hover:-translate-y-1"
       title={manga.title}
     >

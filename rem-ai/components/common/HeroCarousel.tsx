@@ -70,7 +70,9 @@ export default function HeroCarousel({ featuredMangas }: { featuredMangas: Manga
                 {current.description}
               </p>
 
-              <Link href={`/manga/${current.id}`} className="mx-auto md:mx-0 w-fit px-6 py-2.5 bg-white text-neutral-950 font-bold rounded-sm text-sm hover:bg-neutral-200 transition-all">
+              <Link href={`/manga/${current.id}`}
+              prefetch={false}
+              className="mx-auto md:mx-0 w-fit px-6 py-2.5 bg-white text-neutral-950 font-bold rounded-sm text-sm hover:bg-neutral-200 transition-all">
                 Leer ahora
               </Link>
             </div>
