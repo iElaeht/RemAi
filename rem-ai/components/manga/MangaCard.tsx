@@ -8,15 +8,15 @@ interface MangaCardProps {
   title: string;
   coverUrl: string;
   author?: string;
-  status?: string; 
   tags?: string[];
-  rating?: number; // Asegúrate de recibir esto
+  rating?: number;
 }
 
-export default function MangaCard({ id, title, coverUrl, author, status, tags, rating }: MangaCardProps) {
+export default function MangaCard({ id, title, coverUrl, author, tags, rating }: MangaCardProps) {
   return (
     <Link 
       href={`/manga/${id}`}
+      prefetch={false}
       className="group block w-full space-y-3"
     >
       {/* Contenedor Imagen: Diseño moderno con borde fino */}

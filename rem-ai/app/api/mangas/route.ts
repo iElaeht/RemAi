@@ -112,10 +112,6 @@ export async function GET(request: Request) {
       results: formattedResults,
       totalPages: Math.min(Math.ceil((data.total || 0) / limit), 555),
     });
-    return NextResponse.json({
-      results: formattedResults,
-      totalPages: Math.min(Math.ceil((data.total || 0) / limit), 555),
-    });
   } catch (error) {
     return NextResponse.json({ results: [] }, { status: 500 });
   }
