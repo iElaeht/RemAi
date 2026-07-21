@@ -1,3 +1,4 @@
+// rem-ai/app/api/read/[id]/route.ts
 import { NextResponse } from 'next/server';
 
 // 1. FORZAMOS DINAMISMO: Evita caché de borde y garantiza datos frescos.

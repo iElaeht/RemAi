@@ -6,12 +6,15 @@ export interface MangaResponse {
   author: string;
   coverUrl: string;
   description: string;
+  descriptionUrl?: string;
   status: string;
   tags: string[];
   latestChapter?: string;
   rating: number;
+  altTitles?: { [key: string]: string }[];
+  arts?: string[]; 
+  
 }
 
-// Tipos para los filtros
 export type SortOption = 'latestUploadedChapter' | 'rating' | 'followedCount';
 export type StatusOption = 'all' | 'ongoing' | 'completed' | 'hiatus';

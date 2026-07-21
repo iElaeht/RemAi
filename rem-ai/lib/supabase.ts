@@ -1,3 +1,4 @@
+// lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 
 // 1. Validación estricta de variables de entorno
@@ -37,3 +38,10 @@ export const getSupabaseClient = (clerkToken: string) => {
  * ¡OJO! Úsalo EXCLUSIVAMENTE para SELECTs públicos.
  */
 export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);
+
+// 4. Cliente exclusivo para el Servidor (Backend) con privilegios de Administrador (Service Role)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+export const supabaseServer = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey) 
+  : null;

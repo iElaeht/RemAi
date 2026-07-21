@@ -1,3 +1,4 @@
+// rem-ai/app/(main)/manga/[id]/page.tsx
 import { getMangaById, getSimilarMangas } from "@/lib/mangadex";
 import { notFound } from "next/navigation";
 import MangaView from "@/components/manga/MangaView";

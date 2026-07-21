@@ -3,13 +3,13 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
+import MangaDetailsContainer from "./MangaDetailsContainer";
 import ChapterSidebar from "./ChapterSidebar";
 import { MangaResponse } from "@/types/mangadex";
 import { getTagIdByName, tagToSlug } from "@/service/tagService";
 import { List, BookOpen, Tag, User, X, Star, Clock } from "lucide-react";
 
 export default function MangaView({ manga }: { manga: MangaResponse }) {
-
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>(() =>
@@ -17,8 +17,10 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
       ? localStorage.getItem("manga_lang") || "es"
       : "es",
   );
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showAllTitles, setShowAllTitles] = useState(false);
   const router = useRouter();
 
   const rating = manga.rating || 0;
@@ -33,20 +35,17 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     localStorage.setItem("manga_lang", lang);
   }, [lang]);
 
-useEffect(() => {
-  // Solo cargamos si el ID existe y si estamos en el cliente
-  if (manga.id) {
-    const loadData = async () => {
-      setLoading(true);
-      const data = await fetchAllChapters(manga.id);
-      setChapters(data);
-      setLoading(false);
-    };
-    loadData();
-  }
-  // Eliminamos manga.id de la dependencia si es que solo quieres cargar al montar,
-  // pero manteniéndolo como está ahora está bien.
-}, [manga.id]);
+  useEffect(() => {
+    if (manga.id) {
+      const loadData = async () => {
+        setLoading(true);
+        const data = await fetchAllChapters(manga.id);
+        setChapters(data);
+        setLoading(false);
+      };
+      loadData();
+    }
+  }, [manga.id]);
 
   const firstChapter = useMemo(() => {
     if (chapters.length === 0) return null;
@@ -57,7 +56,7 @@ useEffect(() => {
     }
     return [...chapters].sort((a, b) => Number(a.number) - Number(b.number))[0];
   }, [chapters]);
-  const noChaptersAvailable = chapters.length === 0 && !loading;
+
   const handleReadNow = () => {
     if (firstChapter)
       router.push(`/leer/${firstChapter.id}?lang=${firstChapter.language}`);
@@ -66,19 +65,14 @@ useEffect(() => {
   const handleTagClick = (tag: string) => {
     const tagId = getTagIdByName(tag);
     const slug = tagToSlug(tag);
-
-    if (tagId) {
-      router.push(`/library/${tagId}/${slug}`);
-    } else {
-      console.warn(`Tag ${tag} no encontrado, ignorando click.`); // Útil para depuración
-    }
+    if (tagId) router.push(`/library/${tagId}/${slug}`);
   };
 
   return (
     <div className="bg-[#0b101d] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl select-none">
       <div className="flex flex-col md:flex-row gap-8">
-        {/* PORTADA */}
-        <div className="flex flex-col gap-4">
+        {/* PORTADA Y TÍTULOS ALTERNOS */}
+        <div className="flex flex-col gap-8">
           <div
             className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => setIsModalOpen(true)}
@@ -90,99 +84,162 @@ useEffect(() => {
               className="object-cover"
             />
           </div>
-          <div className="bg-[#0f1523] p-3 rounded-xl border border-white/5 flex flex-col items-center">
-            <div className="flex text-yellow-400 gap-1 mb-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={14}
-                  fill={i < Math.round(rating / 2) ? "currentColor" : "none"}
-                />
-              ))}
+          {/* TÍTULOS ALTERNOS - DISEÑO DE COLOR NOCHE */}
+          {manga.altTitles && manga.altTitles.length > 0 && (
+            <div className="w-full md:w-64 space-y-3">
+              <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest px-1 flex items-center gap-2">
+                <span className="w-0.5 h-3 bg-pink-500"></span> Títulos Alternos
+              </h3>
+
+              <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-[#0b101d] border border-white/5">
+                {(showAllTitles
+                  ? manga.altTitles
+                  : manga.altTitles.slice(0, 6)
+                ).map((title, index) => {
+                  const fullTitle = Object.values(title)[0];
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 text-xs text-gray-400 px-2 py-2 rounded-md bg-[#151c2f] hover:bg-white/5 transition-colors cursor-default group"
+                      title={fullTitle}
+                    >
+                      <span className="truncate">{fullTitle}</span>
+                    </div>
+                  );
+                })}
+
+                {manga.altTitles.length > 6 && (
+                  <button
+                    onClick={() => setShowAllTitles(!showAllTitles)}
+                    className="flex items-center gap-1.5 text-[10px] text-pink-500 font-bold px-2 py-1 hover:text-pink-400 transition-colors mt-1"
+                  >
+                    {showAllTitles ? (
+                      <>
+                        <X size={10} /> Ocultar todo
+                      </>
+                    ) : (
+                      <>
+                        <List size={10} /> Mostrar {manga.altTitles.length - 6}{" "}
+                        más
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-            <span className="text-sm font-bold text-white">
-              {rating > 0 ? rating.toFixed(1) : "0.0"}{" "}
-              <span className="text-gray-500">/ 10</span>
-            </span>
-          </div>
+          )}
         </div>
 
-        {/* DETALLES */}
+        {/* DETALLES REORGANIZADOS - EQUILIBRADOS */}
         <div className="flex flex-col gap-4 w-full">
           <h1 className="text-3xl md:text-5xl font-black text-white leading-tight">
             {manga.title}
           </h1>
 
-          {/* AUTOR | ESTADO */}
-          <div className="flex items-center gap-3 text-neutral-400 text-sm font-medium">
+          {/* Fila: Autor y Estado - Añadimos un poco más de margen */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400">
             <div className="flex items-center gap-2">
-              <User size={16} />{" "}
-              <span>{manga.author || "Autor Desconocido"}</span>
+              <User size={16} />
+              <span className="hidden md:inline">Autor:</span>
+              <span className="font-medium text-white">
+                {manga.author || "Desconocido"}
+              </span>
             </div>
-            <span className="text-white/20">|</span>
-            <Clock size={16} />{" "}
-            <span className="text-pink-500 font-semibold">{statusLabel}</span>
+            <span className="text-white/20 hidden md:inline">•</span>
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="text-pink-500" />
+              <span className="hidden md:inline">Estado:</span>
+              <span className="text-pink-500 font-semibold">{statusLabel}</span>
+            </div>
           </div>
 
-          {/* GENEROS (Estilo plano, no burbuja) */}
-          <div className="mt-2">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 block">
-              Generos:
+          {/* RATING */}
+          <div className="flex items-center gap-3">
+            <div className="flex text-yellow-400 gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={16}
+                  fill={i < Math.round(rating / 2) ? "currentColor" : "none"}
+                />
+              ))}
+            </div>
+            <span className="text-sm font-bold text-white">
+              {rating > 0 ? rating.toFixed(1) : "0.0"}
+              <span className="text-gray-500 font-normal ml-2">
+                Calificación
+              </span>
             </span>
-            <div className="flex flex-wrap gap-2">
+          </div>
+
+          {/* GENEROS Y CATEGORÍAS - DISEÑO RENOVADO */}
+          <div className="space-y-3 pt-3">
+            <div className="flex items-center gap-2 text-gray-500">
+              <Tag size={14} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">
+                Géneros y Categorías
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-[#0e1629] border border-white/5">
               {manga.tags?.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => handleTagClick(tag)}
-                  className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-gray-400 hover:text-white transition-colors"
+                  className="px-3 py-1 rounded-md bg-white/5 hover:bg-pink-600/20 border border-white/10 text-[10px] uppercase font-bold text-gray-300 hover:text-white hover:border-pink-500/50 transition-all duration-300"
                 >
-                  <Tag size={10} /> {tag}
+                  {tag}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* DESCRIPCION */}
-          <div className="mt-2">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block">
-              Descripción
-            </span>
-            <p className="text-gray-400 text-sm md:text-base leading-relaxed font-light">
-              {manga.description}
-            </p>
+          {/* CONTENEDOR DE TABS - Añadimos margen superior para despegarlo de los géneros */}
+          <div className="pt-2">
+            <MangaDetailsContainer manga={manga} />
           </div>
 
-          {/* BOTONES */}
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 px-6 py-3 rounded-xl text-white transition-all w-full md:w-auto"
-            >
-              <List size={18} />{" "}
-              <span className="hidden md:inline font-semibold">Capítulos</span>
-              <span className="md:hidden font-semibold">Caps</span>
-            </button>
-            <button
-              onClick={handleReadNow}
-              disabled={loading || !firstChapter}
-              className="flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white px-8 py-3 rounded-xl font-bold transition-all w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                "Loading..."
-              ) : !firstChapter ? (
-                "Sin capítulos"
-              ) : (
-                <>
-                  <BookOpen size={18} /> Leer
-                </>
-              )}
-            </button>
+          {/* CONTENEDOR DE ACCIONES */}
+          <div className="flex flex-col gap-3 mt-6">
+            {/* Ajuste: justify-center para centrar los botones */}
+            <div className="flex justify-center gap-3 w-full">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                disabled={chapters.length === 0}
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all w-full md:w-auto ${
+                  chapters.length === 0
+                    ? "bg-white/5 text-gray-600 cursor-not-allowed"
+                    : "bg-white/5 hover:bg-white/10 text-white"
+                }`}
+              >
+                <List size={18} /> Capítulos
+              </button>
+
+              <button
+                onClick={handleReadNow}
+                disabled={loading || !firstChapter}
+                className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold transition-all w-full md:w-auto ${
+                  loading || !firstChapter
+                    ? "bg-gray-800 text-gray-500 cursor-not-allowed"
+                    : "bg-pink-600 hover:bg-pink-500 text-white"
+                }`}
+              >
+                <BookOpen size={18} /> Leer
+              </button>
+            </div>
+
+            {/* MENSAJE DE ERROR */}
+            {chapters.length === 0 && !loading && (
+              <div className="flex justify-center">
+                {" "}
+                {/* También centramos el mensaje de error */}
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-950/20 border border-red-900/50 text-red-400 text-sm">
+                  <X size={16} className="shrink-0" />
+                  <p>Aún no hay capítulos disponibles para este manga.</p>
+                </div>
+              </div>
+            )}
           </div>
-          {noChaptersAvailable && (
-            <p className="text-pink-400/80 text-[12px] font-medium animate-pulse">
-              No hay idiomas disponibles. Por favor, revisa el índice.
-            </p>
-          )}
         </div>
       </div>
 
