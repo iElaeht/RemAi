@@ -1,4 +1,10 @@
 // types/mangadex.ts
+export interface AniListCharacter {
+  id: number;
+  name: string;
+  role: string;
+  image: string;
+}
 
 export interface MangaResponse {
   id: string;
@@ -6,14 +12,14 @@ export interface MangaResponse {
   author: string;
   coverUrl: string;
   description: string;
-  descriptionUrl?: string;
   status: string;
   tags: string[];
   latestChapter?: string;
   rating: number;
   altTitles?: { [key: string]: string }[];
   arts?: string[]; 
-  
+  descriptionUrl?: string;
+  characters?: AniListCharacter[];
 }
 
 export type SortOption = 'latestUploadedChapter' | 'rating' | 'followedCount';

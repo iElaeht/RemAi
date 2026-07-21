@@ -2,7 +2,7 @@
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { cache } from 'react';
 import { MangaResponse } from "@/types/mangadex";
-import { getTranslatedDescription } from './translator';
+import { fetchAniListMedia } from './anilist';
 
 const MANGADEX_API_URL = "https://api.mangadex.org";
 const MANGADEX_COVERS_URL = "https://uploads.mangadex.org";
@@ -21,10 +21,7 @@ interface MangaDexManga {
     attributes?: { name?: string; fileName?: string };
   }>;
 }
-interface AniListResult {
-  desc: string;
-  url: string;
-}
+
 // Función auxiliar para obtener el rating real de MangaDex
 
 async function fetchMangaRating(mangaId: string): Promise<number> {
@@ -53,29 +50,28 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
     const json = await res.json();
     const attrs = json.data.attributes;
 
-    const title = attrs.title.en || Object.values(attrs.title)[0] as string;
+    // Buscamos de manera inteligente el mejor título para AniList
+    const title = 
+      attrs.title.es || 
+      attrs.title["es-la"] || 
+      attrs.title.en || 
+      Object.values(attrs.title)[0] as string;
     
-    // 1. Obtenemos el objeto de AniList (desc + url)
-    const aniData = await fetchAniListDescription(title);
+    // Obtenemos descripción, URL y personajes desde nuestro módulo independiente de AniList
+    const aniData = await fetchAniListMedia(title);
     
-    let finalDesc = "No hay descripción disponible.";
-    let finalUrl = undefined;
+    const finalDesc = aniData ? aniData.description : "No hay descripción disponible.";
+    const finalUrl = aniData ? aniData.url : undefined;
+    const finalCharacters = aniData ? aniData.characters : [];
 
-    if (aniData) {
-      const cacheId = `anilist-${title.toLowerCase().replace(/\s+/g, '-')}`; 
-      
-      console.log("Consultando caché o traduciendo...");
-      finalDesc = await getTranslatedDescription(cacheId, aniData.desc);
-      finalUrl = aniData.url; 
-    }
-
-    // 2. Mapeamos los datos base
+    // Mapeamos los datos base
     const mangaData = mapMangaData(json.data, await fetchMangaRating(id), finalDesc);
     
-    // 3. RETORNO CON BLINDAJE: 
+    // Retorno con la descripción, la fuente y los personajes integrados
     return { 
       ...mangaData, 
-      descriptionUrl: finalUrl 
+      descriptionUrl: finalUrl,
+      characters: finalCharacters 
     };
   } catch (e) {
     console.error("Error en getMangaById:", e);
@@ -209,38 +205,4 @@ export async function getSimilarMangas(
     .slice(0, 10);
 
   return uniqueResults;
-}
-async function fetchAniListDescription(title: string): Promise<AniListResult | null> {
-  try {
-    const query = `
-      query ($search: String) { 
-        Media(search: $search, type: MANGA) { 
-          description(asHtml: false)
-          siteUrl
-        } 
-      }`;
-    
-    const res = await fetch("https://graphql.anilist.co", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, variables: { search: title } }),
-    });
-    
-    const json = await res.json();
-    const media = json?.data?.Media;
-    
-    if (!media || !media.description) return null;
-
-    // Blindaje: Limpieza de texto y retorno del objeto completo
-    return {
-      desc: media.description
-        .replace(/<[^>]+>/g, "")
-        .replace(/\n/g, " ")
-        .trim(),
-      url: media.siteUrl || "https://anilist.co"
-    };
-  } catch (e) {
-    console.error("Error al obtener datos de AniList:", e);
-    return null;
-  }
 }
