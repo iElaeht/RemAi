@@ -1,8 +1,11 @@
+// components/manga/MangaDetailsContainer.tsx
 "use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DescriptionTab from "./tabs/DescriptionTab";
+import CharactersTab from "./tabs/characters";
+import ArtTab from "./tabs/ArtTab";
 import { MangaResponse } from "@/types/mangadex";
 
 interface MangaDetailsContainerProps {
@@ -16,8 +19,8 @@ export default function MangaDetailsContainer({
 
   const tabs = [
     { id: "description", label: "Descripción" },
-    { id: "art", label: "Artes" },
     { id: "characters", label: "Personajes" },
+    { id: "art", label: "Artes" },
   ];
 
   return (
@@ -28,7 +31,7 @@ export default function MangaDetailsContainer({
           <div key={tab.id} className="flex items-center flex-1">
             <button
               onClick={() => setActiveTab(tab.id)}
-              className={`relative z-10 w-full py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-bold transition-all duration-300 text-center truncate rounded-xl ${
+              className={`cursor-pointer relative z-10 w-full py-2.5 px-2 sm:px-4 text-xs sm:text-sm font-bold transition-all duration-300 text-center truncate rounded-xl ${
                 activeTab === tab.id
                   ? "text-white"
                   : "text-gray-400 hover:text-white hover:bg-white/[0.06]"
@@ -68,15 +71,11 @@ export default function MangaDetailsContainer({
               sourceUrl={manga.descriptionUrl}
             />
           )}
-          {activeTab === "art" && (
-            <div className="p-8 sm:p-12 text-center text-gray-500 text-xs sm:text-sm bg-[#121929] rounded-2xl border border-white/5">
-              Galería en construcción...
-            </div>
-          )}
           {activeTab === "characters" && (
-            <div className="p-8 sm:p-12 text-center text-gray-500 text-xs sm:text-sm bg-[#121929] rounded-2xl border border-white/5">
-              Personajes próximamente...
-            </div>
+            <CharactersTab characters={manga.characters} />
+          )}
+          {activeTab === "art" && (
+            <ArtTab covers={manga.covers} />
           )}
         </motion.div>
       </AnimatePresence>

@@ -94,7 +94,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
               <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-[#0b101d] border border-white/5">
                 {(showAllTitles
                   ? manga.altTitles
-                  : manga.altTitles.slice(0, 6)
+                  : manga.altTitles.slice(0, 4)
                 ).map((title, index) => {
                   const fullTitle = Object.values(title)[0];
                   return (
@@ -108,7 +108,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
                   );
                 })}
 
-                {manga.altTitles.length > 6 && (
+                {manga.altTitles.length > 4 && (
                   <button
                     onClick={() => setShowAllTitles(!showAllTitles)}
                     className="flex items-center gap-1.5 text-[10px] text-pink-500 font-bold px-2 py-1 hover:text-pink-400 transition-colors mt-1"
@@ -119,7 +119,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
                       </>
                     ) : (
                       <>
-                        <List size={10} /> Mostrar {manga.altTitles.length - 6}{" "}
+                        <List size={10} /> Mostrar {manga.altTitles.length - 4}{" "}
                         más
                       </>
                     )}
@@ -186,7 +186,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
                 <button
                   key={tag}
                   onClick={() => handleTagClick(tag)}
-                  className="px-3 py-1 rounded-md bg-white/5 hover:bg-pink-600/20 border border-white/10 text-[10px] uppercase font-bold text-gray-300 hover:text-white hover:border-pink-500/50 transition-all duration-300"
+                  className="cursor-pointer px-3 py-1 rounded-md bg-white/5 hover:bg-pink-600/20 border border-white/10 text-[10px] uppercase font-bold text-gray-300 hover:text-white hover:border-pink-500/50 transition-all duration-300"
                 >
                   {tag}
                 </button>

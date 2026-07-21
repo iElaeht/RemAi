@@ -1,7 +1,7 @@
 // lib/mangadex.ts
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { cache } from 'react';
-import { MangaResponse } from "@/types/mangadex";
+import { MangaResponse, MangaCover, MangaDexCoverItem, MangaDexCoverResponse } from "@/types/mangadex";
 import { fetchAniListMedia } from './anilist';
 
 const MANGADEX_API_URL = "https://api.mangadex.org";
@@ -22,24 +22,50 @@ interface MangaDexManga {
   }>;
 }
 
-// Función auxiliar para obtener el rating real de MangaDex
-
 async function fetchMangaRating(mangaId: string): Promise<number> {
   try {
-    // Usamos el endpoint correcto según tu captura
     const res = await fetch(
       `https://api.mangadex.org/statistics/manga/${mangaId}`,
     );
     if (!res.ok) return 0;
 
     const json = await res.json();
-
-    // Acceso corregido: eliminamos el ".md" que no existe
     const rating = json.statistics?.[mangaId]?.rating?.average;
+
     return typeof rating === "number" ? rating : 0;
   } catch (e) {
     console.error("Error al obtener rating:", e);
     return 0;
+  }
+}
+
+export async function fetchMangaCovers(mangaId: string): Promise<MangaCover[]> {
+  try {
+    const res = await fetch(
+      `${MANGADEX_API_URL}/cover?manga[]=${mangaId}&limit=100&order[volume]=asc`
+    );
+    if (!res.ok) return [];
+
+    const data: MangaDexCoverResponse = await res.json();
+    if (!data.result || !data.data) return [];
+
+    return data.data.map((cover: MangaDexCoverItem) => {
+      const fileName = cover.attributes.fileName;
+      const volume = cover.attributes.volume;
+      const locale = cover.attributes.locale;
+      const imageUrl = `${MANGADEX_COVERS_URL}/covers/${mangaId}/${fileName}`;
+
+      return {
+        id: cover.id,
+        volume: volume || "Extra",
+        fileName,
+        imageUrl,
+        locale,
+      };
+    });
+  } catch (error) {
+    console.error("Error al obtener portadas de MangaDex:", error);
+    return [];
   }
 }
 
@@ -50,28 +76,24 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
     const json = await res.json();
     const attrs = json.data.attributes;
 
-    // Buscamos de manera inteligente el mejor título para AniList
     const title = 
       attrs.title.es || 
       attrs.title["es-la"] || 
       attrs.title.en || 
       Object.values(attrs.title)[0] as string;
     
-    // Obtenemos descripción, URL y personajes desde nuestro módulo independiente de AniList
     const aniData = await fetchAniListMedia(title);
-    
     const finalDesc = aniData ? aniData.description : "No hay descripción disponible.";
     const finalUrl = aniData ? aniData.url : undefined;
     const finalCharacters = aniData ? aniData.characters : [];
-
-    // Mapeamos los datos base
+    const covers = await fetchMangaCovers(id);
     const mangaData = mapMangaData(json.data, await fetchMangaRating(id), finalDesc);
     
-    // Retorno con la descripción, la fuente y los personajes integrados
     return { 
       ...mangaData, 
       descriptionUrl: finalUrl,
-      characters: finalCharacters 
+      characters: finalCharacters,
+      covers: covers 
     };
   } catch (e) {
     console.error("Error en getMangaById:", e);
@@ -99,7 +121,6 @@ function mapMangaData(
     hiatus: "En pausa",
     cancelled: "Cancelado",
   };
-
   const title =
     attrs.title.es ||
     attrs.title["es-la"] ||
@@ -132,7 +153,6 @@ function mapMangaData(
   };
 }
 
-// Función base privada
 async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
   query.append("contentRating[]", "safe");
   ["cover_art", "author"].forEach((val) => query.append("includes[]", val));
@@ -146,8 +166,6 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
     const json = await res.json();
     const data = (json.data || []) as MangaDexManga[];
 
-    // --- OPTIMIZACIÓN AQUÍ ---
-    // Recolectamos todos los IDs y hacemos UNA sola petición masiva
     const ids = data.map((m) => m.id);
     const statsRes = await fetch(
       `${MANGADEX_API_URL}/statistics/manga?${ids.map((id) => `manga[]=${id}`).join("&")}`,
@@ -197,7 +215,6 @@ export async function getSimilarMangas(
   );
 
   const flatResults = results.flat();
-
   const uniqueResults = Array.from(
     new Map(flatResults.map((m) => [m.id, m])).values(),
   )

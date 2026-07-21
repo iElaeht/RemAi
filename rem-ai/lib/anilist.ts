@@ -87,11 +87,11 @@ export async function fetchAniListMedia(title: string): Promise<AniListMediaResu
     console.log("Consultando caché o traduciendo descripción...");
     const finalDesc = await getTranslatedDescription(cacheId, cleanDesc);
 
-    // 3. Mapeo de personajes fuertemente tipado
+    // 3. Mapeo de personajes con el detalle de rol estilo AniList
     const characters: AniListCharacter[] = (media.characters?.edges || []).map((edge: AniListCharacterEdge) => ({
       id: edge.node.id,
       name: edge.node.name.full,
-      role: edge.role === "MAIN" ? "Principal" : "Secundario",
+      role: edge.role === "MAIN" ? "Main (Principal)" : "Supporting (Secundario)",
       image: edge.node.image?.large || "/placeholder.jpg",
     }));
 
