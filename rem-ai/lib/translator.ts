@@ -6,9 +6,7 @@ const translator = new deepl.Translator(process.env.DEEPL_API_KEY!);
 
 export async function getTranslatedDescription(mangaId: string, originalText: string): Promise<string> {
   if (!originalText) return "";
-
-  console.log("¡INSERTANDO EN SUPABASE!");
-  console.trace();
+  
   // 1. Intentar buscar en Supabase usando el cliente público (SELECT)
   const { data } = await supabasePublic
     .from('manga_translations')

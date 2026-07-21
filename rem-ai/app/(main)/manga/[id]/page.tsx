@@ -13,6 +13,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   
   return {
     title: manga ? `${manga.title} | MangasRem` : "Manga | MangasRem",
+    robots: {
+      index: true,
+      follow: true,
+      nocache: false, 
+    },
   };
 }
 export default async function MangaPage({

@@ -1,9 +1,7 @@
-// rem-ai/components/library/MangaGrid.tsx
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
 
 interface Manga {
   id: string;
@@ -24,10 +22,6 @@ const truncate = (text: string, limit: number) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
 export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
-  const searchParams = useSearchParams(); // 2. Obtener los parámetros actuales
-  const paramsString = searchParams.toString(); // Convertirlos a string
-  const query = paramsString ? `?${paramsString}` : ""; // Preparar el string de query
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-16">
       {isLoading ? (
@@ -39,8 +33,8 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
           <div key={manga.id} className="group relative flex flex-col gap-3 select-none">
             
             <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#111827] border border-white/5 transition-all duration-300 group-hover:border-pink-500/50 shadow-lg">
-              {/* 3. Añadir la query al link de la imagen */}
-              <Link href={`/manga/${manga.id}${query}`}>
+              {/* Enlace limpio sin query params y con prefetch={false} por seguridad */}
+              <Link href={`/manga/${manga.id}`} prefetch={false}>
                 <Image 
                   src={manga.cover} 
                   alt={manga.title} 
@@ -52,8 +46,7 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
             </div>
 
             <div className="flex flex-col px-1 gap-1">
-              {/* 4. Añadir la query al link del título */}
-              <Link href={`/manga/${manga.id}${query}`}>
+              <Link href={`/manga/${manga.id}`} prefetch={false}>
                 <h3 className="text-[13px] font-bold text-white hover:text-pink-500 transition-colors" title={manga.title}>
                   {truncate(manga.title, 20)}
                 </h3>
@@ -70,8 +63,8 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
               <div className="flex items-center gap-1 mt-1 text-[10px] text-neutral-400 selection-none">
                 <Bookmark size={10} />
                 <span className="truncate ">
-                  {manga.genres?.slice(0, 3).join(' • ') || 'Sin géneros'}
-                  {manga.genres?.length > 3 && "..."}
+                  {manga.genres?.slice(0, 4).join(' • ') || 'Sin géneros'}
+                  {manga.genres?.length > 4 && "..."}
                 </span>
               </div>
             </div>
