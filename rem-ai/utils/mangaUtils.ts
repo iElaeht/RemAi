@@ -9,20 +9,42 @@ export interface VolumeGroup {
   count: number;
 }
 
-/**
- * Blindado y tipado estrictamente.
- * Nota: Asumimos que Chapter puede tener 'volume' en el root o dentro de 'attributes'.
- */
+// Jerarquía de respaldo de idiomas por defecto
+const FALLBACK_LANGUAGES = ["es-la", "es", "en", "pt-br", "pt", "fr", "it", "uk", "ja"];
+
 export function groupChaptersByVolume(
   chapters: Chapter[],
   lang: string,
 ): VolumeGroup[] {
-  if (!Array.isArray(chapters)) return [];
+  if (!Array.isArray(chapters) || chapters.length === 0) return [];
 
   const langNormalized = (lang || "es").toLowerCase().trim();
-  const filtered = chapters.filter(
+
+  // 1. Intentamos filtrar primero con el idioma solicitado por el usuario
+  let filtered = chapters.filter(
     (ch) => ch?.language?.toLowerCase().trim() === langNormalized,
   );
+
+  // 2. Si no hay capítulos en ese idioma, aplicamos la jerarquía de respaldo automáticamente
+  if (filtered.length === 0) {
+    // Buscamos qué idiomas sí están disponibles en la lista de capítulos
+    const availableLangs = Array.from(new Set(chapters.map((ch) => ch?.language?.toLowerCase().trim())));
+
+    // Encontramos el primer idioma disponible según nuestra lista de prioridad
+    let selectedFallback = FALLBACK_LANGUAGES.find((l) => availableLangs.includes(l));
+
+    // Si ninguno de los preferidos está, agarramos el primero que exista en el array
+    if (!selectedFallback && availableLangs.length > 0) {
+      selectedFallback = availableLangs[0];
+    }
+
+    if (selectedFallback) {
+      filtered = chapters.filter(
+        (ch) => ch?.language?.toLowerCase().trim() === selectedFallback,
+      );
+    }
+  }
+
   const grouped = filtered.reduce(
     (acc: Record<string, Chapter[]>, ch: Chapter) => {
       const volumeValue = ch.volume ?? ch.attributes?.volume;

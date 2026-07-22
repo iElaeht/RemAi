@@ -6,8 +6,14 @@ const isPublicRoute = createRouteMatcher([
   "/discover",
   "/sign-in",
   "/sign-up",
-  "/library",
-  "/library/(.*)",
+  "/mangas",
+  "/mangas/(.*)",
+  "/manhwas",
+  "/manhwas/(.*)",
+  // Nuevas rutas de detalles estructuradas
+  "/details/manga/(.*)",
+  "/details/manhwa/(.*)",
+  // Por compatibilidad temporal o si aún queda alguna referencia vieja:
   "/manga/(.*)",
   "/leer/(.*)",
   "/api/(.*)",

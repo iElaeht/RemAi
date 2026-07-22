@@ -1,4 +1,4 @@
-// rem-ai/app/(main)/manga/[id]/page.tsx
+// rem-ai/app/(main)/details/manga/[id]/page.tsx
 import { getMangaById, getSimilarMangas } from "@/lib/mangadex";
 import { notFound } from "next/navigation";
 import MangaView from "@/components/manga/MangaView";
@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     },
   };
 }
+
 export default async function MangaPage({
   params,
 }: {
@@ -31,20 +32,19 @@ export default async function MangaPage({
   const manga = await getMangaById(id);
   if (!manga) notFound();
 
-  // 2. Ejecutamos comentarios y búsqueda de similares en paralelo
+  // 2. Ejecutamos comentarios y búsqueda de similares en paralelo (Pasando "manga" de forma inteligente)
   const [commentsResponse, similarMangas] = await Promise.all([
     supabasePublic
       .from("comments")
       .select("*")
       .eq("manga_id", id)
       .order("created_at", { ascending: true }),
-    getSimilarMangas(id, manga.tags || []),
+    getSimilarMangas(id, manga.tags || [], "manga"), // <-- AQUÍ INDICAMOS EL CONTEXTO
   ]);
 
   const initialComments: Comment[] = commentsResponse.data || [];
   
-return (
-  
+  return (
     <main className="bg-[#0b1120] min-h-screen text-white p-4 md:p-6 lg:p-8">
       <div className="max-w-[1200px] mx-auto flex flex-col gap-12 animate-in fade-in duration-500">
         
@@ -54,7 +54,7 @@ return (
         {/* Sección Mangas Similares */}
         {similarMangas.length > 0 && (
           <section>
-            <SimilarMangas mangas={similarMangas} />
+            <SimilarMangas mangas={similarMangas} contentType="manga" />
           </section>
         )}
 

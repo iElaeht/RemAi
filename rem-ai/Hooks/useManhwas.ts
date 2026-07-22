@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { SortOption, StatusOption } from "@/types/mangadex";
 
-export interface Manga {
+export interface Manhwa {
   id: string;
   title: string;
   cover: string;
@@ -11,7 +11,7 @@ export interface Manga {
   rating: string;
 }
 
-interface RawMangaApiData {
+interface RawManhwaApiData {
   id?: string;
   title?: string;
   cover?: string;
@@ -20,8 +20,8 @@ interface RawMangaApiData {
   rating?: string;
 }
 
-export interface UseMangasReturn {
-  mangas: Manga[];
+export interface UseManhwasReturn {
+  manhwas: Manhwa[];
   isLoading: boolean;
   currentPage: number;
   totalPages: number;
@@ -30,7 +30,7 @@ export interface UseMangasReturn {
   setSearchQuery: (query: string) => void;
   selectedTags: string[];
   toggleTag: (tagId: string) => void;
-  fetchMangas: (
+  fetchManhwas: (
     page: number,
     search: string,
     tags: string[],
@@ -44,9 +44,9 @@ export interface UseMangasReturn {
   setStatus: (val: StatusOption) => void;
 }
 
-export function useMangas(): UseMangasReturn {
+export function useManhwas(): UseManhwasReturn {
   // --- 1. Estados Principales ---
-  const [mangas, setMangas] = useState<Manga[]>([]);
+  const [manhwas, setManhwas] = useState<Manhwa[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -57,8 +57,8 @@ export function useMangas(): UseMangasReturn {
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [status, setStatus] = useState<StatusOption>("all");
 
-  // --- 3. Función para Obtener Mangas ---
-  const fetchMangas = useCallback(
+  // --- 3. Función para Obtener Manhwas ---
+  const fetchManhwas = useCallback(
     async (
       page: number,
       search: string,
@@ -68,18 +68,19 @@ export function useMangas(): UseMangasReturn {
     ) => {
       setIsLoading(true);
       try {
-        const url = `/api/mangas?page=${page}&search=${encodeURIComponent(search)}&tags=${tags.join(",")}&sort=${currentSort}&status=${currentStatus}`;
+        // Apunta al endpoint de manhwas/manhuas que consume ko y zh
+        const url = `/api/manhwas?page=${page}&search=${encodeURIComponent(search)}&tags=${tags.join(",")}&sort=${currentSort}&status=${currentStatus}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || "Error al obtener mangas");
+        if (!res.ok) throw new Error(data.error || "Error al obtener manhwas");
 
         setTotalPages(data.totalPages || 1);
 
-        const formattedMangas: Manga[] = (
+        const formattedManhwas: Manhwa[] = (
           Array.isArray(data.results) ? data.results : []
         ).map((item: unknown) => {
-          const m = item as RawMangaApiData;
+          const m = item as RawManhwaApiData;
           return {
             id: String(m.id || ""),
             title: m.title || "Sin título",
@@ -90,11 +91,11 @@ export function useMangas(): UseMangasReturn {
           };
         });
 
-        setMangas(formattedMangas);
+        setManhwas(formattedManhwas);
         setCurrentPage(page);
       } catch (error) {
-        console.error("Error al obtener mangas:", error);
-        setMangas([]);
+        console.error("Error al obtener manhwas:", error);
+        setManhwas([]);
         setTotalPages(1);
       } finally {
         setIsLoading(false);
@@ -125,7 +126,7 @@ export function useMangas(): UseMangasReturn {
   };
 
   return {
-    mangas,
+    manhwas,
     isLoading,
     currentPage,
     totalPages,
@@ -134,7 +135,7 @@ export function useMangas(): UseMangasReturn {
     setSearchQuery,
     selectedTags,
     toggleTag,
-    fetchMangas,
+    fetchManhwas,
     resetFilters,
     sortBy,
     setSortBy,

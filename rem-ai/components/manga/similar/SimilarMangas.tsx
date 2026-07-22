@@ -1,7 +1,13 @@
+// components/manga/similar/SimilarMangas.tsx
 import MangaSimilarCard from "./MangaSimilarCard";
 import { MangaResponse } from "@/types/mangadex";
 
-export default function SimilarMangas({ mangas }: { mangas: MangaResponse[] }) {
+interface SimilarMangasProps {
+  mangas: MangaResponse[];
+  contentType?: string; // Recibe 'manga' o 'manhwa' desde la página de detalles
+}
+
+export default function SimilarMangas({ mangas, contentType = "manga" }: SimilarMangasProps) {
   if (!mangas || mangas.length === 0) return null;
 
   return (
@@ -17,7 +23,11 @@ export default function SimilarMangas({ mangas }: { mangas: MangaResponse[] }) {
       {/* Carrusel con máscara de desvanecimiento */}
       <div className="flex gap-4 overflow-x-auto pb-6 px-2 hide-scroll-auto">
         {mangas.map((manga) => (
-          <MangaSimilarCard key={manga.id} manga={manga} />
+          <MangaSimilarCard 
+            key={manga.id} 
+            manga={manga} 
+            currentType={contentType} // Inyectamos el contexto exacto a la tarjeta
+          />
         ))}
       </div>
     </section>

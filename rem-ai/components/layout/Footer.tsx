@@ -1,7 +1,8 @@
+// components/Footer.tsx
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { Coffee, MessageSquare } from 'lucide-react'; 
+import { Compass, BookOpen, Layers, MessageSquare, Coffee } from 'lucide-react'; 
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -27,9 +28,24 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start">
             <h4 className="font-bold text-white mb-6">Plataforma</h4>
             <ul className="space-y-4 text-sm text-neutral-400">
-              <li><Link href="/discover" className="hover:text-sky-400 transition">Explorar</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Top Mangas</Link></li>
-              <li><Link href="#" className="hover:text-sky-400 transition">Novedades</Link></li>
+              <li>
+                <Link href="/discover" className="flex items-center justify-center md:justify-start gap-2 hover:text-sky-400 transition group">
+                  <Compass className="w-4 h-4 text-sky-500 group-hover:rotate-45 transition-transform" />
+                  <span>Explorar</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/mangas" className="flex items-center justify-center md:justify-start gap-2 hover:text-sky-400 transition group">
+                  <BookOpen className="w-4 h-4 text-pink-500 group-hover:scale-110 transition-transform" />
+                  <span>Mangas</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/manhwas" className="flex items-center justify-center md:justify-start gap-2 hover:text-sky-400 transition group">
+                  <Layers className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" />
+                  <span>Manhwas</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -38,8 +54,8 @@ export default function Footer() {
             <h4 className="font-bold text-white mb-6">Servicios</h4>
             <ul className="space-y-4 text-sm text-neutral-400">
               <li>
-                <Link href="/feedback" className="flex items-center gap-2 hover:text-sky-400 transition group">
-                  <MessageSquare className="w-4 h-4" />
+                <Link href="/feedback" className="flex items-center justify-center md:justify-start gap-2 hover:text-sky-400 transition group">
+                  <MessageSquare className="w-4 h-4 text-sky-400" />
                   <span>Reportar / Sugerir</span>
                 </Link>
               </li>
@@ -47,9 +63,9 @@ export default function Footer() {
                 <Link 
                   href="https://ko-fi.com/elaehtdev" 
                   target="_blank" 
-                  className="flex items-center gap-2 hover:text-sky-400 transition group"
+                  className="flex items-center justify-center md:justify-start gap-2 hover:text-sky-400 transition group"
                 >
-                  <Coffee className="w-4 h-4 group-hover:animate-bounce" />
+                  <Coffee className="w-4 h-4 text-amber-500 group-hover:animate-bounce" />
                   <span>Ko-fi</span>
                 </Link>
               </li>

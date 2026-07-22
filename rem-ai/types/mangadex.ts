@@ -14,7 +14,6 @@ export interface MangaCover {
   locale?: string | null;
 }
 
-// Interfaces crudas para tipar la respuesta directa de la API de MangaDex
 export interface MangaDexCoverItem {
   id: string;
   attributes: {
@@ -44,6 +43,8 @@ export interface MangaResponse {
   descriptionUrl?: string;
   characters?: AniListCharacter[];
   covers?: MangaCover[];
+  type?: 'manga' | 'manhwa' | 'manhua'; // Añadido tipado estricto
+  contentType?: 'manga' | 'manhwa' | 'manhua'; // Añadido por compatibilidad
 }
 
 export type SortOption = 'latestUploadedChapter' | 'rating' | 'followedCount';

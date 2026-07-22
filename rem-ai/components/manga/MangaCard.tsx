@@ -1,3 +1,4 @@
+// components/manga/MangaCard.tsx
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,26 +16,26 @@ interface MangaCardProps {
 export default function MangaCard({ id, title, coverUrl, author, tags, rating }: MangaCardProps) {
   return (
     <Link 
-      href={`/manga/${id}`}
+      href={`/details/manga/${id}`}
       prefetch={false}
-      className="group block w-full space-y-3"
+      className="block w-full space-y-3 group cursor-pointer"
     >
-      {/* Contenedor Imagen: Diseño moderno con borde fino */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-neutral-900 ring-1 ring-white/10 transition-all duration-300 group-hover:ring-white/30">
+      {/* Contenedor Imagen: Estático, sin zoom ni efectos globales */}
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-neutral-900 ring-1 ring-white/10">
         <Image
           src={coverUrl}
           alt={title}
           fill
           sizes="(max-width: 768px) 50vw, 20vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="object-cover"
         />
-        {/* Degradado inferior para resaltar texto en caso de necesidad */}
+        {/* Degradado inferior sutil */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
       </div>
 
       {/* Detalles del Manga */}
       <div className="flex flex-col gap-1.5">
-        <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-neutral-300 transition-colors">
+        <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-blue-400 transition-colors">
           {title}
         </h3>
         

@@ -65,7 +65,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
   const handleTagClick = (tag: string) => {
     const tagId = getTagIdByName(tag);
     const slug = tagToSlug(tag);
-    if (tagId) router.push(`/library/${tagId}/${slug}`);
+    if (tagId) router.push(`/mangas/${tagId}/${slug}`);
   };
 
   return (

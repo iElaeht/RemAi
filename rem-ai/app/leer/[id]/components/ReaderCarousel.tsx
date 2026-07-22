@@ -1,7 +1,9 @@
+// rem-ai/app/leer/[id]/components/ReaderCarousel.tsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
+import { Grid, X } from "lucide-react";
 
 interface ReaderViewProps {
   pages: string[];
@@ -22,6 +24,7 @@ export default function ReaderView({
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPageModalOpen, setIsPageModalOpen] = useState(false);
 
   const handleScroll = () => {
     if (containerRef.current) {
@@ -29,6 +32,14 @@ export default function ReaderView({
       const totalScrollable = scrollWidth - clientWidth;
       setProgress(totalScrollable > 0 ? (scrollLeft / totalScrollable) * 100 : 0);
       setCurrentPage(Math.round(scrollLeft / clientWidth) + 1);
+    }
+  };
+
+  const jumpToPage = (index: number) => {
+    const targetPage = document.getElementById(`page-${index}`);
+    if (targetPage) {
+      targetPage.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      setIsPageModalOpen(false);
     }
   };
 
@@ -42,16 +53,26 @@ export default function ReaderView({
 
   return (
     <div className="relative w-full min-h-screen bg-[#0a0f1a] flex flex-col select-none">
-      {/* Header */}
-      <div className={`w-full h-16 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-sm gap-1.5 shrink-0 z-50 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-        <span className="text-gray-400 text-[10px] font-bold tracking-[0.2em] uppercase">
-          Página {currentPage} / {pages?.length || 0}
-        </span>
-        <div className="w-1/3 h-0.5 bg-gray-800 rounded-full overflow-hidden">
+      
+      {/* Header Interactivo del Carrusel */}
+      <div className={`w-full h-16 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-md gap-1.5 shrink-0 z-50 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+        
+        <button
+          onClick={() => setIsPageModalOpen(true)}
+          className="group flex items-center gap-1.5 px-3 py-1 rounded-full transition-all cursor-pointer"
+          title="Abrir selector rápido de páginas"
+        >
+          <span className="text-gray-300 group-hover:text-white text-[11px] font-bold tracking-[0.15em] uppercase transition-colors">
+            Página {currentPage} / {pages?.length || 0}
+          </span>
+        </button>
+
+        <div className="w-1/3 sm:w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
           <div className="h-full bg-blue-500 transition-all duration-100" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
+      {/* Contenedor Principal de Páginas */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
@@ -70,7 +91,6 @@ export default function ReaderView({
                   ? `fixed inset-0 z-[100] bg-[#0a0f1a] w-screen h-screen ${isTouch ? 'overflow-auto' : 'cursor-crosshair'}`
                   : "min-w-full h-full pt-10 pb-2 snap-center items-center cursor-default"
               }`}
-              // Restauramos la interacción de seguimiento para Desktop
               onMouseMove={(e) => !isTouch && isCurrentPageZoomed && handleInteraction(e.clientX, e.clientY, e.currentTarget)}
               onClick={(e) => {
                 if (isZoomed) { resetZoom(); return; }
@@ -84,7 +104,6 @@ export default function ReaderView({
                 } else if (relativeX >= zone * 2) {
                   idx === pages.length - 1 ? onNextChapter?.() : document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
                 } 
-                // Zoom dinámico solo en Desktop
                 else if (!isTouch) {
                   setIsZoomed(true);
                 }
@@ -110,6 +129,58 @@ export default function ReaderView({
           );
         })}
       </div>
+
+      {/* Modal / Selector Rápido de Páginas */}
+      {isPageModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="relative w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-[#0e1422] border border-blue-500/30 shadow-2xl p-6">
+            
+            {/* Cabecera del Modal */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <Grid size={18} className="text-blue-400" />
+                <h3 className="text-sm font-bold text-white tracking-wide">Seleccionar Página</h3>
+              </div>
+              <button 
+                onClick={() => setIsPageModalOpen(false)}
+                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
+                aria-label="Cerrar modal"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Cuadrícula de Páginas */}
+            <div className="flex-1 overflow-y-auto py-4 grid grid-cols-5 sm:grid-cols-6 gap-2.5 pr-1 custom-scrollbar">
+              {pages.map((_, idx) => {
+                const isSelected = currentPage === idx + 1;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => jumpToPage(idx)}
+                    className={`h-12 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center border ${
+                      isSelected
+                        ? "bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40 scale-105"
+                        : "bg-white/[0.03] border-white/5 text-neutral-300 hover:bg-white/10 hover:border-white/10 hover:text-white"
+                    }`}
+                  >
+                    <span>{idx + 1}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Pie del Modal */}
+            <div className="pt-3 border-t border-white/5 text-center">
+              <span className="text-[11px] text-neutral-400">
+                Página actual: <strong className="text-white">{currentPage}</strong> de {pages.length}
+              </span>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

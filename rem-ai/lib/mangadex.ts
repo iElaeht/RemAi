@@ -193,25 +193,41 @@ export async function getMainManga(): Promise<MangaResponse[]> {
 
 export async function getFilterManga(
   genreTag: string,
+  originalLanguages: string[] = ["ja"] // Por defecto japonés (manga), pero configurable
 ): Promise<MangaResponse[]> {
   const query = new URLSearchParams();
   query.append("limit", "10");
   query.append("includedTags[]", genreTag);
   query.append("availableTranslatedLanguage[]", "es");
   query.append("order[rating]", "desc");
+
+  // Aplicar de forma limpia los idiomas de origen permitidos
+  originalLanguages.forEach((lang) => {
+    query.append("originalLanguage[]", lang);
+  });
+
   return fetchMangas(query);
 }
 export async function getSimilarMangas(
   mangaId: string,
   tags: string[],
+  contentType: "manga" | "manhwa" | "manhua" = "manga" // Recibimos el contexto actual
 ): Promise<MangaResponse[]> {
   const searchTags = tags
     .map((t) => TAG_DICTIONARY[t])
     .filter((id) => id !== undefined)
     .slice(0, 2);
 
+  // Definimos los idiomas permitidos según el tipo de contenido en el que estamos navegando
+  let allowedLanguages = ["ja"]; // Manga por defecto
+  if (contentType === "manhwa") {
+    allowedLanguages = ["ko", "zh"]; // Coreano y Chino para manhwa/manhua
+  } else if (contentType === "manhua") {
+    allowedLanguages = ["zh", "ko"];
+  }
+
   const results = await Promise.all(
-    searchTags.map((tagId) => getFilterManga(tagId)),
+    searchTags.map((tagId) => getFilterManga(tagId, allowedLanguages)),
   );
 
   const flatResults = results.flat();

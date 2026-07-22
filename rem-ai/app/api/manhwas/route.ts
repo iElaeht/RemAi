@@ -1,11 +1,11 @@
-// api/mangas/route.ts
+// api/manhwas/route.ts
 import { NextResponse } from "next/server";
 
 // Forzamos que la ruta sea dinámica para evitar problemas con caché estática en Vercel
 export const dynamic = "force-dynamic";
 
 // Interfaces para tipar la respuesta de la API de MangaDex
-interface MangaAttributes {
+interface ManhwaAttributes {
   title: Record<string, string>;
   contentRating: string;
   status: string; // "ongoing", "completed", etc.
@@ -13,19 +13,19 @@ interface MangaAttributes {
   tags: { attributes: { name: { en: string } } }[];
 }
 
-interface MangaRelationship {
+interface ManhwaRelationship {
   type: string;
   attributes?: { fileName?: string; name?: string };
 }
 
-interface MangaData {
+interface ManhwaData {
   id: string;
-  attributes: MangaAttributes;
-  relationships: MangaRelationship[];
+  attributes: ManhwaAttributes;
+  relationships: ManhwaRelationship[];
 }
 
 export async function GET(request: Request) {
-  // 1. Capturamos los parámetros de búsqueda de la URL (página, texto, tags, orden, estado)
+  // 1. Capturamos los parámetros de búsqueda de la URL
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const search = searchParams.get("search") || "";
@@ -47,8 +47,12 @@ export async function GET(request: Request) {
   query.append("includes[]", "author");
   query.append("includes[]", "cover_art");
   
-  // FILTRO CLAVE: Exclusivo para mangas de origen japonés ("ja")
-  query.append("originalLanguage[]", "ja");
+  // FILTRO CLAVE: Exclusivo para manhwas de origen coreano ("ko y zh")
+  query.append("originalLanguage[]", "ko");
+  query.append("originalLanguage[]", "zh");
+
+  // Opcional: También puedes asegurar que incluya la etiqueta de formato Webtoon si lo deseas
+  // query.append("includedTags[]", "02323315-5bb5-486c-9942-c1676704d31f"); // ID de Webtoon en MangaDex
 
   // Restricciones de contenido permitidas
   ["safe", "suggestive", "erotica", "pornographic"].forEach((r) =>
@@ -78,7 +82,7 @@ export async function GET(request: Request) {
     query.append("order[followedCount]", "desc");
   }
 
-  // Filtro por estado de publicación (ej. en emisión, finalizado)
+  // Filtro por estado de publicación
   if (status !== "all") {
     query.append("status[]", status);
   }
@@ -97,39 +101,38 @@ export async function GET(request: Request) {
       return NextResponse.json({ results: [] }, { status: res.status });
     const data = await res.json();
 
-    // Si no hay resultados, retornamos vacío
     if (!data.data || data.data.length === 0) {
       return NextResponse.json({ results: [], totalPages: 0 });
     }
 
     // 5. Recolectar IDs para pedir estadísticas de calificaciones en lote
-    const mangaIds = data.data.map((m: MangaData) => m.id);
+    const manhwaIds = data.data.map((m: ManhwaData) => m.id);
     const statsRes = await fetch(
-      `https://api.mangadex.org/statistics/manga?${mangaIds.map((id: string) => `manga[]=${id}`).join("&")}`,
+      `https://api.mangadex.org/statistics/manga?${manhwaIds.map((id: string) => `manga[]=${id}`).join("&")}`,
     );
     const statsData = await statsRes.json();
 
-    // 6. Mapear y formatear los resultados finales para enviarlos al cliente
-    const formattedResults = data.data.map((manga: MangaData) => {
-      const coverRel = manga.relationships.find((r) => r.type === "cover_art");
-      const authorRel = manga.relationships.find((r) => r.type === "author");
-      const stats = statsData.statistics?.[manga.id]?.rating?.average;
+    // 6. Mapear y formatear los resultados finales
+    const formattedResults = data.data.map((manhwa: ManhwaData) => {
+      const coverRel = manhwa.relationships.find((r) => r.type === "cover_art");
+      const authorRel = manhwa.relationships.find((r) => r.type === "author");
+      const stats = statsData.statistics?.[manhwa.id]?.rating?.average;
 
       const fileName = coverRel?.attributes?.fileName;
 
       return {
-        id: manga.id,
+        id: manhwa.id,
         title:
-          manga.attributes.title.en ||
-          Object.values(manga.attributes.title)[0] ||
+          manhwa.attributes.title.en ||
+          Object.values(manhwa.attributes.title)[0] ||
           "Sin título",
         cover: fileName
-          ? `https://uploads.mangadex.org/covers/${manga.id}/${fileName}.256.jpg`
+          ? `https://uploads.mangadex.org/covers/${manhwa.id}/${fileName}.256.jpg`
           : "",
-        tags: manga.attributes.tags?.map((t) => t.attributes.name.en) || [],
+        tags: manhwa.attributes.tags?.map((t) => t.attributes.name.en) || [],
         author: authorRel?.attributes?.name || "Autor desconocido",
         rating: stats ? stats.toFixed(1) : "0.0",
-        status: manga.attributes.status,
+        status: manhwa.attributes.status,
       };
     });
 

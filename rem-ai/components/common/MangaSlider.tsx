@@ -1,5 +1,6 @@
+// components/manga/MangaSlider.tsx
 'use client';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MangaCard from '@/components/manga/MangaCard';
@@ -18,6 +19,8 @@ export default function MangaSlider({ title, mangas }: Props) {
     containScroll: 'trimSnaps' 
   });
 
+  const [isHovered, setIsHovered] = useState(false);
+
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
@@ -27,7 +30,11 @@ export default function MangaSlider({ title, mangas }: Props) {
   }, [mangas]);
 
   return (
-    <section className="py-8 relative group select-none">
+    <section 
+      className="py-8 relative select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Encabezado limpio */}
       <div className="flex items-center justify-between px-6 md:px-24 mb-6">
         <h2 className="text-xl md:text-2xl font-bold flex items-center gap-3">
@@ -36,10 +43,12 @@ export default function MangaSlider({ title, mangas }: Props) {
       </div>
 
       <div className="relative mx-6 md:mx-24">
-        {/* Botón Prev */}
+        {/* Botón Prev (Controlado por estado local para evitar efecto en cascada) */}
         <button 
           onClick={scrollPrev} 
-          className="absolute -left-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 hidden md:block hover:bg-neutral-800"
+          className={`absolute -left-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full transition-all z-10 hidden md:block hover:bg-neutral-800 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`}
         >
           <ChevronLeft size={24} />
         </button>
@@ -61,7 +70,9 @@ export default function MangaSlider({ title, mangas }: Props) {
         {/* Botón Next */}
         <button 
           onClick={scrollNext} 
-          className="absolute -right-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 hidden md:block hover:bg-neutral-800"
+          className={`absolute -right-12 top-1/3 p-2 bg-neutral-900/80 backdrop-blur-sm text-white rounded-full transition-all z-10 hidden md:block hover:bg-neutral-800 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`}
         >
           <ChevronRight size={24} />
         </button>

@@ -1,5 +1,6 @@
+// rem-ai/app/leer/[id]/components/ReaderHeader.tsx
 'use client';
-import { Menu, ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react'; 
+import { Menu, ChevronLeft, ChevronRight, BookOpen, FileText, Layers, Bookmark } from 'lucide-react'; 
 
 interface ReaderHeaderProps {
   mangaTitle: string;
@@ -7,7 +8,7 @@ interface ReaderHeaderProps {
   chapter: string;
   volume: string;
   lang: string;
-  mangaId: string; // Ya no lo usaremos para el botón, pero lo mantenemos por si lo necesitas luego
+  mangaId: string;
   onOpenSidebar: () => void;
   onPrevChapter: () => void;
   onNextChapter: () => void;
@@ -30,61 +31,110 @@ export default function ReaderHeader({
   const isValidVolume = volume && volume !== "null" && volume !== "Sin Volumen" && volume !== "" && volume !== "0";
 
   return (
-    <header className="w-full bg-[#0a0f1a] border-b border-white/5 px-4 py-4 select-none">
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+    <header className="w-full bg-[#0a0f1a]/95 backdrop-blur-md border-b border-white/5 px-3 py-2.5 sm:py-3 top-0 z-40 select-none shadow-lg">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
         
-        {/* IZQUIERDA: Info del Manga (Fija y sin botón) */}
-        <div className="flex flex-col truncate max-w-[140px] sm:max-w-[300px]">
-          <span className="text-xs sm:text-sm font-bold text-white truncate">{mangaTitle}</span>
-          <span className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">{author}</span>
-        </div>
-
-        {/* CENTRO: Controles de Capítulo */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-3">
-          <button onClick={onPrevChapter} className="p-1.5 text-gray-400 hover:text-white transition-colors">
-            <ChevronLeft size={24} />
-          </button>
-          
-          <div className="flex flex-col items-center px-2 sm:px-6">
-            <span className="text-[10px] sm:text-xs text-blue-400 font-bold tracking-[0.2em] uppercase whitespace-nowrap">
-              <span className="hidden sm:inline">Capítulo {chapter}</span>
-              <span className="sm:hidden">Cap {chapter}</span>
-            </span>
-
-            <span className="text-[9px] sm:text-[11px] text-gray-500 font-medium tracking-tight uppercase">
-              {isValidVolume ? (
-                <>
-                  <span className="hidden sm:inline">Volumen {volume}</span>
-                  <span className="sm:hidden">Vol {volume}</span>
-                  {' • '}
-                </>
-              ) : null}
-              {lang.toUpperCase()}
-            </span>
+        {/* FILA MOBILE 1 / WEB IZQUIERDA: Título y Autor */}
+        <div className="flex items-center justify-between sm:justify-start gap-2.5">
+          <div className="flex items-center gap-2.5 truncate">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-pink-500/10 border border-pink-500/25 flex items-center justify-center text-pink-400 shrink-0">
+              <BookOpen size={16} />
+            </div>
+            <div className="flex flex-col truncate max-w-[220px] sm:max-w-[260px] lg:max-w-[340px]">
+              <span className="text-xs sm:text-sm font-bold text-white truncate" title={mangaTitle}>
+                {mangaTitle || "Cargando título..."}
+              </span>
+              <span className="text-[10px] sm:text-xs text-gray-400 truncate tracking-wide">
+                {author || "Autor desconocido"}
+              </span>
+            </div>
           </div>
 
-          <button onClick={onNextChapter} className="p-1.5 text-gray-400 hover:text-white transition-colors">
-            <ChevronRight size={24} />
+          {/* Botones rápidos en Mobile (Derecha de la fila 1) */}
+          <div className="flex items-center gap-1 sm:hidden">
+            <button 
+              onClick={onToggleReadingMode}
+              className="p-2 text-gray-300 hover:text-pink-400 rounded-xl bg-white/5"
+              title={readingMode === 'carousel' ? "Modo vertical" : "Modo carrusel"}
+            >
+              {readingMode === 'carousel' ? <FileText size={18} /> : <BookOpen size={18} />}
+            </button>
+            <button 
+              onClick={onOpenSidebar} 
+              className="p-2 text-gray-300 hover:text-white rounded-xl bg-white/5"
+              title="Capítulos"
+            >
+              <Menu size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* FILA MOBILE 2 / WEB CENTRO: Controles de Capítulo */}
+        <div className="flex items-center justify-between sm:absolute sm:left-1/2 sm:-translate-x-1/2 gap-1 sm:gap-2 border-t border-white/5 sm:border-t-0 pt-2 sm:pt-0">
+          <button 
+            onClick={onPrevChapter} 
+            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            title="Capítulo anterior"
+          >
+            <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+          </button>
+          
+          <div className="flex items-center gap-2 sm:gap-3 px-3 py-1 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="flex items-center gap-1 text-blue-400">
+              <Bookmark size={12} className="hidden sm:inline" />
+              <span className="text-xs sm:text-xs font-bold tracking-wider uppercase">
+                Cap. {chapter}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+              {isValidVolume && (
+                <>
+                  <span className="flex items-center gap-0.5">
+                    <Layers size={10} className="hidden sm:inline text-gray-500" />
+                    Vol. {volume}
+                  </span>
+                  <span className="text-gray-600">•</span>
+                </>
+              )}
+              <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 font-semibold text-[9px] uppercase">
+                {lang}
+              </span>
+            </div>
+          </div>
+
+          <button 
+            onClick={onNextChapter} 
+            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            title="Capítulo siguiente"
+          >
+            <ChevronRight size={20} className="sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        {/* DERECHA: Botón Modo Lectura y Sidebar */}
-        <div className="flex items-center gap-1 sm:gap-2 z-10">
+        {/* WEB DERECHA: Botones de Modo Lectura y Sidebar (Oculto en mobile porque ya están arriba) */}
+        <div className="hidden sm:flex items-center gap-1.5 z-10">
           <button 
             onClick={onToggleReadingMode}
-            className="p-2 text-gray-400 hover:text-pink-500 transition-all rounded-full hover:bg-white/5"
+            className="p-2 text-gray-300 hover:text-pink-400 transition-all rounded-xl hover:bg-pink-500/10 border border-transparent hover:border-pink-500/20 flex items-center gap-1.5"
             title={readingMode === 'carousel' ? "Cambiar a lectura vertical" : "Cambiar a carrusel"}
           >
-            {readingMode === 'carousel' ? <FileText size={22} /> : <BookOpen size={22} />}
+            {readingMode === 'carousel' ? <FileText size={18} /> : <BookOpen size={18} />}
+            <span className="text-xs font-medium">
+              {readingMode === 'carousel' ? 'Vertical' : 'Carrusel'}
+            </span>
           </button>
 
           <button 
             onClick={onOpenSidebar} 
-            className="p-2 text-gray-400 hover:text-white transition-all rounded-full hover:bg-white/5"
+            className="p-2 text-gray-300 hover:text-white transition-all rounded-xl hover:bg-white/10 border border-white/5 flex items-center gap-1.5"
+            title="Abrir índice de capítulos"
           >
-            <Menu size={22} />
+            <Menu size={18} />
+            <span className="text-xs font-medium">Capítulos</span>
           </button>
         </div>
+
       </div>
     </header>
   );

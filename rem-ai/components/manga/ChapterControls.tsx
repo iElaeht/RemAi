@@ -1,12 +1,41 @@
 // components/manga/ChapterControls.tsx
 import { Chapter } from "@/service/mangaService";
 import { useState, useRef, useEffect } from "react";
+import { Globe, ChevronDown, Check, Layers } from "lucide-react";
 
 interface Props {
   lang: string;
   setLang: (lang: string) => void;
   chapters: Chapter[];
+  contentType?: string;
 }
+
+const themeConfig: Record<string, { accentText: string; accentBg: string; borderHover: string; borderActive: string }> = {
+  manga: {
+    accentText: "text-blue-400",
+    accentBg: "bg-blue-500/10",
+    borderHover: "hover:border-blue-500/40",
+    borderActive: "border-blue-500/20",
+  },
+  manhwa: {
+    accentText: "text-purple-400",
+    accentBg: "bg-purple-500/10",
+    borderHover: "hover:border-purple-500/40",
+    borderActive: "border-purple-500/20",
+  },
+  manhua: {
+    accentText: "text-emerald-400",
+    accentBg: "bg-emerald-500/10",
+    borderHover: "hover:border-emerald-500/40",
+    borderActive: "border-emerald-500/20",
+  },
+  default: {
+    accentText: "text-blue-400",
+    accentBg: "bg-blue-500/10",
+    borderHover: "hover:border-blue-500/40",
+    borderActive: "border-blue-500/20",
+  }
+};
 
 const langMap: Record<string, { name: string; flag: string }> = {
   es: { name: "Español", flag: "🇪🇸" },
@@ -23,17 +52,29 @@ const langMap: Record<string, { name: string; flag: string }> = {
   id: { name: "Bahasa Indonesia", flag: "🇮🇩" },
 };
 
-export default function ChapterControls({ lang, setLang, chapters }: Props) {
-  useEffect(() => {
-}, [chapters]);
+// Jerarquía de prioridad deseada para la selección automática
+const PREFERRED_LANGUAGE_ORDER = ["es-la", "es", "en", "pt-br", "pt", "fr", "it", "uk", "ja"];
+
+export default function ChapterControls({ lang, setLang, chapters, contentType = "manga" }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const theme = themeConfig[contentType?.toLowerCase()] || themeConfig.manga;
+
   const safeChapters = Array.isArray(chapters) ? chapters : [];
   const availableLangs = Array.from(new Set(safeChapters.map((ch) => ch.language)));
+
+  // Selección inteligente basada en la jerarquía de prioridad
   useEffect(() => {
-    if (availableLangs.length > 0 && !availableLangs.includes(lang)) {
-      setLang(availableLangs[0]);
+    if (availableLangs.length > 0) {
+      // Si el idioma actual no está disponible en los capítulos, o si está por defecto en 'en' u otro sin verificar
+      const isCurrentLangAvailable = availableLangs.includes(lang);
+      
+      if (!isCurrentLangAvailable) {
+        // Buscamos el primer idioma disponible que haga match con nuestra jerarquía de preferencia
+        const bestLang = PREFERRED_LANGUAGE_ORDER.find((l) => availableLangs.includes(l)) || availableLangs[0];
+        setLang(bestLang);
+      }
     }
   }, [availableLangs, lang, setLang]);
 
@@ -49,61 +90,75 @@ export default function ChapterControls({ lang, setLang, chapters }: Props) {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6 mb-8 w-full">
+    <div className="flex flex-col gap-5 w-full">
       
-      {/* 1. Selector de Idioma (Prioridad alta arriba) */}
-      <div className="flex flex-col gap-3" ref={dropdownRef}>
-        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-          Idioma de lectura
-        </h3>
-        <div className="relative">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="w-full bg-[#0a0f1a] border border-white/5 hover:border-pink-500/30 transition-all duration-300 rounded-lg p-4 text-sm font-semibold text-gray-200 flex justify-between items-center group"
-          >
-            <span className="flex items-center gap-3">
-              <span className="text-lg">{langMap[lang]?.flag || "🌐"}</span>
-              {langMap[lang]?.name || lang.toUpperCase()}
-            </span>
-            <span className={`transition-transform duration-300 text-[10px] text-gray-500 group-hover:text-pink-500 ${isOpen ? "rotate-180" : ""}`}>
-              ▼
-            </span>
-          </button>
+      <div className="flex flex-col gap-5 pb-6 border-b border-white/5">
+        {/* 1. Selector de Idioma */}
+        <div className="flex flex-col gap-2.5" ref={dropdownRef}>
+          <div className="flex items-center gap-2">
+            <Globe size={13} className={theme.accentText} />
+            <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.15em]">
+              Idioma de lectura
+            </h3>
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={`w-full bg-[#090d16] border border-white/5 ${theme.borderHover} transition-all duration-300 rounded-xl px-4 py-3 text-sm font-semibold text-neutral-200 flex justify-between items-center group cursor-pointer shadow-inner`}
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-base">{langMap[lang]?.flag || "🌐"}</span>
+                <span className="group-hover:text-white transition-colors">{langMap[lang]?.name || lang.toUpperCase()}</span>
+              </span>
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform duration-300 text-neutral-500 group-hover:${theme.accentText} ${isOpen ? `rotate-180 ${theme.accentText}` : ""}`} 
+              />
+            </button>
 
-          {/* Menú Desplegable de Idiomas */}
-          {isOpen && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-[#0f1420] border border-white/10 rounded-lg shadow-2xl z-50 py-1 overflow-hidden max-h-60 overflow-y-auto">
-              {availableLangs.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => {
-                    setLang(l);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${
-                    lang === l ? "text-pink-500 bg-white/5" : "text-gray-300 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <span className="text-lg">{langMap[l]?.flag || "🌐"}</span>
-                  {langMap[l]?.name || l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          )}
+            {/* Menú Desplegable de Idiomas */}
+            {isOpen && (
+              <div className="absolute top-full left-0 w-full mt-2 bg-[#0e1422] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+                {availableLangs.map((l) => {
+                  const isSelected = lang === l;
+                  return (
+                    <button
+                      key={l}
+                      onClick={() => {
+                        setLang(l);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between group cursor-pointer ${
+                        isSelected ? `${theme.accentText} ${theme.accentBg} font-bold` : "text-neutral-300 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="text-base">{langMap[l]?.flag || "🌐"}</span>
+                        <span>{langMap[l]?.name || l.toUpperCase()}</span>
+                      </span>
+                      {isSelected && <Check size={14} className={theme.accentText} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Contador de Capítulos */}
+        <div className="flex justify-between items-center px-3 py-2.5 bg-white/[0.02] border border-white/5 rounded-xl">
+          <div className="flex items-center gap-2">
+            <Layers size={13} className={theme.accentText} />
+            <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-[0.15em]">
+              Capítulos disponibles
+            </h3>
+          </div>
+          <span className={`text-xs font-bold ${theme.accentText} ${theme.accentBg} px-2.5 py-1 rounded-lg border ${theme.borderActive} tracking-wider`}>
+            {count}
+          </span>
         </div>
       </div>
 
-      {/* 2. Contador de Capítulos (Posicionado debajo del idioma) */}
-      <div className="flex justify-between items-center py-2 border-y border-white/5">
-        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-          Capítulos encontrados
-        </h3>
-        <span className="text-[11px] font-bold text-pink-500 bg-pink-500/10 px-2.5 py-1 rounded uppercase tracking-wider">
-          {count}
-        </span>
-      </div>
-
-      {/* 3. Volúmenes (Se renderizan inmediatamente después en el componente Sidebar) */}
     </div>
   );
 }
