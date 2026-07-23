@@ -22,56 +22,53 @@ const truncate = (text: string, limit: number) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
 export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
-  const basePath = '/details/manga'; // Manteniendo la ruta correcta de detalles
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 sm:gap-4 mb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-16">
       {isLoading ? (
-        [...Array(24)].map((_, i) => (
-          <div key={i} className="aspect-[3/4] bg-[#0e1422] rounded-xl animate-pulse" />
+        [...Array(12)].map((_, i) => (
+          <div key={i} className="aspect-[2/3] bg-[#111827] rounded-xl animate-pulse" />
         ))
       ) : (
         mangas.map((manga) => (
-          <Link 
-            key={manga.id} 
-            href={`${basePath}/${manga.id}`}
-            prefetch={false}
-            className="group relative flex flex-col gap-1.5 p-2 rounded-xl bg-[#0e1422] border border-white/5 hover:border-pink-500/40 hover:bg-[#131b2e] transition-all duration-300 shadow-lg select-none"
-          >
-            {/* Contenedor de Imagen */}
-            <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900 shadow-inner">
-              <Image 
-                src={manga.cover || "/images/NoImage/placeholder-manga.jpg"} 
-                alt={manga.title} 
-                fill 
-                sizes="(max-width: 768px) 50vw, 12vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
+          <div key={manga.id} className="group relative flex flex-col gap-3 select-none">
+            
+            <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#111827] border border-white/5 transition-all duration-300 group-hover:border-pink-500/50 shadow-lg">
+              {/* Enlace limpio sin query params y con prefetch={false} por seguridad */}
+              <Link href={`/manga/${manga.id}`} prefetch={false}>
+                <Image 
+                  src={manga.cover} 
+                  alt={manga.title} 
+                  fill 
+                  sizes="(max-width: 768px) 50vw, 16vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                />
+              </Link>
             </div>
 
-            {/* Detalles del Manga */}
-            <div className="flex flex-col px-0.5 gap-1">
-              <h3 className="text-xs font-bold text-gray-200 group-hover:text-pink-400 transition-colors line-clamp-1" title={manga.title}>
-                {truncate(manga.title, 20)}
-              </h3>
+            <div className="flex flex-col px-1 gap-1">
+              <Link href={`/manga/${manga.id}`} prefetch={false}>
+                <h3 className="text-[13px] font-bold text-white hover:text-pink-500 transition-colors" title={manga.title}>
+                  {truncate(manga.title, 20)}
+                </h3>
+              </Link>
               
-              <div className="flex items-center justify-between text-[10px] text-neutral-400 group-hover:text-gray-300 transition-colors">
-                <span className="truncate max-w-[65px]">{truncate(manga.author || 'Desconocido', 10)}</span>
-                <span className="flex items-center gap-0.5 text-yellow-500/90 font-medium">
-                  <Star size={9} fill="currentColor" /> {manga.rating || '0.0'}
+              <div className="flex items-center gap-2 text-[10px] text-neutral-500 uppercase tracking-widest">
+                <span className="truncate max-w-[80px]">{truncate(manga.author || 'Desconocido', 12)}</span>
+                <span className="flex items-center gap-0.5 text-yellow-500">
+                  <Star size={10} fill="currentColor" /> {manga.rating || '0.0'}
                 </span>
               </div>
 
-              {/* Tags con Bookmark */}
-              <div className="flex items-center gap-1 text-[9px] text-neutral-500 group-hover:text-neutral-400 transition-colors">
-                <Bookmark size={11} className="text-neutral-600 group-hover:text-pink-400 transition-colors shrink-0" />
-                <span className="truncate">
-                  {manga.genres?.slice(0, 2).join(' • ') || 'Sin géneros'}
+              {/* TAGS CON BOOKMARK */}
+              <div className="flex items-center gap-1 mt-1 text-[10px] text-neutral-400 selection-none">
+                <Bookmark size={10} />
+                <span className="truncate ">
+                  {manga.genres?.slice(0, 4).join(' • ') || 'Sin géneros'}
+                  {manga.genres?.length > 4 && "..."}
                 </span>
               </div>
             </div>
-          </Link>
+          </div>
         ))
       )}
     </div>
