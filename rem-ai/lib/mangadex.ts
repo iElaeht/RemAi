@@ -145,7 +145,7 @@ function mapMangaData(
     altTitles: attrs.altTitles || [],
     description: customDesc || cleanDescription(rawDesc),
     coverUrl: coverFile
-      ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}.512.jpg`
+      ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}`
       : "/placeholder.jpg",
     status: statusMap[attrs.status] || "En curso",
     tags: attrs.tags.map((t) => t.attributes.name.en),
