@@ -1,4 +1,3 @@
-// components/manga/tabs/ArtTab.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -14,11 +13,11 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
   const [selectedLocale, setSelectedLocale] = useState<string | null>("ja");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCover, setSelectedCover] = useState<MangaCover | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const modalContentRef = useRef<HTMLDivElement>(null); // Referencia solo al contenido interno del modal
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar el menú desplegable y el modal al hacer clic fuera del contenido central
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -32,9 +31,12 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Función de descarga limpia manejando blobs por CORS
+  const handleImageError = (id: string) => {
+    setImageErrors(prev => ({ ...prev, [id]: true }));
+  };
+
   const handleDownload = async (cover: MangaCover, e: React.MouseEvent) => {
-    e.stopPropagation(); // Evita que se propague el evento
+    e.stopPropagation();
     try {
       const response = await fetch(cover.imageUrl);
       const blob = await response.blob();
@@ -86,7 +88,6 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
 
   return (
     <div className="w-full">
-      {/* Cabecera y Botón Desplegable */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 px-1">
         <div>
           <h3 className="text-white font-bold text-sm sm:text-base">Portadas y Volúmenes</h3>
@@ -95,7 +96,6 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
           </span>
         </div>
 
-        {/* Dropdown Estilizado */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -164,49 +164,54 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
         </div>
       </div>
 
-      {/* Cuadrícula de portadas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-        {filteredCovers.map((cover) => (
-          <div
-            key={cover.id}
-            onClick={() => setSelectedCover(cover)}
-            className="flex flex-col bg-[#121929] rounded-xl border border-white/5 overflow-hidden group hover:border-white/15 transition-all duration-300 shadow-md cursor-pointer"
-          >
-            <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
-              <Image
-                src={cover.imageUrl}
-                alt={`Volumen ${cover.volume}`}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                className="object-cover transition-transform duration-500"
-              />
-            </div>
+        {filteredCovers.map((cover) => {
+          const hasError = imageErrors[cover.id];
+          return (
+            <div
+              key={cover.id}
+              onClick={() => setSelectedCover(cover)}
+              className="flex flex-col bg-[#121929] rounded-xl border border-white/5 overflow-hidden group hover:border-white/15 transition-all duration-300 shadow-md cursor-pointer"
+            >
+              <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
+                {!hasError ? (
+                  <Image
+                    src={cover.imageUrl}
+                    alt={`Volumen ${cover.volume}`}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    className="object-cover transition-transform duration-500"
+                    onError={() => handleImageError(cover.id)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
+                    Sin imagen
+                  </div>
+                )}
+              </div>
 
-            <div className="p-3 text-center bg-[#121929] flex flex-col gap-0.5">
-              <span className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">
-                {cover.volume === "Extra" ? "Extra / Art" : `Volumen ${cover.volume}`}
-              </span>
-              {cover.locale && (
-                <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                  [{cover.locale}]
+              <div className="p-3 text-center bg-[#121929] flex flex-col gap-0.5">
+                <span className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">
+                  {cover.volume === "Extra" ? "Extra / Art" : `Volumen ${cover.volume}`}
                 </span>
-              )}
+                {cover.locale && (
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+                    [{cover.locale}]
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* MODAL / VISOR EN GRANDE */}
       {selectedCover && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-          
-          {/* Contenedor principal que envuelve todo lo interactivo del modal para que no se cierre al hacer clic dentro */}
           <div
             ref={modalContentRef}
             className="relative flex flex-col items-center justify-center max-w-[90vw] max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Botones superiores derechos (Descarga y X) */}
             <div className="absolute -top-14 right-0 flex items-center gap-2 z-50">
               <button
                 onClick={(e) => handleDownload(selectedCover, e)}
@@ -229,7 +234,6 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
               </button>
             </div>
 
-            {/* Imagen Grande */}
             <div className="relative w-[300px] sm:w-[400px] md:w-[450px] aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black/40">
               <Image
                 src={selectedCover.imageUrl}
@@ -239,7 +243,6 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
               />
             </div>
             
-            {/* Texto inferior */}
             <div className="mt-4 text-center">
               <span className="text-sm font-bold text-white">
                 {selectedCover.volume === "Extra" ? "Extra / Art" : `Volumen ${selectedCover.volume}`}

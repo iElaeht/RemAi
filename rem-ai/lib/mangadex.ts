@@ -53,7 +53,7 @@ export async function fetchMangaCovers(mangaId: string): Promise<MangaCover[]> {
       const fileName = cover.attributes.fileName;
       const volume = cover.attributes.volume;
       const locale = cover.attributes.locale;
-      const imageUrl = `${MANGADEX_COVERS_URL}/covers/${mangaId}/${fileName}`;
+      const imageUrl = `${MANGADEX_COVERS_URL}/covers/${mangaId}/${fileName}.512.jpg`;
 
       return {
         id: cover.id,
@@ -145,7 +145,7 @@ function mapMangaData(
     altTitles: attrs.altTitles || [],
     description: customDesc || cleanDescription(rawDesc),
     coverUrl: coverFile
-      ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}`
+      ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}.512.jpg`
       : "/placeholder.jpg",
     status: statusMap[attrs.status] || "En curso",
     tags: attrs.tags.map((t) => t.attributes.name.en),

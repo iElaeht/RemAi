@@ -24,7 +24,7 @@ const truncate = (text: string, limit: number) =>
 export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
   const basePath = '/details/manga';
   
-  // Estado para rastrear qué imágenes fallaron al cargar y mostrar el placeholder
+  // Estado para rastrear qué imágenes fallaron al cargar de la API
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const handleImageError = (id: string) => {
@@ -32,7 +32,6 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
   };
 
   return (
-    /* Ajustado el grid para pantallas grandes: ahora muestra hasta 7 u 8 columnas para que las cartas sean más compactas */
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 sm:gap-4 mb-16">
       {isLoading ? (
         [...Array(24)].map((_, i) => (
@@ -41,7 +40,8 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
       ) : (
         mangas.map((manga) => {
           const hasError = imageErrors[manga.id];
-          const coverSource = !hasError && manga.cover ? manga.cover : "/images/NoImage/placeholder-manga.jpg";
+          // Si hay error o no viene portada, dejamos un string vacío para que Next.js/navegador maneje el espacio limpiamente
+          const coverSource = !hasError && manga.cover ? manga.cover : "";
 
           return (
             <Link 
@@ -50,20 +50,26 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
               prefetch={false}
               className="group relative flex flex-col gap-1.5 p-2 rounded-xl bg-[#0e1422] border border-white/5 hover:border-pink-500/40 hover:bg-[#131b2e] transition-all duration-300 shadow-lg select-none"
             >
-              {/* Contenedor de Imagen con Fallback */}
+              {/* Contenedor de Imagen */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
-                <Image 
-                  src={coverSource} 
-                  alt={manga.title} 
-                  fill 
-                  sizes="(max-width: 768px) 50vw, 12vw"
-                  className="object-cover transition-opacity duration-300 group-hover:opacity-90" 
-                  onError={() => handleImageError(manga.id)}
-                />
+                {coverSource ? (
+                  <Image 
+                    src={coverSource} 
+                    alt={manga.title} 
+                    fill 
+                    sizes="(max-width: 768px) 50vw, 12vw"
+                    className="object-cover transition-opacity duration-300 group-hover:opacity-90" 
+                    onError={() => handleImageError(manga.id)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
+                    Sin imagen
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity" />
               </div>
 
-              {/* Detalles del Manga (Compactos) */}
+              {/* Detalles del Manga */}
               <div className="flex flex-col px-0.5 gap-1">
                 <h3 className="text-xs font-bold text-gray-200 group-hover:text-pink-400 transition-colors line-clamp-1" title={manga.title}>
                   {truncate(manga.title, 20)}
