@@ -1,8 +1,6 @@
-// components/manga/HeroCarousel.tsx
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, Star, User, Clock } from "lucide-react";
 import Link from "next/link";
 import { MangaResponse } from "@/types/mangadex";
@@ -58,13 +56,10 @@ export default function HeroCarousel({
       <AnimatePresence mode="wait">
         <motion.div key={current.id} className="absolute inset-0">
           <div className="absolute inset-0 z-0">
-            <Image
+            <img
               src={current.coverUrl || "/images/NoImage/placeholder-manga.jpg"}
               alt="Background"
-              fill
-              className="object-cover transition-all duration-700"
-              priority
-              sizes="100vw"
+              className="w-full h-full object-cover transition-all duration-700"
             />
             <div className="absolute inset-0 bg-neutral-950/90 backdrop-blur-3xl" />
           </div>
@@ -76,12 +71,8 @@ export default function HeroCarousel({
               prefetch={false}
               className="w-32 md:w-72 aspect-[2/3] shrink-0 shadow-2xl rounded-lg overflow-hidden border border-white/10 bg-neutral-900 group cursor-pointer block transition-transform duration-300 hover:scale-[1.01]"
             >
-              <Image
-                src={
-                  current.coverUrl || "/images/NoImage/placeholder-manga.jpg"
-                }
-                width={400}
-                height={600}
+              <img
+                src={current.coverUrl || "/images/NoImage/placeholder-manga.jpg"}
                 alt={current.title}
                 className="w-full h-full object-cover transition-transform duration-500"
               />

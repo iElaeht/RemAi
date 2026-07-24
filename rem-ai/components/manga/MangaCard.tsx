@@ -1,6 +1,4 @@
-// components/manga/MangaCard.tsx
-import React from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Star, User } from 'lucide-react';
 
@@ -14,23 +12,30 @@ interface MangaCardProps {
 }
 
 export default function MangaCard({ id, title, coverUrl, author, tags, rating }: MangaCardProps) {
+  const [hasError, setHasError] = useState(false);
+
   return (
     <Link 
       href={`/details/manga/${id}`}
       prefetch={false}
       className="block w-full space-y-3 group cursor-pointer"
     >
-      {/* Contenedor Imagen: Estático, sin zoom ni efectos globales */}
+      {/* Contenedor Imagen */}
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-neutral-900 ring-1 ring-white/10">
-        <Image
-          src={coverUrl}
-          alt={title}
-          fill
-          sizes="(max-width: 768px) 50vw, 20vw"
-          className="object-cover"
-        />
+        {!hasError ? (
+          <img
+            src={coverUrl}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setHasError(true)}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
+            Sin imagen
+          </div>
+        )}
         {/* Degradado inferior sutil */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
       </div>
 
       {/* Detalles del Manga */}
