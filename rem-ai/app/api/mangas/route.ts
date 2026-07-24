@@ -123,7 +123,7 @@ export async function GET(request: Request) {
           Object.values(manga.attributes.title)[0] ||
           "Sin título",
         cover: fileName
-          ? `https://uploads.mangadex.org/covers/${manga.id}/${fileName}`
+          ? `https://uploads.mangadex.org/covers/${manga.id}/${fileName}.512.jpg`
           : "",
         tags: manga.attributes.tags?.map((t) => t.attributes.name.en) || [],
         author: authorRel?.attributes?.name || "Autor desconocido",
