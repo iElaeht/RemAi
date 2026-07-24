@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
 
@@ -40,7 +39,6 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
       ) : (
         mangas.map((manga) => {
           const hasError = imageErrors[manga.id];
-          // Si hay error o no viene portada, dejamos un string vacío para que Next.js/navegador maneje el espacio limpiamente
           const coverSource = !hasError && manga.cover ? manga.cover : "";
 
           return (
@@ -53,12 +51,10 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
               {/* Contenedor de Imagen */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
                 {coverSource ? (
-                  <Image 
+                  <img 
                     src={coverSource} 
                     alt={manga.title} 
-                    fill 
-                    sizes="(max-width: 768px) 50vw, 12vw"
-                    className="object-cover transition-opacity duration-300 group-hover:opacity-90" 
+                    className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                     onError={() => handleImageError(manga.id)}
                   />
                 ) : (
@@ -66,7 +62,7 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
                     Sin imagen
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity pointer-events-none" />
               </div>
 
               {/* Detalles del Manga */}
