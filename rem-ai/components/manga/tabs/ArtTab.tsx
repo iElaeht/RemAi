@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import { MangaCover } from "@/types/mangadex";
 
 interface ArtTabProps {
@@ -175,12 +174,10 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
             >
               <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
                 {!hasError ? (
-                  <Image
+                  <img
                     src={cover.imageUrl}
                     alt={`Volumen ${cover.volume}`}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    className="object-cover transition-transform duration-500"
+                    className="w-full h-full object-cover transition-transform duration-500"
                     onError={() => handleImageError(cover.id)}
                   />
                 ) : (
@@ -235,11 +232,10 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
             </div>
 
             <div className="relative w-[300px] sm:w-[400px] md:w-[450px] aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black/40">
-              <Image
+              <img
                 src={selectedCover.imageUrl}
                 alt={`Volumen ${selectedCover.volume}`}
-                fill
-                className="object-contain"
+                className="w-full h-full object-contain"
               />
             </div>
             

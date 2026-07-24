@@ -1,4 +1,3 @@
-// rem-ai/app/(main)/details/manga/[id]/page.tsx
 import { getMangaById, getSimilarMangas } from "@/lib/mangadex";
 import { notFound } from "next/navigation";
 import MangaView from "@/components/manga/MangaView";
@@ -7,12 +6,16 @@ import SimilarMangas from "@/components/manga/similar/SimilarMangas";
 import { supabasePublic } from "@/lib/supabase";
 import { Comment } from "@/types/comment";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const manga = await getMangaById(id);
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params;
+  const manga = await getMangaById(resolvedParams.id);
   
   return {
-    title: manga ? `${manga.title} | MangasRem` : "Manga | MangasRem",
+    title: manga ? `${manga.title} | AI Mangas` : "Manga | AI Mangas",
     robots: {
       index: true,
       follow: true,
@@ -21,25 +24,22 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function MangaPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default async function MangaPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
   // 1. Obtenemos el manga para tener sus tags y pasarle a la función de similares
   const manga = await getMangaById(id);
   if (!manga) notFound();
 
-  // 2. Ejecutamos comentarios y búsqueda de similares en paralelo (Pasando "manga" de forma inteligente)
+  // 2. Ejecutamos comentarios y búsqueda de similares en paralelo
   const [commentsResponse, similarMangas] = await Promise.all([
     supabasePublic
       .from("comments")
       .select("*")
       .eq("manga_id", id)
       .order("created_at", { ascending: true }),
-    getSimilarMangas(id, manga.tags || [], "manga"), // <-- AQUÍ INDICAMOS EL CONTEXTO
+    getSimilarMangas(id, manga.tags || [], "manga"),
   ]);
 
   const initialComments: Comment[] = commentsResponse.data || [];

@@ -1,6 +1,5 @@
 // components/manga/similar/MangaSimilarCard.tsx
 import Link from "next/link";
-import Image from "next/image";
 import { MangaResponse } from "@/types/mangadex";
 import { detectContentType } from "@/utils/mangaTypeDetector";
 
@@ -21,12 +20,10 @@ export default function MangaSimilarCard({ manga, currentType }: MangaSimilarCar
       title={manga.title}
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-lg group-hover:ring-pink-500/50 transition-all duration-300">
-        <Image
+        <img
           src={manga.coverUrl}
           alt={manga.title}
-          fill
-          sizes="(max-width: 768px) 128px, 160px"
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
         <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">

@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import MangaDetailsContainer from "./MangaDetailsContainer";
@@ -77,11 +76,10 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
             className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => setIsModalOpen(true)}
           >
-            <Image
+            <img
               src={manga.coverUrl}
               alt={manga.title}
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
           {/* TÍTULOS ALTERNOS - DISEÑO DE COLOR NOCHE */}
@@ -252,12 +250,10 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
           <button className="absolute top-6 right-6 text-white">
             <X size={32} />
           </button>
-          <Image
+          <img
             src={manga.coverUrl}
             alt="Preview"
-            width={400}
-            height={600}
-            className="rounded-lg shadow-2xl"
+            className="max-w-[400px] max-h-[600px] object-contain rounded-lg shadow-2xl"
           />
         </div>
       )}
