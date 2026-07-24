@@ -1,7 +1,6 @@
 // api/mangas/route.ts
 import { NextResponse } from "next/server";
 
-// Forzamos que la ruta sea dinámica para evitar problemas con caché estática en Vercel
 export const dynamic = "force-dynamic";
 
 // Interfaces para tipar la respuesta de la API de MangaDex
@@ -124,7 +123,7 @@ export async function GET(request: Request) {
           Object.values(manga.attributes.title)[0] ||
           "Sin título",
         cover: fileName
-          ? `https://uploads.mangadex.org/covers/${manga.id}/${fileName}.256.jpg`
+          ? `https://uploads.mangadex.org/covers/${manga.id}/${fileName}`
           : "",
         tags: manga.attributes.tags?.map((t) => t.attributes.name.en) || [],
         author: authorRel?.attributes?.name || "Autor desconocido",
