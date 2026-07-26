@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { SortOption, StatusOption } from "@/types/mangadex";
+import { getProxiedImageUrl } from "@/utils/image"; // <--- Importamos la utilidad unificada
 
 export interface Manga {
   id: string;
@@ -45,7 +46,6 @@ export interface UseMangasReturn {
 }
 
 export function useMangas(): UseMangasReturn {
-  // --- 1. Estados Principales ---
   const [mangas, setMangas] = useState<Manga[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -53,11 +53,9 @@ export function useMangas(): UseMangasReturn {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // --- 2. Estados de Filtros Avanzados (Sincronizados con "rating" por defecto) ---
   const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [status, setStatus] = useState<StatusOption>("all");
 
-  // --- 3. Función para Obtener Mangas ---
   const fetchMangas = useCallback(
     async (
       page: number,
@@ -83,7 +81,7 @@ export function useMangas(): UseMangasReturn {
           return {
             id: String(m.id || ""),
             title: m.title || "Sin título",
-            cover: m.cover || "",
+            cover: getProxiedImageUrl(m.cover || ""), // <--- Aplicamos el proxy aquí
             genres: Array.isArray(m.tags) ? m.tags : [],
             author: m.author || "Autor desconocido",
             rating: m.rating || "0.0",
@@ -103,7 +101,6 @@ export function useMangas(): UseMangasReturn {
     [],
   );
 
-  // --- 4. Gestión de Tags ---
   const toggleTag = (tagId: string) => {
     const validTags = Object.values(TAG_DICTIONARY);
     const isValid = validTags.includes(tagId);
@@ -115,7 +112,6 @@ export function useMangas(): UseMangasReturn {
     );
   };
 
-  // --- 5. Resetear Filtros (Sincronizado con los valores iniciales) ---
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedTags([]);
