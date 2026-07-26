@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
+import { getProxiedImageUrl } from '@/utils/image';
 
 interface Manhwa {
   id: string;
@@ -40,7 +41,9 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
       ) : (
         manhwas.map((manhwa) => {
           const hasError = imageErrors[manhwa.id];
-          const coverSource = !hasError && manhwa.cover ? manhwa.cover : "/images/NoImage/placeholder-manga.jpg";
+          // Limpiamos y procesamos la URL con nuestro proxy a través de getProxiedImageUrl
+          const rawCover = !hasError && manhwa.cover ? manhwa.cover : "/images/NoImage/placeholder-manga.jpg";
+          const coverSource = getProxiedImageUrl(rawCover);
 
           return (
             <Link 
@@ -49,7 +52,7 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
               prefetch={false}
               className="group relative flex flex-col gap-1.5 p-2 rounded-xl bg-[#170a0d] border border-white/5 hover:border-red-500/40 hover:bg-[#200d11] transition-all duration-300 shadow-lg select-none"
             >
-              {/* Contenedor de Imagen con Fallback */}
+              {/* Contenedor de Imagen con Fallback y el componente Image de Next.js */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
                 <Image 
                   src={coverSource} 
