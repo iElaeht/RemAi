@@ -86,7 +86,14 @@ export default function SearchFilter({
   const isFiltering =
     selectedTags.length > 0 || searchQuery.length > 0 || isCategoryRoute;
 
+  // --- BÚSQUEDA EXCLUSIVA ---
   const handleSearchClick = () => {
+    if (!searchQuery.trim()) return;
+
+    if (isCategoryRoute) {
+      router.push(currentBasePath);
+    }
+    
     onSearch();
     setIsFilterOpen(false);
   };
@@ -134,9 +141,21 @@ export default function SearchFilter({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // --- FILTRO EXCLUSIVO ---
   const handleTagClick = (tagId: string, tagName: string) => {
+    if (searchQuery.trim()) {
+      setSearchQuery("");
+    }
     router.push(`${currentBasePath}/${tagId}/${tagToSlug(tagName)}`);
     setIsFilterOpen(false);
+  };
+
+  // --- NUEVA "X INTELIGENTE" ---
+  // Limpia el input de texto Y redirige a la página base (reseteando la vista)
+  const handleSmartClearInput = () => {
+    setSearchQuery("");
+    onClear();
+    router.push(`${currentBasePath}?page=1&sort=${sortBy || "rating"}&status=${status || "all"}`);
   };
 
   return (
@@ -173,14 +192,15 @@ export default function SearchFilter({
             <ArrowRight size={18} />
           </button>
 
-          {/* Botón de Borrar Input */}
+          {/* Botón de Borrar Inteligente (X) */}
           <button
-            onClick={() => setSearchQuery("")}
+            onClick={handleSmartClearInput}
             className={`p-2 transition-colors cursor-pointer ${
-              searchQuery
+              searchQuery || isFiltering
                 ? "text-neutral-300 hover:text-white"
                 : "text-neutral-700"
             }`}
+            title="Limpiar búsqueda"
           >
             <X size={18} />
           </button>
@@ -198,15 +218,15 @@ export default function SearchFilter({
           </button>
         </div>
 
-        {/* --- ESTADO DE FILTROS ACTIVOS --- */}
+        {/* --- ESTADO DE FILTROS ACTIVOS (Dinámico y con truncamiento) --- */}
         {isFiltering && (
           <div className={`px-4 py-3 border-t border-white/5 flex justify-between items-center ${theme.dropdownBg}/50`}>
             <span
-              className={`text-[10px] font-bold uppercase tracking-wider truncate ${theme.activeText}`}
+              className={`text-[10px] font-bold uppercase tracking-wider truncate max-w-[75%] ${theme.activeText}`}
             >
               {activeInfo
                 ? `Categoría : ${activeInfo.catName} | ${activeInfo.tagName}`
-                : "Búsqueda Activa"}
+                : `Buscando : "${searchQuery}"`}
             </span>
             <button
               onClick={handleClear}

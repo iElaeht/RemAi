@@ -17,6 +17,9 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Detectar la ruta base actual para manhwas
+  const currentBasePath = pathname.startsWith("/manhwas") ? "/manhwas" : "/mangas";
+
   const {
     manhwas,
     isLoading,
@@ -65,7 +68,6 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
     const sort = (searchParams.get("sort") || "rating") as SortOption;
     const statusVal = (searchParams.get("status") || "all") as StatusOption;
     
-    // Obtenemos los tags de la URL si existen, o combinamos con el initialTagId si lo hubiera
     const tagsParam = searchParams.get("tags");
     const urlTags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
     const tags = initialTagId ? Array.from(new Set([initialTagId, ...urlTags])) : urlTags;
@@ -78,7 +80,7 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
     fetchManhwas(page, search, tags, sort, statusVal);
   }, [initialTagId, searchParams, fetchManhwas, setCurrentPage, setSearchQuery, setSortBy, setStatus]);
 
-  // 3. Efecto para actualizar el título de la pestaña del navegador
+  // 3. Efecto para actualizar dinámicamente el título de la pestaña del navegador
   useEffect(() => {
     const search = searchParams.get("search");
     const page = searchParams.get("page");
@@ -86,27 +88,36 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
     const pathParts = window.location.pathname.split('/');
     const genreFromUrl = pathParts.length > 3 ? pathParts[pathParts.length - 1] : null;
 
-    let title = "Manhwas | MangasRem";
+    let title = "Manhwas | Mangas Rem";
 
     if (search) {
-      title = `Búsqueda: "${search}" | MangasRem`;
+      title = `Búsqueda: "${search}" | Mangas Rem`;
     } else if (genreFromUrl) {
       const genreName = genreFromUrl.charAt(0).toUpperCase() + genreFromUrl.slice(1);
-      title = `Género: ${genreName} | MangasRem`;
+      title = `Género: ${genreName} | Mangas Rem`;
     } else if (page && page !== "1") {
-      title = `Manhwas (Pág. ${page}) | MangasRem`;
+      title = `Manhwas (Pág. ${page}) | Mangas Rem`;
     }
 
     document.title = title;
   }, [searchParams, pathname]);
 
   const handleFilterSearch = () => {
-    updateUrlParams({ search: searchQuery });
+    // Si estamos dentro de una categoría de manhwas, saltamos a la raíz limpia con el parámetro de búsqueda
+    if (initialTagId) {
+      router.push(
+        `${currentBasePath}?search=${encodeURIComponent(
+          searchQuery
+        )}&sort=${sortBy}&status=${status}`
+      );
+    } else {
+      updateUrlParams({ search: searchQuery });
+    }
   };
 
   const handleClear = () => {
     resetFilters();
-    router.push(`${pathname}?page=1&sort=rating&status=all`);
+    router.push(`${currentBasePath}?page=1&sort=rating&status=all`);
   };
 
   return (
@@ -121,7 +132,6 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
           selectedTags={selectedTags}
           toggleTag={(tagId) => {
             toggleTag(tagId);
-            // Opcional: Aquí puedes actualizar los tags en la URL si deseas que persistan al recargar
           }}
           onSearch={handleFilterSearch}
           onClear={handleClear}

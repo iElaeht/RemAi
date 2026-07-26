@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps) {
   const manga = await getMangaById(resolvedParams.id);
   
   return {
-    title: manga ? `${manga.title} | AI Mangas` : "Manga | AI Mangas",
+    title: manga ? `${manga.title} | Mangas Rem` : "Manga | Mangas Rem",
     robots: {
       index: true,
       follow: true,
