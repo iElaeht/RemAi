@@ -25,7 +25,8 @@ interface MangaDexManga {
 async function fetchMangaRating(mangaId: string): Promise<number> {
   try {
     const res = await fetch(
-      `https://api.mangadex.org/statistics/manga/${mangaId}`,
+      `${MANGADEX_API_URL}/statistics/manga/${mangaId}`,
+      { next: { revalidate: 3600 } }
     );
     if (!res.ok) return 0;
 
@@ -39,10 +40,11 @@ async function fetchMangaRating(mangaId: string): Promise<number> {
   }
 }
 
-export async function fetchMangaCovers(mangaId: string): Promise<MangaCover[]> {
+export const fetchMangaCovers = cache(async (mangaId: string): Promise<MangaCover[]> => {
   try {
     const res = await fetch(
-      `${MANGADEX_API_URL}/cover?manga[]=${mangaId}&limit=100&order[volume]=asc`
+      `${MANGADEX_API_URL}/cover?manga[]=${mangaId}&limit=100&order[volume]=asc`,
+      { next: { revalidate: 86400 } }
     );
     if (!res.ok) return [];
 
@@ -68,11 +70,13 @@ export async function fetchMangaCovers(mangaId: string): Promise<MangaCover[]> {
     console.error("Error al obtener portadas de MangaDex:", error);
     return [];
   }
-}
+});
 
 export const getMangaById = cache(async (id: string): Promise<MangaResponse | null> => {
   try {
-    const res = await fetch(`${MANGADEX_API_URL}/manga/${id}?includes[]=cover_art&includes[]=author`);
+    const res = await fetch(`${MANGADEX_API_URL}/manga/${id}?includes[]=cover_art&includes[]=author`, {
+      next: { revalidate: 3600 },
+    });
     if (!res.ok) return null;
     const json = await res.json();
     const attrs = json.data.attributes;
@@ -83,12 +87,17 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
       attrs.title.en || 
       Object.values(attrs.title)[0] as string;
     
-    const aniData = await fetchAniListMedia(title);
+    const [aniData, covers, rating] = await Promise.all([
+      fetchAniListMedia(title),
+      fetchMangaCovers(id),
+      fetchMangaRating(id)
+    ]);
+
     const finalDesc = aniData ? aniData.description : "No hay descripción disponible.";
     const finalUrl = aniData ? aniData.url : undefined;
     const finalCharacters = aniData ? aniData.characters : [];
-    const covers = await fetchMangaCovers(id);
-    const mangaData = mapMangaData(json.data, await fetchMangaRating(id), finalDesc);
+    
+    const mangaData = mapMangaData(json.data, rating, finalDesc);
     
     return { 
       ...mangaData, 
@@ -172,9 +181,12 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
     const json = await res.json();
     const data = (json.data || []) as MangaDexManga[];
 
+    if (data.length === 0) return [];
+
     const ids = data.map((m) => m.id);
     const statsRes = await fetch(
       `${MANGADEX_API_URL}/statistics/manga?${ids.map((id) => `manga[]=${id}`).join("&")}`,
+      { next: { revalidate: 3600 } }
     );
     const statsJson = await statsRes.json();
     const statistics = statsJson.statistics || {};
@@ -189,45 +201,44 @@ async function fetchMangas(query: URLSearchParams): Promise<MangaResponse[]> {
   }
 }
 
-export async function getMainManga(): Promise<MangaResponse[]> {
+export const getMainManga = cache(async (): Promise<MangaResponse[]> => {
   const query = new URLSearchParams();
   query.append("limit", "15");
   query.append("order[rating]", "desc");
   query.append("availableTranslatedLanguage[]", "es");
   return fetchMangas(query);
-}
+});
 
-export async function getFilterManga(
+export const getFilterManga = cache(async (
   genreTag: string,
-  originalLanguages: string[] = ["ja"] // Por defecto japonés (manga), pero configurable
-): Promise<MangaResponse[]> {
+  originalLanguages: string[] = ["ja"]
+): Promise<MangaResponse[]> => {
   const query = new URLSearchParams();
   query.append("limit", "10");
   query.append("includedTags[]", genreTag);
   query.append("availableTranslatedLanguage[]", "es");
   query.append("order[rating]", "desc");
 
-  // Aplicar de forma limpia los idiomas de origen permitidos
   originalLanguages.forEach((lang) => {
     query.append("originalLanguage[]", lang);
   });
 
   return fetchMangas(query);
-}
-export async function getSimilarMangas(
+});
+
+export const getSimilarMangas = cache(async (
   mangaId: string,
   tags: string[],
-  contentType: "manga" | "manhwa" | "manhua" = "manga" // Recibimos el contexto actual
-): Promise<MangaResponse[]> {
+  contentType: "manga" | "manhwa" | "manhua" = "manga"
+): Promise<MangaResponse[]> => {
   const searchTags = tags
     .map((t) => TAG_DICTIONARY[t])
     .filter((id) => id !== undefined)
     .slice(0, 2);
 
-  // Definimos los idiomas permitidos según el tipo de contenido en el que estamos navegando
-  let allowedLanguages = ["ja"]; // Manga por defecto
+  let allowedLanguages = ["ja"];
   if (contentType === "manhwa") {
-    allowedLanguages = ["ko", "zh"]; // Coreano y Chino para manhwa/manhua
+    allowedLanguages = ["ko", "zh"];
   } else if (contentType === "manhua") {
     allowedLanguages = ["zh", "ko"];
   }
@@ -244,4 +255,4 @@ export async function getSimilarMangas(
     .slice(0, 10);
 
   return uniqueResults;
-}
+});

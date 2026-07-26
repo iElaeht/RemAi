@@ -1,6 +1,6 @@
 // components/events/EventCarouselPopular.tsx
 import { getMainManga } from '@/lib/mangadex';
-import { fetchAniListMedia } from '@/lib/anilist'; // <-- Importamos la función de AniList
+import { fetchAniListMedia } from '@/lib/anilist';
 import HeroCarousel from '@/components/common/HeroCarousel';
 
 export default async function EventCarouselPopular() {

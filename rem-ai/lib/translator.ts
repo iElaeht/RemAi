@@ -1,10 +1,11 @@
 import * as deepl from 'deepl-node';
 import { createClient } from '@supabase/supabase-js';
 import { supabasePublic } from '@/lib/supabase';
+import { cache } from 'react';
 
 const translator = new deepl.Translator(process.env.DEEPL_API_KEY!);
 
-export async function getTranslatedDescription(mangaId: string, originalText: string): Promise<string> {
+export const getTranslatedDescription = cache(async (mangaId: string, originalText: string): Promise<string> => {
   if (!originalText) return "";
   
   // 1. Intentar buscar en Supabase usando el cliente público (SELECT)
@@ -52,4 +53,4 @@ export async function getTranslatedDescription(mangaId: string, originalText: st
   }
 
   return translatedText;
-}
+});

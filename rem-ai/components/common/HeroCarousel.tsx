@@ -7,7 +7,7 @@ import { MangaResponse } from "@/types/mangadex";
 
 interface HeroCarouselProps {
   featuredMangas: MangaResponse[];
-  basePath?: string; // Por defecto "/details/manga" tal como lo manejas en tus detalles
+  basePath?: string;
 }
 
 export default function HeroCarousel({
