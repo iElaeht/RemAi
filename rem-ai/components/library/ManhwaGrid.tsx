@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
 import { getProxiedImageUrl } from '@/utils/image';
@@ -25,7 +24,7 @@ const truncate = (text: string, limit: number) =>
 export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
   const basePath = '/details/manhwa';
   
-  // Estado para rastrear qué imágenes fallaron al cargar y mostrar el placeholder
+  // Estado para rastrear qué imágenes fallaron al cargar de la API
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const handleImageError = (id: string) => {
@@ -41,8 +40,7 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
       ) : (
         manhwas.map((manhwa) => {
           const hasError = imageErrors[manhwa.id];
-          // Limpiamos y procesamos la URL con nuestro proxy a través de getProxiedImageUrl
-          const rawCover = !hasError && manhwa.cover ? manhwa.cover : "/images/NoImage/placeholder-manga.jpg";
+          const rawCover = !hasError && manhwa.cover ? manhwa.cover : "";
           const coverSource = getProxiedImageUrl(rawCover);
 
           return (
@@ -52,20 +50,24 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
               prefetch={false}
               className="group relative flex flex-col gap-1.5 p-2 rounded-xl bg-[#170a0d] border border-white/5 hover:border-red-500/40 hover:bg-[#200d11] transition-all duration-300 shadow-lg select-none"
             >
-              {/* Contenedor de Imagen con Fallback y el componente Image de Next.js */}
+              {/* Contenedor de Imagen con <img> nativo */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
-                <Image 
-                  src={coverSource} 
-                  alt={manhwa.title} 
-                  fill 
-                  sizes="(max-width: 768px) 50vw, 12vw"
-                  className="object-cover transition-opacity duration-300 group-hover:opacity-90" 
-                  onError={() => handleImageError(manhwa.id)}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity" />
+                {coverSource ? (
+                  <img 
+                    src={coverSource} 
+                    alt={manhwa.title} 
+                    className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
+                    onError={() => handleImageError(manhwa.id)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
+                    Sin imagen
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity pointer-events-none" />
               </div>
 
-              {/* Detalles del Manhwa (Compactos) */}
+              {/* Detalles del Manhwa */}
               <div className="flex flex-col px-0.5 gap-1">
                 <h3 className="text-xs font-bold text-gray-200 group-hover:text-red-400 transition-colors line-clamp-1" title={manhwa.title}>
                   {truncate(manhwa.title, 20)}
