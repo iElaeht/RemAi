@@ -1,12 +1,21 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import MangaDetailsContainer from "./MangaDetailsContainer";
 import ChapterSidebar from "./ChapterSidebar";
 import { MangaResponse } from "@/types/mangadex";
 import { getTagIdByName, tagToSlug } from "@/service/tagService";
 import { List, BookOpen, Tag, User, X, Star, Clock } from "lucide-react";
+
+const createSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+};
 
 export default function MangaView({ manga }: { manga: MangaResponse }) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -20,7 +29,12 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAllTitles, setShowAllTitles] = useState(false);
+  
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Detección dinámica: si la ruta actual incluye "manhwa", usamos ese prefijo; de lo contrario, "manga".
+  const watchBasePath = pathname.includes("manhwa") ? "/watch/manhwa" : "/watch/manga";
 
   const rating = manga.rating || 0;
   const statusLabel =
@@ -57,8 +71,12 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
   }, [chapters]);
 
   const handleReadNow = () => {
-    if (firstChapter)
-      router.push(`/leer/${firstChapter.id}?lang=${firstChapter.language}`);
+    if (firstChapter) {
+      const mangaSlug = createSlug(manga.title);
+      router.push(
+        `${watchBasePath}/${manga.id}/${firstChapter.language}/${firstChapter.id}/${mangaSlug}`
+      );
+    }
   };
 
   const handleTagClick = (tag: string) => {
@@ -82,7 +100,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
               className="w-full h-full object-cover"
             />
           </div>
-          {/* TÍTULOS ALTERNOS - DISEÑO DE COLOR NOCHE */}
+          {/* TÍTULOS ALTERNOS */}
           {manga.altTitles && manga.altTitles.length > 0 && (
             <div className="w-full md:w-64 space-y-3">
               <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest px-1 flex items-center gap-2">
@@ -128,13 +146,12 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
           )}
         </div>
 
-        {/* DETALLES REORGANIZADOS - EQUILIBRADOS */}
+        {/* DETALLES REORGANIZADOS */}
         <div className="flex flex-col gap-4 w-full">
           <h1 className="text-3xl md:text-5xl font-black text-white leading-tight">
             {manga.title}
           </h1>
 
-          {/* Fila: Autor y Estado - Añadimos un poco más de margen */}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <User size={16} />
@@ -170,7 +187,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
             </span>
           </div>
 
-          {/* GENEROS Y CATEGORÍAS - DISEÑO RENOVADO */}
+          {/* GENEROS Y CATEGORÍAS */}
           <div className="space-y-3 pt-3">
             <div className="flex items-center gap-2 text-gray-500">
               <Tag size={14} />
@@ -192,14 +209,12 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
             </div>
           </div>
 
-          {/* CONTENEDOR DE TABS - Añadimos margen superior para despegarlo de los géneros */}
           <div className="pt-2">
             <MangaDetailsContainer manga={manga} />
           </div>
 
-          {/* CONTENEDOR DE ACCIONES */}
+          {/* ACCIONES */}
           <div className="flex flex-col gap-3 mt-6">
-            {/* Ajuste: justify-center para centrar los botones */}
             <div className="flex justify-center gap-3 w-full">
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -226,14 +241,11 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
               </button>
             </div>
 
-            {/* MENSAJE DE ERROR */}
             {chapters.length === 0 && !loading && (
               <div className="flex justify-center">
-                {" "}
-                {/* También centramos el mensaje de error */}
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-950/20 border border-red-900/50 text-red-400 text-sm">
                   <X size={16} className="shrink-0" />
-                  <p>Aún no hay capítulos disponibles para este manga.</p>
+                  <p>Aún no hay capítulos disponibles para este contenido.</p>
                 </div>
               </div>
             )}
@@ -257,6 +269,8 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
           />
         </div>
       )}
+      
+      {/* Sidebar de Capítulos */}
       <ChapterSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -264,6 +278,8 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
         lang={lang}
         setLang={setLang}
         loading={loading}
+        mangaId={manga.id}
+        mangaTitle={manga.title} 
       />
     </div>
   );

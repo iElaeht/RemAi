@@ -1,14 +1,13 @@
-// rem-ai/app/leer/[id]/page.tsx
-"use client";
+'use client';
 import { useEffect, useState, use, Suspense } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ReaderHeader from "./components/ReaderHeader";
 import ReaderView from "./components/ReaderView";
 import ReaderEndModal from "./components/ReaderEndModal";
 import ChapterSidebar from "@/components/manga/ChapterSidebar";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 
-interface MangaData {
+interface ManhwaData {
   mangaId: string;
   mangaTitle: string;
   author: string;
@@ -20,10 +19,24 @@ interface MangaData {
   chaptersList: Chapter[];
 }
 
-function ReaderContent({ id }: { id: string }) {
+const createSlug = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+};
+
+interface ReaderContentProps {
+  mangaId: string;
+  lang: string;
+  chapterId: string;
+  mangaSlug: string;
+}
+
+function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
 
   const [readingMode, setReadingMode] = useState<"carousel" | "vertical">(
     () => {
@@ -37,15 +50,8 @@ function ReaderContent({ id }: { id: string }) {
     },
   );
 
-  const [currentLang, setCurrentLang] = useState(() => {
-    const langFromUrl = searchParams.get("lang");
-    if (langFromUrl) return langFromUrl;
-    if (typeof window !== "undefined")
-      return localStorage.getItem("manga_lang") || "es";
-    return "es";
-  });
-
-  const [data, setData] = useState<MangaData | null>(null);
+  const [currentLang, setCurrentLang] = useState(lang);
+  const [data, setData] = useState<ManhwaData | null>(null);
   const [chaptersList, setChaptersList] = useState<Chapter[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
@@ -57,11 +63,19 @@ function ReaderContent({ id }: { id: string }) {
   };
 
   useEffect(() => {
-    localStorage.setItem("manga_lang", currentLang);
+    localStorage.setItem("manhwa_lang", currentLang);
   }, [currentLang]);
 
   useEffect(() => {
-    fetch(`/api/read/${id}?lang=${currentLang}`)
+    if (currentLang !== lang) {
+      if (data) {
+        router.push(`/watch/manhwa/${mangaId}/${currentLang}/${chapterId}/${mangaSlug}`);
+      }
+    }
+  }, [currentLang, lang, data, mangaId, chapterId, mangaSlug, router]);
+
+  useEffect(() => {
+    fetch(`/api/read/${chapterId}?lang=${currentLang}`)
       .then((res) => res.json())
       .then((json) => {
         setData(json);
@@ -71,12 +85,12 @@ function ReaderContent({ id }: { id: string }) {
           });
         }
       })
-      .catch((err) => console.error("Error cargando:", err));
-  }, [id, currentLang]);
+      .catch((err) => console.error("Error cargando capítulo:", err));
+  }, [chapterId, currentLang]);
 
   useEffect(() => {
     if (data) {
-      document.title = `Lectura - Cap ${data.chapterNum || "N/A"} | MangasRem`;
+      document.title = `Lectura - Cap ${data.chapterNum || "N/A"} | AI Mangas`;
     }
   }, [data]);
 
@@ -97,7 +111,7 @@ function ReaderContent({ id }: { id: string }) {
       return numA - numB;
     });
 
-    const currentIndex = sortedChapters.findIndex((ch) => ch.id === id);
+    const currentIndex = sortedChapters.findIndex((ch) => ch.id === chapterId);
     if (currentIndex === -1) return;
 
     const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
@@ -108,21 +122,18 @@ function ReaderContent({ id }: { id: string }) {
     }
 
     if (newIndex >= 0 && newIndex < sortedChapters.length) {
-      router.push(`/leer/${sortedChapters[newIndex].id}?lang=${currentLang}`);
+      const nextChapter = sortedChapters[newIndex];
+      const titleSlug = data?.mangaTitle ? createSlug(data.mangaTitle) : mangaSlug;
+      router.push(`/watch/manhwa/${mangaId}/${currentLang}/${nextChapter.id}/${titleSlug}`);
     }
   };
 
   if (!data)
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
-        <div className="animate-pulse">Cargando...</div>
+        <div className="animate-pulse text-sm font-medium text-red-400">Cargando contenido...</div>
       </div>
     );
-
-  const isManhwa =
-    typeof window !== "undefined" &&
-    (window.location.pathname.includes("manhwa") ||
-      document.referrer.includes("manhwa"));
 
   return (
     <main className="w-full bg-[#0a0f1a] min-h-screen">
@@ -132,7 +143,6 @@ function ReaderContent({ id }: { id: string }) {
         chapter={data.chapterNum}
         volume={data.volume}
         lang={currentLang}
-        mangaId={data.mangaId}
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onPrevChapter={() => navigateChapter("prev")}
         onNextChapter={() => navigateChapter("next")}
@@ -154,15 +164,16 @@ function ReaderContent({ id }: { id: string }) {
         onClose={() => setIsSidebarOpen(false)}
         chapters={chaptersList}
         lang={currentLang}
-        setLang={setCurrentLang}
+        setLang={(newLang) => setCurrentLang(newLang)}
         loading={chaptersList.length === 0}
+        mangaId={data.mangaId}
+        mangaTitle={data.mangaTitle}
       />
 
       <ReaderEndModal
         isOpen={isEndModalOpen}
-        mangaTitle={data.mangaTitle}
-        mangaId={data.mangaId}
-        isManhwa={isManhwa}
+        manhwaTitle={data.mangaTitle}
+        manhwaId={data.mangaId}
         chapterNum={data.chapterNum}
         volume={data.volume}
         onClose={() => setIsEndModalOpen(false)}
@@ -171,21 +182,26 @@ function ReaderContent({ id }: { id: string }) {
   );
 }
 
-export default function LectorManga({
+export default function LectorManhwa({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ mangaId: string; lang: string; chapterId: string; mangaSlug: string }>;
 }) {
-  const { id } = use(params);
+  const resolvedParams = use(params);
   return (
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
-          <div className="animate-pulse">Cargando...</div>
+          <div className="animate-pulse text-sm font-medium text-red-400">Cargando contenido...</div>
         </div>
       }
     >
-      <ReaderContent id={id} />
+      <ReaderContent
+        mangaId={resolvedParams.mangaId}
+        lang={resolvedParams.lang}
+        chapterId={resolvedParams.chapterId}
+        mangaSlug={resolvedParams.mangaSlug}
+      />
     </Suspense>
   );
 }

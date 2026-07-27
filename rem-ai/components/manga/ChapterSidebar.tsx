@@ -1,4 +1,4 @@
-// components/manga/ChapterSidebar.tsx
+"use client";
 import { useState, useMemo, useEffect } from "react";
 import { X, BookOpen, Layers } from "lucide-react";
 import ChapterControls from "./ChapterControls";
@@ -13,9 +13,20 @@ interface Props {
   lang: string;
   setLang: (lang: string) => void;
   loading: boolean;
+  mangaId: string;
+  mangaTitle: string;
 }
 
-export default function ChapterSidebar({ isOpen, onClose, chapters, lang, setLang, loading }: Props) {
+export default function ChapterSidebar({ 
+  isOpen, 
+  onClose, 
+  chapters, 
+  lang, 
+  setLang, 
+  loading, 
+  mangaId, 
+  mangaTitle 
+}: Props) {
   const volumeGroups = useMemo(() => groupChaptersByVolume(
     chapters, lang), [chapters, lang]
   );
@@ -45,12 +56,12 @@ export default function ChapterSidebar({ isOpen, onClose, chapters, lang, setLan
 
       {/* Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-[#0f172a] shadow-2xl z-[70] transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"} border-l border-white/10`}
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-[#0a0f1a] shadow-2xl z-[70] transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"} border-l border-white/10`}
       >
         <div className="p-6 h-full flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400">
                 <BookOpen size={18} />
               </div>
               <h2 className="text-lg font-bold text-white tracking-wide">
@@ -70,7 +81,7 @@ export default function ChapterSidebar({ isOpen, onClose, chapters, lang, setLan
           <div className="mt-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {loading ? (
               <div className="flex items-center justify-center h-32">
-                <p className="text-neutral-500 animate-pulse text-sm">
+                <p className="text-red-400 animate-pulse text-sm font-medium">
                   Cargando capítulos...
                 </p>
               </div>
@@ -82,6 +93,8 @@ export default function ChapterSidebar({ isOpen, onClose, chapters, lang, setLan
                     group={group}
                     isOpen={activeVol === group.volume}
                     onToggle={() => handleToggle(group.volume)}
+                    mangaId={mangaId}
+                    mangaTitle={mangaTitle}
                   />
                 ))}
               </div>

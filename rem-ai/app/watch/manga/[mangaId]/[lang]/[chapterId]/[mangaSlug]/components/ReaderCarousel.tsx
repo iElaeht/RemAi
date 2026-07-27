@@ -1,4 +1,3 @@
-// rem-ai/app/leer/[id]/components/ReaderCarousel.tsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";
@@ -43,6 +42,18 @@ export default function ReaderView({
     }
   };
 
+  // Bloquear el scroll del body cuando el modal de páginas está abierto
+  useEffect(() => {
+    if (isPageModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isPageModalOpen]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       const firstPage = document.getElementById("page-0");
@@ -77,7 +88,7 @@ export default function ReaderView({
         ref={containerRef}
         onScroll={handleScroll}
         style={{ touchAction: "auto" }}
-        className={`flex-1 w-full flex flex-row ${isZoomed ? "overflow-hidden" : "overflow-hidden snap-x snap-mandatory"} scroll-smooth `}
+        className={`flex-1 w-full flex flex-row ${isZoomed ? "overflow-hidden" : "overflow-hidden snap-x snap-mandatory"} scroll-smooth`}
       >
         {pages?.map((page: string, idx: number) => {
           const isCurrentPageZoomed = isZoomed && currentPage === idx + 1;
@@ -132,8 +143,14 @@ export default function ReaderView({
 
       {/* Modal / Selector Rápido de Páginas */}
       {isPageModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="relative w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-[#0e1422] border border-blue-500/30 shadow-2xl p-6">
+        <div 
+          onClick={() => setIsPageModalOpen(false)}
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-[#0e1422] border border-blue-500/30 shadow-2xl p-6"
+          >
             
             {/* Cabecera del Modal */}
             <div className="flex items-center justify-between pb-4 border-b border-white/5">
@@ -143,10 +160,10 @@ export default function ReaderView({
               </div>
               <button 
                 onClick={() => setIsPageModalOpen(false)}
-                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
+                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
                 aria-label="Cerrar modal"
               >
-                <X size={16} />
+                <X size={20} />
               </button>
             </div>
 
@@ -158,7 +175,7 @@ export default function ReaderView({
                   <button
                     key={idx}
                     onClick={() => jumpToPage(idx)}
-                    className={`h-12 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center border ${
+                    className={`h-12 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center border cursor-pointer ${
                       isSelected
                         ? "bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40 scale-105"
                         : "bg-white/[0.03] border-white/5 text-neutral-300 hover:bg-white/10 hover:border-white/10 hover:text-white"

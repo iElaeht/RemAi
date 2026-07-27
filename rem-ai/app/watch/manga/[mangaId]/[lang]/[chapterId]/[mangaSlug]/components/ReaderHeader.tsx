@@ -1,6 +1,6 @@
-// rem-ai/app/leer/[id]/components/ReaderHeader.tsx
 'use client';
 import { Menu, ChevronLeft, ChevronRight, BookOpen, FileText, Layers, Bookmark } from 'lucide-react'; 
+import QuickSearch from './QuickSearch';
 
 interface ReaderHeaderProps {
   mangaTitle: string;
@@ -40,7 +40,7 @@ export default function ReaderHeader({
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-pink-500/10 border border-pink-500/25 flex items-center justify-center text-pink-400 shrink-0">
               <BookOpen size={16} />
             </div>
-            <div className="flex flex-col truncate max-w-[220px] sm:max-w-[260px] lg:max-w-[340px]">
+            <div className="flex flex-col truncate max-w-[200px] sm:max-w-[240px] lg:max-w-[320px]">
               <span className="text-xs sm:text-sm font-bold text-white truncate" title={mangaTitle}>
                 {mangaTitle || "Cargando título..."}
               </span>
@@ -50,8 +50,9 @@ export default function ReaderHeader({
             </div>
           </div>
 
-          {/* Botones rápidos en Mobile (Derecha de la fila 1) */}
+          {/* Botones rápidos en Mobile (Derecha de la fila 1: QuickSearch + Modo + Sidebar) */}
           <div className="flex items-center gap-1 sm:hidden">
+            <QuickSearch />
             <button 
               onClick={onToggleReadingMode}
               className="p-2 text-gray-300 hover:text-pink-400 rounded-xl bg-white/5"
@@ -112,8 +113,10 @@ export default function ReaderHeader({
           </button>
         </div>
 
-        {/* WEB DERECHA: Botones de Modo Lectura y Sidebar (Oculto en mobile porque ya están arriba) */}
+        {/* WEB DERECHA: QuickSearch, Modo Lectura y Sidebar */}
         <div className="hidden sm:flex items-center gap-1.5 z-10">
+          <QuickSearch />
+          
           <button 
             onClick={onToggleReadingMode}
             className="p-2 text-gray-300 hover:text-pink-400 transition-all rounded-xl hover:bg-pink-500/10 border border-transparent hover:border-pink-500/20 flex items-center gap-1.5"

@@ -7,7 +7,7 @@ interface ReaderViewProps {
   pages: string[];
   baseUrl: string;
   hash: string;
-  mode: "carousel" | "vertical"; // El modo viene de tus props o estado global
+  mode: "carousel" | "vertical";
   onNextChapter?: () => void;
   onPrevChapter?: () => void;
 }
