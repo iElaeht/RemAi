@@ -11,12 +11,11 @@ export default async function EventCarouselPopular() {
   // Enriquecemos cada manga popular buscando su descripción y datos oficiales en AniList
   const enrichedMangas = await Promise.all(
     popularMangas.slice(0, 6).map(async (manga) => {
-      // Llamamos a AniList usando el título del manga
-      const anilistData = await fetchAniListMedia(manga.title);
+      // Pasamos tanto el título como el manga.id (UUID) para que la caché use el ID correcto
+      const anilistData = await fetchAniListMedia(manga.title, manga.id);
 
       return {
         ...manga,
-        // Si AniList nos devuelve descripción traducida, la usamos. Si no, mantenemos la original.
         description: anilistData?.description || manga.description,
       };
     })

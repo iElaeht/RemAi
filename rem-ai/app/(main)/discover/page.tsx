@@ -1,3 +1,4 @@
+// rem-ai/app/(main)/discover/page.tsx
 import { TAG_DICTIONARY } from '@/data/tagDictionary';
 import EventMangaSection from '@/components/events/EventMangaSection';
 import EventCarouselPopular from '@/components/events/EventCarouselPopular';
