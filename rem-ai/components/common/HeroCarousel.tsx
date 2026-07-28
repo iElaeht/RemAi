@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star, User, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, User, Clock, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { MangaResponse } from "@/types/mangadex";
 
@@ -45,7 +45,6 @@ export default function HeroCarousel({
   if (!featuredMangas || featuredMangas.length === 0) return null;
   const current = featuredMangas[activeIndex];
 
-  // Función para limitar la descripción y evitar textos muy largos en el hero
   const truncateDescription = (text: string, maxLength: number = 220) => {
     if (!text) return "Sin descripción disponible.";
     if (text.length <= maxLength) return text;
@@ -66,7 +65,6 @@ export default function HeroCarousel({
           </div>
 
           <div className="relative h-full flex flex-col items-center justify-center px-4 md:px-24 pt-12 md:pt-0 gap-4 md:flex-row md:gap-12 z-20">
-            {/* Imagen del manga clickeable */}
             <Link
               href={`${basePath}/${current.id}`}
               prefetch={false}
@@ -80,7 +78,7 @@ export default function HeroCarousel({
             </Link>
 
             <div className="flex flex-col max-w-xl w-full text-center md:text-left">
-              <div className="hidden md:flex gap-2 mb-4 justify-center md:justify-start">
+              <div className="hidden md:flex gap-2 mb-4 justify-center md:justify-start items-center">
                 {current.tags?.slice(0, 3).map((tag: string) => (
                   <span
                     key={tag}
@@ -89,6 +87,20 @@ export default function HeroCarousel({
                     {tag}
                   </span>
                 ))}
+
+                {/* AQUÍ AGREGAMOS EL INDICADOR DE FUENTE EN EL HERO */}
+                {current.descriptionUrl && (
+                  <a
+                    href={current.descriptionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900/80 border border-neutral-700 hover:border-neutral-500 text-neutral-300 text-[10px] uppercase font-medium rounded-full transition-colors ml-auto md:ml-2"
+                    title={`Ver fuente en ${current.sourceName || "MangaDex"}`}
+                  >
+                    <span>Fuente: <strong className="text-white">{current.sourceName || "MangaDex"}</strong></span>
+                    <ExternalLink size={10} />
+                  </a>
+                )}
               </div>
 
               <h1 className="text-2xl md:text-6xl font-black mb-2 md:mb-4 tracking-tight leading-tight line-clamp-2">
@@ -108,12 +120,10 @@ export default function HeroCarousel({
                 </span>
               </div>
 
-              {/* Descripción limitada con la función truncateDescription */}
               <p className="hidden md:block text-neutral-400 text-sm md:text-base mb-6 leading-relaxed">
                 {truncateDescription(current.description, 220)}
               </p>
 
-              {/* Redirección exacta a /details/manga/[id] */}
               <Link
                 href={`${basePath}/${current.id}`}
                 prefetch={false}
@@ -126,7 +136,6 @@ export default function HeroCarousel({
         </motion.div>
       </AnimatePresence>
 
-      {/* Botones de navegación */}
       <button
         onClick={() =>
           changeSlide(
@@ -148,7 +157,6 @@ export default function HeroCarousel({
         <ChevronRight size={20} />
       </button>
 
-      {/* Indicadores */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-1.5 z-30">
         {featuredMangas.map((_, i) => (
           <button

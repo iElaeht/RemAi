@@ -37,12 +37,10 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
   const watchBasePath = pathname.includes("manhwa") ? "/watch/manhwa" : "/watch/manga";
 
   const rating = manga.rating || 0;
-  const statusLabel =
-    manga.status === "completed"
-      ? "Finalizado"
-      : manga.status === "hiatus"
-        ? "En Pausa"
-        : "En Emisión";
+  
+  // Como manga.status ya viene mapeado desde mapMangaData (ej. "Finalizado", "En emisión", etc.),
+  // podemos usarlo directamente o respaldarlo por si acaso.
+  const statusLabel = manga.status || "En emisión";
 
   useEffect(() => {
     localStorage.setItem("manga_lang", lang);

@@ -6,9 +6,14 @@ import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 interface DescriptionTabProps {
   description: string;
   sourceUrl?: string;
+  sourceName?: "AniList" | "MangaDex"; // <- Opcional para indicar de dónde viene
 }
 
-export default function DescriptionTab({ description, sourceUrl }: DescriptionTabProps) {
+export default function DescriptionTab({ 
+  description, 
+  sourceUrl, 
+  sourceName = "AniList" // Por defecto mantiene AniList si no se especifica
+}: DescriptionTabProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -70,7 +75,7 @@ export default function DescriptionTab({ description, sourceUrl }: DescriptionTa
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-[10px] text-neutral-400 hover:text-red-400 transition-colors uppercase tracking-[0.2em] font-semibold bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 px-2.5 py-1 rounded-lg"
           >
-            <ExternalLink size={11} /> AniList
+            <ExternalLink size={11} /> {sourceName}
           </a>
         )}
       </div>

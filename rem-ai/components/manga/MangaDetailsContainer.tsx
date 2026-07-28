@@ -69,14 +69,13 @@ export default function MangaDetailsContainer({
             <DescriptionTab
               description={manga.description}
               sourceUrl={manga.descriptionUrl}
+              sourceName={manga.sourceName || "AniList"}
             />
           )}
           {activeTab === "characters" && (
             <CharactersTab characters={manga.characters} />
           )}
-          {activeTab === "art" && (
-            <ArtTab covers={manga.covers} />
-          )}
+          {activeTab === "art" && <ArtTab covers={manga.covers} />}
         </motion.div>
       </AnimatePresence>
     </div>

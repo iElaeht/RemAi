@@ -2,7 +2,8 @@
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { cache } from 'react';
 import { MangaResponse, MangaCover, MangaDexCoverItem, MangaDexCoverResponse } from "@/types/mangadex";
-import { fetchAniListMedia } from './anilist';
+import { fetchAniListMedia, AniListCharacter } from './anilist';
+import { getTranslatedDescription } from "./translator";
 
 const MANGADEX_API_URL = "https://api.mangadex.org";
 const MANGADEX_COVERS_URL = "https://uploads.mangadex.org";
@@ -73,6 +74,12 @@ export const fetchMangaCovers = cache(async (mangaId: string): Promise<MangaCove
   }
 });
 
+/**
+ * Obtiene la información detallada de un manga por su ID (UUID) aplicando estrategia en cascada:
+ * 1. Intenta obtener la descripción, personajes y URLs desde AniList (con caché en Supabase `anilist-<uuid>`).
+ * 2. Si AniList no tiene la obra o carece de descripción, rescata la descripción nativa de MangaDex, 
+ *    la limpia, la traduce y la almacena en caché usando el prefijo `mangadex-<uuid>`.
+ */
 export const getMangaById = cache(async (id: string): Promise<MangaResponse | null> => {
   try {
     const res = await fetch(`${MANGADEX_API_URL}/manga/${id}?includes[]=cover_art&includes[]=author`, {
@@ -85,7 +92,6 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
     const titlesToTry: string[] = [];
     const origLang = attrs.originalLanguage;
 
-    // Priorización inteligente basada en el idioma original de la obra
     if (origLang === 'ko') {
       if (attrs.title.ko) titlesToTry.push(attrs.title.ko);
       if (attrs.title["ko-ro"]) titlesToTry.push(attrs.title["ko-ro"]);
@@ -118,22 +124,50 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
 
     const uniqueTitlesToTry = Array.from(new Set(titlesToTry.filter(Boolean)));
     
-    // AQUÍ ESTÁ EL CAMBIO CLAVE: Le pasamos 'id' (el UUID de MangaDex) para que la caché use `anilist-<uuid>`
     const [aniData, covers, rating] = await Promise.all([
       fetchAniListMedia(uniqueTitlesToTry, id),
       fetchMangaCovers(id),
       fetchMangaRating(id)
     ]);
 
-    const finalDesc = aniData ? aniData.description : "No hay descripción disponible.";
-    const finalUrl = aniData ? aniData.url : undefined;
-    const finalCharacters = aniData ? aniData.characters : [];
+    let finalDesc = "";
+    let finalUrl = undefined;
+    let sourceName: "AniList" | "MangaDex" = "AniList"; // <-- 1. Declarar la fuente por defecto
+    let finalCharacters: AniListCharacter[] = [];
+
+    if (aniData && aniData.description) {
+      finalDesc = aniData.description;
+      finalUrl = aniData.url;
+      sourceName = "AniList"; // <-- 2. Indicar que viene de AniList
+      finalCharacters = aniData.characters;
+    } else {
+      console.log(`AniList no encontró el manga con ID (${id}). Usando descripción en cascada de MangaDex...`);
+      
+      const rawDesc =
+        attrs.description.es ||
+        attrs.description["es-la"] ||
+        attrs.description.en ||
+        "";
+
+      const cleaned = cleanDescription(rawDesc);
+
+      if (cleaned && cleaned !== "Sin descripción disponible.") {
+        const cacheId = `mangadex-${id}`;
+        finalDesc = await getTranslatedDescription(cacheId, cleaned);
+      } else {
+        finalDesc = "No hay descripción disponible.";
+      }
+
+      sourceName = "MangaDex"; // <-- 3. Indicar que activó la cascada de MangaDex
+      finalUrl = `https://mangadex.org/title/${id}`; // <-- 4. Asegurar la URL de MangaDex
+    }
     
     const mangaData = mapMangaData(json.data, rating, finalDesc);
     
     return { 
       ...mangaData, 
       descriptionUrl: finalUrl,
+      sourceName: sourceName, // <-- 5. Retornar el sourceName al componente
       characters: finalCharacters,
       covers: covers 
     };
@@ -163,6 +197,7 @@ function mapMangaData(
     hiatus: "En pausa",
     cancelled: "Cancelado",
   };
+
   const title =
     attrs.title.es ||
     attrs.title["es-la"] ||
@@ -174,7 +209,7 @@ function mapMangaData(
     attrs.description.es ||
     attrs.description["es-la"] ||
     attrs.description.en ||
-    "";
+    ""
 
   const coverFile = manga.relationships.find((r) => r.type === "cover_art")
     ?.attributes?.fileName;
@@ -188,6 +223,9 @@ function mapMangaData(
     ? `/api/proxy/pages?url=${encodeURIComponent(rawCoverUrl)}` 
     : "/placeholder.jpg";
 
+  // Normalizamos a minúsculas para que coincida de forma segura con las claves del statusMap
+  const mangaStatus = attrs.status ? attrs.status.toLowerCase() : "ongoing";
+
   return {
     id: manga.id,
     title: title,
@@ -195,7 +233,7 @@ function mapMangaData(
     altTitles: attrs.altTitles || [],
     description: customDesc || cleanDescription(rawDesc),
     coverUrl: coverUrl,
-    status: statusMap[attrs.status] || "En curso",
+    status: statusMap[mangaStatus] || "En curso",
     tags: attrs.tags.map((t) => t.attributes.name.en),
     rating: rating,
   };
