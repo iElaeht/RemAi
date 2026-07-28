@@ -1,8 +1,7 @@
-// components/manga/tabs/DescriptionTab.tsx
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 
 interface DescriptionTabProps {
   description: string;
@@ -14,118 +13,127 @@ export default function DescriptionTab({ description, sourceUrl }: DescriptionTa
   const [showButton, setShowButton] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Aseguramos la medición del contenido para mostrar el botón
+  // Comprobamos si el contenido excede la altura para mostrar el botón de expandir
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (contentRef.current && contentRef.current.scrollHeight > 320) {
+      if (contentRef.current && contentRef.current.scrollHeight > 280) {
         setShowButton(true);
       }
     }, 100);
     return () => clearTimeout(timer);
   }, [description]);
 
-  const parsedBlocks = useMemo(() => {
-    if (!description) return [];
+  // Parseo inteligente y limpio de la descripción
+  const parsedContent = useMemo(() => {
+    if (!description) return { paragraphs: [], notes: [] };
 
-    const cleaned = description.replace(/\(Fuente:.*?\)/gi, "").trim();
+    // Limpiamos cualquier rastro de fuentes tipo (Source: ...) o (Fuente: ...)
+    const cleaned = description
+      .replace(/\((Source|Fuente):.*?\)/gi, "")
+      .replace(/\[Source:.*?\]/gi, "")
+      .trim();
 
-    return cleaned
-      .split(/\n|(?=Notes:|Notas:|Incluye|- )/i)
-      .map((part) => part.trim())
-      .filter(
-        (part) =>
-          part !== "" && part !== "-" && part !== "Notes:" && part !== "Notas:",
-      )
-      .map((part) => {
-        // 1. Detección de etiqueta (Notas)
-        if (
-          part.toLowerCase().startsWith("notas") ||
-          part.toLowerCase().startsWith("notes")
-        ) {
-          return { type: "label", content: part.replace(/:/g, "") };
-        }
-        // 2. Detección de lista (Guiones, números o la palabra Incluye)
-        if (
-          part.startsWith("-") ||
-          part.match(/^\d+\./) ||
-          part.toLowerCase().startsWith("incluye")
-        ) {
-          const content = part.startsWith("-") ? part.replace(/^- /, "") : part;
-          return { type: "list", content: content };
-        }
-        return { type: "paragraph", content: part };
-      });
+    // Separamos el texto principal de notas o avisos especiales (ej. "Nota:", "Notes:")
+    const parts = cleaned.split(/(?=Notes:|Notas:|Nota:)/i);
+    const mainText = parts[0]?.trim() || "";
+    const noteTexts = parts.slice(1).join("\n").trim();
+
+    // Dividimos el texto principal en párrafos reales basados en saltos de línea dobles o simples bien formados
+    const paragraphs = mainText
+      .split(/\n\s*\n/)
+      .map((p) => p.replace(/\n/g, " ").trim())
+      .filter(Boolean);
+
+    // Procesamos las notas o listas si existen
+    const notes = noteTexts
+      ? noteTexts
+          .split(/\n|-|\u2022/)
+          .map((n) => n.trim())
+          .filter((n) => n !== "" && !n.toLowerCase().startsWith("notes") && !n.toLowerCase().startsWith("notas") && !n.toLowerCase().startsWith("nota"))
+      : [];
+
+    return { paragraphs, notes };
   }, [description]);
 
   return (
     <div className="w-full">
       {/* Encabezado */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1 sm:px-2">
-        <h3 className="text-white font-bold text-sm sm:text-base">Detalles :</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 px-1">
+        <h3 className="text-white font-bold text-sm sm:text-base tracking-wide flex items-center gap-2">
+          <span className="w-1.5 h-4 bg-red-500 rounded-full" />
+          Sinopsis y Detalles
+        </h3>
         {sourceUrl && (
           <a
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-[0.2em] font-bold"
+            className="flex items-center gap-1.5 text-[10px] text-neutral-400 hover:text-red-400 transition-colors uppercase tracking-[0.2em] font-semibold bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 px-2.5 py-1 rounded-lg"
           >
-            <ExternalLink size={12} /> Fuente: AniList
+            <ExternalLink size={11} /> AniList
           </a>
         )}
       </div>
 
-      {/* Contenedor principal */}
+      {/* Contenedor principal con efecto de colapso */}
       <div
-        className={`relative bg-white/[0.03] rounded-2xl border border-white/5 p-4 sm:p-8 transition-all duration-500 ease-in-out ${
-          isExpanded ? "max-h-[2000px]" : "max-h-[320px]"
+        className={`relative bg-[#0d1322]/80 backdrop-blur-md rounded-2xl border border-white/5 p-5 sm:p-7 transition-all duration-500 ease-in-out ${
+          isExpanded ? "max-h-[3000px]" : "max-h-[280px]"
         } overflow-hidden`}
       >
-        <div ref={contentRef} className="space-y-3 sm:space-y-4">
-          {parsedBlocks.map((block, index) => {
-            if (block.type === "label") {
-              return (
-                <h4
-                  key={index}
-                  className="text-blue-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-4 sm:mt-6 mb-2"
-                >
-                  {block.content}
-                </h4>
-              );
-            }
-            if (block.type === "list") {
-              return (
-                <div
-                  key={index}
-                  className="text-gray-400 text-xs sm:text-sm italic py-1 pl-3 sm:pl-4 border-l-2 border-gray-700/50"
-                >
-                  • {block.content}
-                </div>
-              );
-            }
-            return (
-              <p
-                key={index}
-                className="text-gray-300 text-xs sm:text-sm leading-relaxed sm:text-justify mb-3 sm:mb-4"
-              >
-                {block.content}
+        <div ref={contentRef} className="space-y-4 text-neutral-300 text-xs sm:text-sm leading-relaxed">
+          {/* Párrafos principales */}
+          {parsedContent.paragraphs.length > 0 ? (
+            parsedContent.paragraphs.map((paragraph, index) => (
+              <p key={index} className="text-justify font-normal tracking-normal text-neutral-300/90">
+                {paragraph}
               </p>
-            );
-          })}
+            ))
+          ) : (
+            <p className="text-neutral-500 italic text-center py-4">No hay descripción disponible.</p>
+          )}
+
+          {/* Bloque estilizado para Notas o Avisos (Listas limpias) */}
+          {parsedContent.notes.length > 0 && (
+            <div className="mt-5 pt-4 border-t border-white/10 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400 block mb-2">
+                Notas importantes
+              </span>
+              <ul className="space-y-2">
+                {parsedContent.notes.map((note, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-xs text-neutral-400 bg-black/20 p-2.5 rounded-xl border border-white/[0.02]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
+                    <span className="leading-normal">{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
-        {/* Gradiente de desvanecimiento */}
+        {/* Gradiente de desvanecimiento cuando está colapsado */}
         {!isExpanded && showButton && (
-          <div className="absolute bottom-0 left-0 w-full h-32 sm:h-40 bg-gradient-to-t from-[#0b101d] via-[#0b101d]/80 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0d1322] via-[#0d1322]/80 to-transparent pointer-events-none" />
         )}
       </div>
 
-      {/* Botón Mostrar más */}
+      {/* Botón Mostrar más / Mostrar menos */}
       {showButton && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-4 sm:mt-6 w-full py-2.5 sm:py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 text-gray-300 text-[10px] font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-2"
+          className="mt-3.5 w-full py-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 text-neutral-400 hover:text-white text-[10px] font-bold uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-2 cursor-pointer group"
         >
-          {isExpanded ? <>▲ CERRAR DESCRIPCIÓN</> : <>▼ LEER MÁS</>}
+          {isExpanded ? (
+            <>
+              <span>Cerrar descripción</span>
+              <ChevronUp size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+            </>
+          ) : (
+            <>
+              <span>Leer descripción completa</span>
+              <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
+            </>
+          )}
         </button>
       )}
     </div>

@@ -14,6 +14,7 @@ interface MangaDexManga {
     description: Record<string, string>;
     altTitles: Array<Record<string, string>>;
     status: string;
+    originalLanguage: string;
     tags: Array<{ attributes: { name: { en: string } } }>;
   };
   relationships: Array<{
@@ -81,14 +82,45 @@ export const getMangaById = cache(async (id: string): Promise<MangaResponse | nu
     const json = await res.json();
     const attrs = json.data.attributes;
 
-    const title = 
-      attrs.title.es || 
-      attrs.title["es-la"] || 
-      attrs.title.en || 
-      Object.values(attrs.title)[0] as string;
+    const titlesToTry: string[] = [];
+    const origLang = attrs.originalLanguage;
+
+    // Priorización inteligente basada en el idioma original de la obra
+    if (origLang === 'ko') {
+      if (attrs.title.ko) titlesToTry.push(attrs.title.ko);
+      if (attrs.title["ko-ro"]) titlesToTry.push(attrs.title["ko-ro"]);
+      if (attrs.title.en) titlesToTry.push(attrs.title.en);
+    } else if (origLang === 'zh') {
+      if (attrs.title.zh) titlesToTry.push(attrs.title.zh);
+      if (attrs.title["zh-ro"]) titlesToTry.push(attrs.title["zh-ro"]);
+      if (attrs.title.en) titlesToTry.push(attrs.title.en);
+    } else {
+      if (attrs.title.ja) titlesToTry.push(attrs.title.ja);
+      if (attrs.title.en) titlesToTry.push(attrs.title.en);
+    }
+
+    if (attrs.title["es-la"]) titlesToTry.push(attrs.title["es-la"]);
+    if (attrs.title.es) titlesToTry.push(attrs.title.es);
+
+    Object.values(attrs.title).forEach((t) => {
+      if (t && typeof t === 'string') titlesToTry.push(t);
+    });
+
+    if (attrs.altTitles && Array.isArray(attrs.altTitles)) {
+      attrs.altTitles.forEach((altObj: Record<string, string>) => {
+        Object.values(altObj).forEach((altTitle) => {
+          if (altTitle && typeof altTitle === 'string') {
+            titlesToTry.push(altTitle);
+          }
+        });
+      });
+    }
+
+    const uniqueTitlesToTry = Array.from(new Set(titlesToTry.filter(Boolean)));
     
+    // AQUÍ ESTÁ EL CAMBIO CLAVE: Le pasamos 'id' (el UUID de MangaDex) para que la caché use `anilist-<uuid>`
     const [aniData, covers, rating] = await Promise.all([
-      fetchAniListMedia(title),
+      fetchAniListMedia(uniqueTitlesToTry, id),
       fetchMangaCovers(id),
       fetchMangaRating(id)
     ]);
@@ -137,6 +169,7 @@ function mapMangaData(
     attrs.title.en ||
     Object.values(attrs.title)[0] ||
     "Sin título";
+  
   const rawDesc =
     attrs.description.es ||
     attrs.description["es-la"] ||
