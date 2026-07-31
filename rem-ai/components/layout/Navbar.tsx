@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Menu, X, Heart, ChevronDown, BookOpen, Book, Compass, MessageSquareCode } from "lucide-react";
+import { Menu, X, Heart, ChevronDown, BookOpen, Book, Compass, MessageSquareCode, Bookmark } from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
@@ -12,6 +12,10 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [isMobileLibraryOpen, setIsMobileLibraryOpen] = useState(false);
+  
+  // Estado para el mensaje temporal en móvil cuando no está autenticado
+  const [favoritesMobileMsg, setFavoritesMobileMsg] = useState(false);
+
   const { isSignedIn, isLoaded } = useUser();
 
   const isActive = (path: string) => pathname === path;
@@ -64,6 +68,17 @@ export default function Navbar() {
 
   // Icono dinámico para el botón Biblioteca según la sección activa
   const LibraryIcon = isActive("/mangas") ? BookOpen : isActive("/manhwas") ? Book : BookOpen;
+
+  // Manejador para clics en Favoritos cuando no está logueado en móvil
+  const handleMobileFavoritesClick = (e: React.MouseEvent) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      setFavoritesMobileMsg(true);
+      setTimeout(() => setFavoritesMobileMsg(false), 3500);
+    } else {
+      setIsMenuOpen(false);
+    }
+  };
 
   return (
     <nav className={`w-full border-b ${theme.border} ${theme.navBg} h-16 flex items-center justify-between px-6 md:px-12 static select-none z-50 transition-colors duration-300`}>
@@ -120,6 +135,27 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Enlace de Favoritos (Inteligente para Desktop: deshabilitado si no hay sesión con tooltip hacia abajo) */}
+          {isSignedIn ? (
+            <Link
+              href="/favorites"
+              className={`text-sm flex items-center gap-2 transition-all duration-200 px-3 py-1.5 rounded-lg ${isActive("/favorites") ? theme.activeLink : `text-neutral-400 ${theme.hoverText}`}`}
+            >
+              <Bookmark size={15} />
+              <span>Favoritos</span>
+            </Link>
+          ) : (
+            <div className="relative group/fav">
+              <span className="text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg text-neutral-600 cursor-not-allowed select-none">
+                <Bookmark size={15} />
+                <span>Favoritos</span>
+              </span>
+              <div className="absolute left-0 top-full mt-2 hidden group-hover/fav:flex px-3 py-1.5 bg-neutral-900 border border-white/10 text-neutral-300 text-xs rounded-md shadow-xl whitespace-nowrap z-50">
+                Inicia sesión para ver tus favoritos
+              </div>
+            </div>
+          )}
 
           <Link
             href="/feedback"
@@ -214,6 +250,29 @@ export default function Navbar() {
                   <span>Manhwas</span>
                 </Link>
               </div>
+            )}
+          </div>
+
+          {/* Enlace de Favoritos en Móvil (Inteligente: muestra mensaje abajo) */}
+          <div className="flex flex-col gap-1.5">
+            <Link
+              href={isSignedIn ? "/favorites" : "#"}
+              onClick={handleMobileFavoritesClick}
+              className={`text-base font-medium flex items-center gap-3 py-1 ${
+                !isSignedIn 
+                  ? "text-neutral-600 cursor-not-allowed" 
+                  : isActive("/favorites") 
+                  ? theme.accentText 
+                  : "text-neutral-400"
+              }`}
+            >
+              <Bookmark size={18} />
+              <span>Favoritos</span>
+            </Link>
+            {favoritesMobileMsg && (
+              <span className="text-xs text-amber-400/90 pl-7 animate-in fade-in duration-300">
+                Inicia sesión para ver tus favoritos
+              </span>
             )}
           </div>
 

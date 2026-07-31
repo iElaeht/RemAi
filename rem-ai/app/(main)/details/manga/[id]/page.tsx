@@ -5,6 +5,8 @@ import Comments from "@/components/manga/comments/Comments";
 import SimilarMangas from "@/components/manga/similar/SimilarMangas";
 import { supabasePublic } from "@/lib/supabase";
 import { Comment } from "@/types/comment";
+import { auth } from "@clerk/nextjs/server";
+import { checkIsFavorite } from "@/actions/Favorites";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -28,11 +30,18 @@ export default async function MangaPage({ params }: PageProps) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
 
-  // 1. Obtenemos el manga para tener sus tags y pasarle a la función de similares
-  const manga = await getMangaById(id);
+  // 1. Obtenemos el usuario de Clerk y validamos si es favorito de manera eficiente
+  const { userId } = await auth();
+
+  // 2. Obtenemos el manga y el estado de favorito en paralelo
+  const [manga, isFavorite] = await Promise.all([
+    getMangaById(id),
+    userId ? checkIsFavorite(userId, id) : Promise.resolve(false),
+  ]);
+
   if (!manga) notFound();
 
-  // 2. Ejecutamos comentarios y búsqueda de similares en paralelo
+  // 3. Ejecutamos comentarios y búsqueda de similares en paralelo
   const [commentsResponse, similarMangas] = await Promise.all([
     supabasePublic
       .from("comments")
@@ -48,8 +57,12 @@ export default async function MangaPage({ params }: PageProps) {
     <main className="bg-[#0b1120] min-h-screen text-white p-4 md:p-6 lg:p-8">
       <div className="max-w-[1200px] mx-auto flex flex-col gap-12 animate-in fade-in duration-500">
         
-        {/* Sección Manga */}
-        <MangaView manga={manga} />
+        {/* Sección Manga (Con los props de favoritos inyectados) */}
+        <MangaView 
+          manga={manga} 
+          userId={userId} 
+          initialIsFavorite={isFavorite} 
+        />
 
         {/* Sección Mangas Similares */}
         {similarMangas.length > 0 && (

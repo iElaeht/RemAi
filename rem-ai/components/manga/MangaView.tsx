@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import MangaDetailsContainer from "./MangaDetailsContainer";
 import ChapterSidebar from "./ChapterSidebar";
+import FavoriteButton from "./FavoriteButton";
 import { MangaResponse } from "@/types/mangadex";
 import { getTagIdByName, tagToSlug } from "@/service/tagService";
 import { List, BookOpen, Tag, User, X, Star, Clock } from "lucide-react";
@@ -17,7 +18,17 @@ const createSlug = (text: string) => {
     .replace(/(^-|-$)+/g, "");
 };
 
-export default function MangaView({ manga }: { manga: MangaResponse }) {
+interface MangaViewProps {
+  manga: MangaResponse;
+  userId: string | null;
+  initialIsFavorite: boolean;
+}
+
+export default function MangaView({
+  manga,
+  userId,
+  initialIsFavorite,
+}: MangaViewProps) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>(() =>
@@ -29,15 +40,18 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAllTitles, setShowAllTitles] = useState(false);
-  
+
   const router = useRouter();
   const pathname = usePathname();
 
   // Detección dinámica: si la ruta actual incluye "manhwa", usamos ese prefijo; de lo contrario, "manga".
-  const watchBasePath = pathname.includes("manhwa") ? "/watch/manhwa" : "/watch/manga";
+  const watchBasePath = pathname.includes("manhwa")
+    ? "/watch/manhwa"
+    : "/watch/manga";
+  const contentType = pathname.includes("manhwa") ? "manhwa" : "manga";
 
   const rating = manga.rating || 0;
-  
+
   // Como manga.status ya viene mapeado desde mapMangaData (ej. "Finalizado", "En emisión", etc.),
   // podemos usarlo directamente o respaldarlo por si acaso.
   const statusLabel = manga.status || "En emisión";
@@ -72,7 +86,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
     if (firstChapter) {
       const mangaSlug = createSlug(manga.title);
       router.push(
-        `${watchBasePath}/${manga.id}/${firstChapter.language}/${firstChapter.id}/${mangaSlug}`
+        `${watchBasePath}/${manga.id}/${firstChapter.language}/${firstChapter.id}/${mangaSlug}`,
       );
     }
   };
@@ -213,11 +227,12 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
 
           {/* ACCIONES */}
           <div className="flex flex-col gap-3 mt-6">
-            <div className="flex justify-center gap-3 w-full">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 w-full">
+              {/* Botón Capítulos */}
               <button
                 onClick={() => setIsSidebarOpen(true)}
                 disabled={chapters.length === 0}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all w-full md:w-auto ${
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all w-full sm:w-auto ${
                   chapters.length === 0
                     ? "bg-white/5 text-gray-600 cursor-not-allowed"
                     : "bg-white/5 hover:bg-white/10 text-white"
@@ -226,10 +241,23 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
                 <List size={18} /> Capítulos
               </button>
 
+              {/* Botón Favorito */}
+              <div className="flex items-center justify-center w-full sm:w-auto">
+                <FavoriteButton
+                  userId={userId}
+                  mangaId={manga.id}
+                  title={manga.title}
+                  coverImage={manga.coverUrl}
+                  type={contentType}
+                  initialIsFavorite={initialIsFavorite}
+                />
+              </div>
+
+              {/* Botón Leer */}
               <button
                 onClick={handleReadNow}
                 disabled={loading || !firstChapter}
-                className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold transition-all w-full md:w-auto ${
+                className={`flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold transition-all w-full sm:w-auto ${
                   loading || !firstChapter
                     ? "bg-gray-800 text-gray-500 cursor-not-allowed"
                     : "bg-pink-600 hover:bg-pink-500 text-white"
@@ -267,7 +295,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
           />
         </div>
       )}
-      
+
       {/* Sidebar de Capítulos */}
       <ChapterSidebar
         isOpen={isSidebarOpen}
@@ -277,7 +305,7 @@ export default function MangaView({ manga }: { manga: MangaResponse }) {
         setLang={setLang}
         loading={loading}
         mangaId={manga.id}
-        mangaTitle={manga.title} 
+        mangaTitle={manga.title}
       />
     </div>
   );
