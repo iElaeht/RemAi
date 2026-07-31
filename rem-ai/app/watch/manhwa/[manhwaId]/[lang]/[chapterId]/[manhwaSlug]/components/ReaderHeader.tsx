@@ -1,5 +1,6 @@
 'use client';
-import { Menu, ChevronLeft, ChevronRight, BookOpen, FileText, Layers, Bookmark } from 'lucide-react'; 
+import { useState, useRef, useEffect } from 'react';
+import { Menu, ChevronLeft, ChevronRight, BookOpen, Layers, Bookmark, LayoutTemplate, Rows2, Columns2, ChevronDown, Check } from 'lucide-react'; 
 import QuickSearch from './QuickSearch';
 
 interface ReaderHeaderProps {
@@ -11,8 +12,8 @@ interface ReaderHeaderProps {
   onOpenSidebar: () => void;
   onPrevChapter: () => void;
   onNextChapter: () => void;
-  readingMode: 'carousel' | 'vertical'; 
-  onToggleReadingMode: () => void;
+  readingMode: 'carousel' | 'vertical' | 'webtoon';
+  onToggleReadingMode: (mode: 'carousel' | 'vertical' | 'webtoon') => void;
 }
 
 export default function ReaderHeader({ 
@@ -29,8 +30,29 @@ export default function ReaderHeader({
 }: ReaderHeaderProps) {
   const isValidVolume = volume && volume !== "null" && volume !== "Sin Volumen" && volume !== "" && volume !== "0";
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar el menú si se hace clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Configuración de los iconos y etiquetas para cada modo de lectura
+  const modeConfig = {
+    carousel: { label: "Carrusel", icon: <LayoutTemplate size={14} className="text-red-400" /> },
+    vertical: { label: "Vertical", icon: <Rows2 size={14} className="text-red-400" /> },
+    webtoon: { label: "Webtoon", icon: <Columns2 size={14} className="text-red-400" /> },
+  };
+
   return (
-    <header className="w-full bg-[#0a0f1a]/95 backdrop-blur-md border-b border-white/5 px-3 py-2.5 sm:py-3 top-0 z-40 select-none shadow-lg">
+    <header className="w-full bg-[#0a0f1a]/95 backdrop-blur-md border-b border-white/5 px-3 py-2.5 sm:py-3 top-0 z-40 select-none shadow-lg shrink-0">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
         
         {/* FILA MOBILE 1 / WEB IZQUIERDA: Título y Autor */}
@@ -52,15 +74,8 @@ export default function ReaderHeader({
           {/* Botones rápidos en Mobile (Derecha de la fila 1) */}
           <div className="flex items-center gap-1 sm:hidden">
             <button 
-              onClick={onToggleReadingMode}
-              className="p-2 text-gray-300 hover:text-red-400 rounded-xl bg-white/5 transition-colors"
-              title={readingMode === 'carousel' ? "Modo vertical" : "Modo carrusel"}
-            >
-              {readingMode === 'carousel' ? <FileText size={18} /> : <BookOpen size={18} />}
-            </button>
-            <button 
               onClick={onOpenSidebar} 
-              className="p-2 text-gray-300 hover:text-white rounded-xl bg-white/5 transition-colors"
+              className="p-2 text-gray-300 hover:text-white rounded-xl bg-white/5 transition-colors cursor-pointer"
               title="Capítulos"
             >
               <Menu size={18} />
@@ -72,7 +87,7 @@ export default function ReaderHeader({
         <div className="flex items-center justify-between sm:absolute sm:left-1/2 sm:-translate-x-1/2 gap-1 sm:gap-2 border-t border-white/5 sm:border-t-0 pt-2 sm:pt-0">
           <button 
             onClick={onPrevChapter} 
-            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all cursor-pointer"
             title="Capítulo anterior"
           >
             <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
@@ -104,33 +119,68 @@ export default function ReaderHeader({
 
           <button 
             onClick={onNextChapter} 
-            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all cursor-pointer"
             title="Capítulo siguiente"
           >
             <ChevronRight size={20} className="sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        {/* WEB DERECHA: QuickSearch, Modo de Lectura y Sidebar */}
-        <div className="hidden sm:flex items-center gap-2 z-10">
+        {/* WEB DERECHA: QuickSearch, Selector de Modo de Lectura y Sidebar */}
+        <div className="hidden sm:flex items-center gap-2.5 z-10">
           
-          {/* QuickSearch sin props para evitar conflictos de TypeScript */}
           <QuickSearch />
 
-          <button 
-            onClick={onToggleReadingMode}
-            className="p-2 text-gray-300 hover:text-red-400 transition-all rounded-xl hover:bg-red-500/10 border border-transparent hover:border-red-500/20 flex items-center gap-1.5"
-            title={readingMode === 'carousel' ? "Cambiar a lectura vertical" : "Cambiar a carrusel"}
-          >
-            {readingMode === 'carousel' ? <FileText size={18} /> : <BookOpen size={18} />}
-            <span className="text-xs font-medium">
-              {readingMode === 'carousel' ? 'Vertical' : 'Carrusel'}
-            </span>
-          </button>
+          {/* Selector de Modo de Lectura Desplegable */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center justify-between gap-2 bg-white/[0.04] hover:bg-white/[0.08] text-gray-200 text-xs font-medium px-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:border-red-500/50 transition-all cursor-pointer shadow-inner min-w-[135px]"
+              title="Seleccionar formato de lectura"
+            >
+              <div className="flex items-center gap-2">
+                {modeConfig[readingMode]?.icon}
+                <span className="text-white font-semibold">{modeConfig[readingMode]?.label}</span>
+              </div>
+              <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-full min-w-[150px] bg-[#0e1422] border border-red-500/40 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.9)] overflow-hidden z-[99999] p-1">
+                {(Object.keys(modeConfig) as Array<keyof typeof modeConfig>).map((mode) => {
+                  const isSelected = readingMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => {
+                        onToggleReadingMode(mode);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left rounded-lg transition-all cursor-pointer ${
+                        isSelected 
+                          ? "bg-red-600 text-white font-semibold shadow-md" 
+                          : "text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={isSelected ? "text-white" : ""}>
+                          {modeConfig[mode].icon}
+                        </span>
+                        <span>{modeConfig[mode].label}</span>
+                      </div>
+                      {isSelected && <Check size={13} className="text-white shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <button 
             onClick={onOpenSidebar} 
-            className="p-2 text-gray-300 hover:text-white transition-all rounded-xl hover:bg-white/10 border border-white/5 flex items-center gap-1.5"
+            className="p-2 text-gray-300 hover:text-white transition-all rounded-xl hover:bg-white/10 border border-white/5 flex items-center gap-1.5 cursor-pointer"
             title="Abrir índice de capítulos"
           >
             <Menu size={18} />

@@ -51,14 +51,14 @@ export default function ReaderCarousel({
   }, [hash]);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#0a0f1a] flex flex-col select-none">
+    <div className="relative w-full h-full bg-[#0a0f1a] flex flex-col select-none overflow-hidden">
       
       {/* Header Interactivo del Carrusel */}
-      <div className={`w-full h-16 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-md gap-1.5 shrink-0 z-50 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+      <div className={`w-full h-14 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-md gap-1 shrink-0 z-30 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
         
         <button
           onClick={() => setIsPageModalOpen(true)}
-          className="group flex items-center gap-1.5 px-3 py-1 rounded-full transition-all cursor-pointer"
+          className="group flex items-center gap-1.5 px-3 py-0.5 rounded-full transition-all cursor-pointer"
           title="Abrir selector rápido de páginas"
         >
           <span className="text-gray-300 group-hover:text-white text-[11px] font-bold tracking-[0.15em] uppercase transition-colors">
@@ -76,7 +76,7 @@ export default function ReaderCarousel({
         ref={containerRef}
         onScroll={handleScroll}
         style={{ touchAction: "auto" }}
-        className={`flex-1 w-full flex flex-row ${isZoomed ? "overflow-hidden" : "overflow-hidden snap-x snap-mandatory"} scroll-smooth `}
+        className={`flex-1 w-full h-full flex flex-row ${isZoomed ? "overflow-hidden" : "overflow-x-auto overflow-y-hidden snap-x snap-mandatory"} scroll-smooth`}
       >
         {pages?.map((page: string, idx: number) => {
           const isCurrentPageZoomed = isZoomed && currentPage === idx + 1;
@@ -85,10 +85,10 @@ export default function ReaderCarousel({
             <div
               key={idx}
               id={`page-${idx}`}
-              className={`flex justify-center transition-all duration-300 ${
+              className={`flex justify-center items-center shrink-0 transition-all duration-300 ${
                 isCurrentPageZoomed
                   ? `fixed inset-0 z-[100] bg-[#0a0f1a] w-screen h-screen ${isTouch ? 'overflow-auto' : 'cursor-crosshair'}`
-                  : "min-w-full h-full pt-10 pb-2 snap-center items-center cursor-default"
+                  : "w-full h-full snap-center cursor-default p-2"
               }`}
               onMouseMove={(e) => !isTouch && isCurrentPageZoomed && handleInteraction(e.clientX, e.clientY, e.currentTarget)}
               onClick={(e) => {
@@ -108,13 +108,13 @@ export default function ReaderCarousel({
                 }
               }}
             >
-              <div className={`relative flex items-center justify-center ${isCurrentPageZoomed ? "w-full h-full" : ""}`}>
+              <div className={`relative flex items-center justify-center w-full h-full`}>
                 <img
                   src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
                   alt={`Página ${idx + 1}`}
                   draggable="false"
-                  className={`object-contain select-none transition-transform duration-100 ease-linear ${
-                    isCurrentPageZoomed && isTouch ? "w-[200%] max-w-none h-auto" : "max-h-[95dvh]"
+                  className={`object-contain select-none transition-transform duration-100 ease-linear max-w-full max-h-full ${
+                    isCurrentPageZoomed && isTouch ? "w-[200%] max-w-none h-auto" : ""
                   }`}
                   style={{
                     transform: (isCurrentPageZoomed && !isTouch) 
@@ -142,7 +142,7 @@ export default function ReaderCarousel({
               </div>
               <button 
                 onClick={() => setIsPageModalOpen(false)}
-                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all"
+                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
                 aria-label="Cerrar modal"
               >
                 <X size={16} />
@@ -157,7 +157,7 @@ export default function ReaderCarousel({
                   <button
                     key={idx}
                     onClick={() => jumpToPage(idx)}
-                    className={`h-12 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center border ${
+                    className={`h-12 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center border cursor-pointer ${
                       isSelected
                         ? "bg-red-600 border-red-400 text-white shadow-lg shadow-red-900/40 scale-105"
                         : "bg-white/[0.03] border-white/5 text-neutral-300 hover:bg-white/10 hover:border-white/10 hover:text-white"

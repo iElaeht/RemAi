@@ -2,12 +2,13 @@
 
 import ReaderCarousel from "./ReaderCarousel";
 import ReaderVertical from "./ReaderVertical";
+import ReaderWebtoon from "./ReaderWebtoon";
 
 interface ReaderViewProps {
   pages: string[];
   baseUrl: string;
   hash: string;
-  mode: "carousel" | "vertical";
+  mode: "carousel" | "vertical" | "webtoon";
   onNextChapter?: () => void;
   onPrevChapter?: () => void;
 }
@@ -22,10 +23,15 @@ export default function ReaderView({
 }: ReaderViewProps) {
   
   // Decidimos qué renderizar basándonos en la prop 'mode'
-  const ReaderComponent = mode === "carousel" ? ReaderCarousel : ReaderVertical;
+  let ReaderComponent = ReaderCarousel;
+  if (mode === "vertical") {
+    ReaderComponent = ReaderVertical;
+  } else if (mode === "webtoon") {
+    ReaderComponent = ReaderWebtoon;
+  }
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full h-full overflow-hidden">
       <ReaderComponent
         pages={pages}
         baseUrl={baseUrl}

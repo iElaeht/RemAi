@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useZoom } from "@/Hooks/useZoom";
 
 interface ReaderVerticalProps {
@@ -19,6 +19,7 @@ export default function ReaderVertical({
 }: ReaderVerticalProps) {
   const { isZoomed, setIsZoomed, offset, isTouch, handleInteraction, resetZoom } = useZoom();
   const [activeZoomIdx, setActiveZoomIdx] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,7 +36,10 @@ export default function ReaderVertical({
   };
 
   return (
-    <div className={`relative w-full min-h-screen bg-[#0a0f1a] flex flex-col select-none ${isZoomed ? "overflow-hidden" : ""}`}>
+    <div 
+      ref={containerRef}
+      className={`relative w-full h-full bg-[#0a0f1a] flex flex-col select-none overflow-y-auto custom-scrollbar ${isZoomed ? "overflow-hidden" : ""}`}
+    >
       <div className="w-full flex flex-col items-center">
         {pages?.map((page: string, idx: number) => {
           const isThisPageZoomed = isZoomed && activeZoomIdx === idx;
@@ -59,7 +63,6 @@ export default function ReaderVertical({
                   return;
                 }
 
-                // Guardamos la referencia y posición ANTES del timeout
                 const target = e.currentTarget;
                 const clientX = e.clientX;
                 

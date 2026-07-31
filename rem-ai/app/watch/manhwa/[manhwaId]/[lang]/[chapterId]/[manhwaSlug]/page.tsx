@@ -35,14 +35,16 @@ interface ReaderContentProps {
   mangaSlug: string;
 }
 
+type ReadingMode = "carousel" | "vertical" | "webtoon";
+
 function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentProps) {
   const router = useRouter();
 
-  const [readingMode, setReadingMode] = useState<"carousel" | "vertical">(
+  const [readingMode, setReadingMode] = useState<ReadingMode>(
     () => {
       if (typeof window !== "undefined") {
         const savedMode = localStorage.getItem("reading_mode");
-        return savedMode === "carousel" || savedMode === "vertical"
+        return savedMode === "carousel" || savedMode === "vertical" || savedMode === "webtoon"
           ? savedMode
           : "carousel";
       }
@@ -56,10 +58,9 @@ function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentPro
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
 
-  const toggleReadingMode = () => {
-    const newMode = readingMode === "carousel" ? "vertical" : "carousel";
-    setReadingMode(newMode);
-    localStorage.setItem("reading_mode", newMode);
+  const handleToggleReadingMode = (mode: ReadingMode) => {
+    setReadingMode(mode);
+    localStorage.setItem("reading_mode", mode);
   };
 
   useEffect(() => {
@@ -136,7 +137,7 @@ function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentPro
     );
 
   return (
-    <main className="w-full bg-[#0a0f1a] min-h-screen">
+    <main className="w-full bg-[#0a0f1a] min-h-screen flex flex-col h-screen overflow-hidden">
       <ReaderHeader
         mangaTitle={data.mangaTitle}
         author={data.author}
@@ -147,17 +148,19 @@ function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentPro
         onPrevChapter={() => navigateChapter("prev")}
         onNextChapter={() => navigateChapter("next")}
         readingMode={readingMode}
-        onToggleReadingMode={toggleReadingMode}
+        onToggleReadingMode={handleToggleReadingMode}
       />
 
-      <ReaderView
-        pages={data.pages}
-        baseUrl={data.baseUrl}
-        hash={data.chapterHash}
-        mode={readingMode}
-        onNextChapter={() => navigateChapter("next")}
-        onPrevChapter={() => navigateChapter("prev")}
-      />
+      <div className="flex-1 w-full overflow-hidden relative">
+        <ReaderView
+          pages={data.pages}
+          baseUrl={data.baseUrl}
+          hash={data.chapterHash}
+          mode={readingMode}
+          onNextChapter={() => navigateChapter("next")}
+          onPrevChapter={() => navigateChapter("prev")}
+        />
+      </div>
 
       <ChapterSidebar
         isOpen={isSidebarOpen}
