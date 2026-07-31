@@ -15,7 +15,7 @@ export default function Navbar() {
   
   // Estado para el mensaje temporal en móvil cuando no está autenticado
   const [favoritesMobileMsg, setFavoritesMobileMsg] = useState(false);
-
+  
   const { isSignedIn, isLoaded } = useUser();
 
   const isActive = (path: string) => pathname === path;

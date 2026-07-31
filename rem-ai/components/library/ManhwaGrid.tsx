@@ -34,8 +34,30 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 sm:gap-4 mb-16">
       {isLoading ? (
-        [...Array(24)].map((_, i) => (
-          <div key={i} className="aspect-[3/4] bg-[#170a0d] rounded-xl animate-pulse" />
+        /* SKELETON LOADER PROFESIONAL PARA MANHWAS */
+        [...Array(16)].map((_, i) => (
+          <div 
+            key={i} 
+            className="flex flex-col gap-1.5 p-2 rounded-xl bg-[#170a0d] border border-white/5 animate-pulse select-none"
+          >
+            {/* Esqueleto de Imagen / Cover */}
+            <div className="aspect-[3/4] rounded-lg bg-white/5 w-full" />
+
+            {/* Esqueleto de Información */}
+            <div className="flex flex-col px-0.5 gap-2 mt-1">
+              {/* Título */}
+              <div className="h-3.5 bg-white/10 rounded-md w-4/5" />
+              
+              {/* Autor y Rating */}
+              <div className="flex items-center justify-between">
+                <div className="h-2.5 bg-white/5 rounded-md w-1/2" />
+                <div className="h-2.5 bg-yellow-500/10 rounded-md w-1/4" />
+              </div>
+
+              {/* Géneros */}
+              <div className="h-2.5 bg-white/5 rounded-md w-3/4 mt-0.5" />
+            </div>
+          </div>
         ))
       ) : (
         manhwas.map((manhwa) => {

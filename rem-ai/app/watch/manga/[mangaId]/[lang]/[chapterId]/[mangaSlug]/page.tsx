@@ -35,6 +35,41 @@ interface ReaderContentProps {
   mangaSlug: string;
 }
 
+// Componente auxiliar para el diseño de carga (Skeleton)
+function ReaderLoadingSkeleton() {
+  return (
+    <main className="w-full bg-[#0a0f1a] min-h-screen text-white flex flex-col select-none overflow-hidden animate-in fade-in duration-300">
+      {/* Esqueleto de la barra superior (estático y sin parpadeos) */}
+      <header className="w-full h-16 bg-[#111827]/80 border-b border-white/5 flex items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/5 border border-white/5 rounded-xl" />
+          <div className="space-y-1.5">
+            <div className="h-4 bg-white/10 rounded-md w-36 md:w-56" />
+            <div className="h-3 bg-white/5 rounded-md w-24" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/5 border border-white/5 rounded-xl hidden sm:block" />
+          <div className="w-9 h-9 bg-white/10 border border-white/5 rounded-xl" />
+          <div className="w-20 h-9 bg-white/5 border border-white/5 rounded-xl hidden sm:block" />
+        </div>
+      </header>
+
+      {/* Esqueleto de la zona de páginas central (estable con spinner fluido) */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-2xl aspect-[3/4] bg-[#111827]/60 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+          </div>
+          <p className="text-xs text-neutral-400 font-medium tracking-wide">
+            Cargando páginas del capítulo...
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentProps) {
   const router = useRouter();
 
@@ -128,12 +163,7 @@ function ReaderContent({ mangaId, lang, chapterId, mangaSlug }: ReaderContentPro
     }
   };
 
-  if (!data)
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
-        <div className="animate-pulse">Cargando...</div>
-      </div>
-    );
+  if (!data) return <ReaderLoadingSkeleton />;
 
   return (
     <main className="w-full bg-[#0a0f1a] min-h-screen">
@@ -190,13 +220,7 @@ export default function LectorManga({
 }) {
   const resolvedParams = use(params);
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen bg-[#0a0f1a] text-white">
-          <div className="animate-pulse">Cargando...</div>
-        </div>
-      }
-    >
+    <Suspense fallback={<ReaderLoadingSkeleton />}>
       <ReaderContent
         mangaId={resolvedParams.mangaId}
         lang={resolvedParams.lang}

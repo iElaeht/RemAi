@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">1. Información que recopilamos</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              En RemAi, valoramos la transparencia. Recopilamos únicamente la información básica necesaria proporcionada al iniciar sesión, como su correo electrónico o nombre de usuario a través de nuestro proveedor de autenticación.
+              En MangasRem, valoramos la transparencia. Recopilamos únicamente la información básica necesaria proporcionada al iniciar sesión, como su correo electrónico o nombre de usuario a través de nuestro proveedor de autenticación.
             </p>
           </section>
 
@@ -47,13 +47,12 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">5. Contacto</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              Para cualquier consulta sobre nuestra política de privacidad, puede contactarnos a través de nuestro servidor de Discord:{" "}
-              {/* <a href="/" className="text-sky-600 underline font-semibold">Discord Oficial</a> */}
+              Para cualquier consulta sobre nuestra política de privacidad, puede contactarnos a través de nuestro servidor de Discord oficial.
             </p>
           </section>
 
           <footer className="pt-12 border-t border-neutral-200 text-sm text-neutral-500">
-            &copy; 2026 RemAi. Todos los derechos reservados.
+            &copy; 2026 MangasRem. Todos los derechos reservados.
           </footer>
         </div>
       </main>

@@ -7,6 +7,7 @@ import SearchFilter from "@/components/features/SearchFilter";
 import MangaGrid from "@/components/library/MangaGrid";
 import Pagination from "@/components/common/Pagination";
 import { SortOption, StatusOption } from "@/types/mangadex";
+import { SearchX } from "lucide-react";
 
 interface LibraryContentProps {
   initialTagId?: string;
@@ -117,6 +118,9 @@ export default function LibraryContent({ initialTagId }: LibraryContentProps) {
     router.push(`${currentBasePath}?page=1&sort=rating&status=all`);
   };
 
+  // Obtenemos el texto de búsqueda actual de los parámetros de la URL para mostrarlo en el mensaje
+  const activeSearchTerm = searchParams.get("search");
+
   return (
     <main className="relative bg-[#090d16] min-h-screen text-white p-4 md:p-6 lg:px-24 overflow-x-hidden selection:bg-pink-500 selection:text-white">
       {/* Luz ambiental superior sutil */}
@@ -137,18 +141,45 @@ export default function LibraryContent({ initialTagId }: LibraryContentProps) {
           setStatus={(val) => updateUrlParams({ status: val })}
         />
 
-        <MangaGrid mangas={mangas} isLoading={isLoading} />
+        {/* Mensaje cuando no hay resultados de búsqueda o filtros */}
+        {!isLoading && mangas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white/[0.02] border border-white/5 rounded-2xl mt-8">
+            <div className="w-16 h-16 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+              <SearchX size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">
+              No se encontraron resultados
+            </h3>
+            <p className="text-neutral-400 text-sm max-w-md">
+              {activeSearchTerm ? (
+                <>No hay resultados para la búsqueda: <span className="text-pink-400 font-semibold">&ldquo;{activeSearchTerm}&rdquo;</span></>
+              ) : (
+                "No hay mangas disponibles con los filtros seleccionados."
+              )}
+            </p>
+            <button
+              onClick={handleClear}
+              className="mt-6 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-xs font-medium transition-all"
+            >
+              Limpiar filtros y búsqueda
+            </button>
+          </div>
+        ) : (
+          <>
+            <MangaGrid mangas={mangas} isLoading={isLoading} />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set("page", page.toString());
-            router.push(`${pathname}?${params.toString()}`);
-          }}
-          disabled={isLoading}
-        />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("page", page.toString());
+                router.push(`${pathname}?${params.toString()}`);
+              }}
+              disabled={isLoading}
+            />
+          </>
+        )}
       </div>
     </main>
   );

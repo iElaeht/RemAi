@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -7,6 +7,7 @@ import SearchFilter from "@/components/features/SearchFilter";
 import ManhwaGrid from "@/components/library/ManhwaGrid";
 import Pagination from "@/components/common/Pagination";
 import { SortOption, StatusOption } from "@/types/mangadex";
+import { SearchX } from "lucide-react"; // <-- Importamos el icono para cuando no hay resultados
 
 interface ManhwasContentProps {
   initialTagId?: string;
@@ -120,6 +121,9 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
     router.push(`${currentBasePath}?page=1&sort=rating&status=all`);
   };
 
+  // Obtenemos el texto de búsqueda actual de la URL para mostrarlo en el aviso
+  const activeSearchTerm = searchParams.get("search");
+
   return (
     <main className="relative bg-[#12080a] min-h-screen text-white p-4 md:p-6 lg:px-24 overflow-x-hidden selection:bg-red-600 selection:text-white">
       {/* Luz ambiental superior en tonos rojos cálidos */}
@@ -141,18 +145,45 @@ export default function ManhwasContent({ initialTagId }: ManhwasContentProps) {
           setStatus={(val) => updateUrlParams({ status: val })}
         />
 
-        <ManhwaGrid manhwas={manhwas} isLoading={isLoading} />
+        {/* Mensaje condicional cuando no se encuentran resultados */}
+        {!isLoading && manhwas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white/[0.02] border border-white/5 rounded-2xl mt-8">
+            <div className="w-16 h-16 bg-red-600/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+              <SearchX size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">
+              No se encontraron resultados
+            </h3>
+            <p className="text-neutral-400 text-sm max-w-md">
+              {activeSearchTerm ? (
+                <>No hay resultados para la búsqueda: <span className="text-red-400 font-semibold">&ldquo;{activeSearchTerm}&rdquo;</span></>
+              ) : (
+                "No hay manhwas disponibles con los filtros seleccionados."
+              )}
+            </p>
+            <button
+              onClick={handleClear}
+              className="mt-6 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-xs font-medium transition-all"
+            >
+              Limpiar filtros y búsqueda
+            </button>
+          </div>
+        ) : (
+          <>
+            <ManhwaGrid manhwas={manhwas} isLoading={isLoading} />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set("page", page.toString());
-            router.push(`${pathname}?${params.toString()}`);
-          }}
-          disabled={isLoading}
-        />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("page", page.toString());
+                router.push(`${pathname}?${params.toString()}`);
+              }}
+              disabled={isLoading}
+            />
+          </>
+        )}
       </div>
     </main>
   );

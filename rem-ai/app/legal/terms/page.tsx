@@ -20,14 +20,14 @@ export default function TermsOfUse() {
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">1. Aceptación de los Términos</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              Al acceder y utilizar RemAi, usted acepta quedar vinculado por estos Términos de Uso. Si no está de acuerdo con alguna parte de estos términos, le solicitamos que se abstenga de utilizar nuestra plataforma.
+              Al acceder y utilizar MangasRem, usted acepta quedar vinculado por estos Términos de Uso. Si no está de acuerdo con alguna parte de estos términos, le solicitamos que se abstenga de utilizar nuestra plataforma.
             </p>
           </div>
 
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">2. Naturaleza del Servicio</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              RemAi es una herramienta de visualización que facilita el acceso a contenido de manga a través de APIs de terceros (como MangaDex). No alojamos, almacenamos ni somos propietarios del contenido protegido por derechos de autor que se visualiza a través de nuestra interfaz.
+              MangasRem es una herramienta de visualización que facilita el acceso a contenido de manga a través de APIs de terceros (como MangaDex). No alojamos, almacenamos ni somos propietarios del contenido protegido por derechos de autor que se visualiza a través de nuestra interfaz.
             </p>
           </div>
 
@@ -41,14 +41,14 @@ export default function TermsOfUse() {
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">4. Limitación de Responsabilidad</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              El servicio se proporciona tal cual. No garantizamos la disponibilidad permanente del contenido ni la ausencia de errores técnicos. RemAi no se hace responsable de interrupciones causadas por fallos en servicios de terceros o API externas.
+              El servicio se proporciona tal cual. No garantizamos la disponibilidad permanente del contenido ni la ausencia de errores técnicos. MangasRem no se hace responsable de interrupciones causadas por fallos en servicios de terceros o API externas.
             </p>
           </div>
 
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-widest text-sky-600">5. Propiedad Intelectual</h2>
             <p className="leading-relaxed text-base text-neutral-700">
-              Todo el diseño, código fuente, logotipos y la marca RemAi son propiedad exclusiva de su desarrollador. El uso de la plataforma no le otorga ningún derecho de propiedad intelectual sobre los activos de la misma.
+              Todo el diseño, código fuente, logotipos y la marca MangasRem son propiedad exclusiva de su desarrollador. El uso de la plataforma no le otorga ningún derecho de propiedad intelectual sobre los activos de la misma.
             </p>
           </div>
 
@@ -61,7 +61,7 @@ export default function TermsOfUse() {
         </section>
 
         <footer className="mt-16 pt-8 border-t border-neutral-200 text-sm text-neutral-500">
-          &copy; 2026 RemAi. Todos los derechos reservados.
+          &copy; 2026 MangasRem. Todos los derechos reservados.
         </footer>
       </main>
     </div>

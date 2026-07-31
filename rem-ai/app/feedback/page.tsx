@@ -53,15 +53,24 @@ export default function FeedbackPage() {
     }
   };
 
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-white text-neutral-900">
+        <Navbar />
+        <main className="w-full max-w-2xl mx-auto py-10 sm:py-16 px-6 sm:px-8 flex justify-center items-center min-h-[50vh]">
+          <div className="w-6 h-6 border-2 border-neutral-300 border-t-neutral-900 rounded-full animate-spin" />
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
+    <div className="min-h-screen bg-white text-neutral-900 animate-in fade-in duration-300">
       <Navbar />
 
-      {/* Contenedor responsivo ajustado para móviles y tablets */}
+      {/* Contenedor responsivo centrado */}
       <main className="w-full max-w-2xl mx-auto py-10 sm:py-16 px-6 sm:px-8">
-        <header className="mb-10">
+        <header className="mb-10 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-neutral-950">Centro de Ayuda</h1>
           <p className="text-neutral-500 mt-2">
             ¿Tienes alguna sugerencia o encontraste un error? Cuéntanoslo aquí.
@@ -69,18 +78,17 @@ export default function FeedbackPage() {
         </header>
 
         {!isSignedIn ? (
-          <div className="border border-neutral-200 p-6 sm:p-8 rounded-lg text-center bg-neutral-50">
-            <h2 className="text-xl font-bold mb-2">Acceso restringido</h2>
-            <p className="text-neutral-600">Para enviar un reporte o sugerencia, debes iniciar sesión en RemAi.</p>
+          <div className="border border-neutral-200 p-6 sm:p-8 rounded-lg text-center bg-neutral-50 shadow-sm">
+            <h2 className="text-xl font-bold mb-2 text-neutral-900">Acceso restringido</h2>
+            <p className="text-neutral-600">Para enviar un reporte o sugerencia, debes iniciar sesión en MangasRem.</p>
           </div>
         ) : success ? (
-          <div className="bg-emerald-50 border border-emerald-200 p-6 sm:p-8 rounded-lg text-center">
+          <div className="bg-emerald-50 border border-emerald-200 p-6 sm:p-8 rounded-lg text-center shadow-sm">
             <h2 className="text-xl font-bold text-emerald-800 mb-2">¡Gracias por tu aporte!</h2>
-            {/* Mensaje dinámico */}
             <p className="text-emerald-600">Hemos recibido tu {type.toLowerCase()} correctamente. Tu {type.toLowerCase()} nos ayuda a mejorar.</p>
             <button 
               onClick={() => setSuccess(false)} 
-              className="mt-6 text-sky-600 font-bold hover:underline"
+              className="mt-6 text-sky-600 font-bold hover:underline cursor-pointer"
             >
               Enviar otro mensaje
             </button>
@@ -92,7 +100,7 @@ export default function FeedbackPage() {
                 Tipo de mensaje
               </label>
               <select 
-                className="w-full p-3 border border-neutral-300 rounded-md bg-white focus:ring-2 focus:ring-sky-600 outline-none transition-all"
+                className="w-full p-3 border border-neutral-300 rounded-md bg-white focus:ring-2 focus:ring-sky-600 outline-none transition-all cursor-pointer"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
               >
@@ -120,7 +128,7 @@ export default function FeedbackPage() {
                 Descripción
               </label>
               <textarea 
-                className="w-full p-3 border border-neutral-300 rounded-md h-32 focus:ring-2 focus:ring-sky-600 outline-none transition-all" 
+                className="w-full p-3 border border-neutral-300 rounded-md h-32 focus:ring-2 focus:ring-sky-600 outline-none transition-all resize-none" 
                 placeholder={type === 'Reporte' ? 'Describe detalladamente el error...' : 'Cuéntanos tu idea para mejorar...'}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -130,9 +138,16 @@ export default function FeedbackPage() {
 
             <button 
               disabled={loading}
-              className="w-full bg-neutral-950 text-white px-6 py-3 rounded-md font-bold hover:bg-neutral-800 transition active:scale-[0.98] disabled:opacity-50"
+              className="w-full bg-neutral-950 text-white px-6 py-3 rounded-md font-bold hover:bg-neutral-800 transition active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
-              {loading ? 'Enviando...' : `Enviar ${type}`}
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <span>Enviando...</span>
+                </>
+              ) : (
+                `Enviar ${type}`
+              )}
             </button>
           </form>
         )}

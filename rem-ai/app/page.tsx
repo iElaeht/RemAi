@@ -1,20 +1,71 @@
-"use client";
+'use client';
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Footer from "@/components/layout/Footer";
-import { useEffect } from "react";
 import { BookOpen, Heart, Coffee, Users } from "lucide-react";
 
 export default function HomePage() {
-  const [isScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     document.title = "MangasRem | Sitio web oficial";
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Simulamos un breve esqueleto de carga inicial (ej. 400ms)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
   }, []);
 
+  // Si está cargando, mostramos el esqueleto visual de la página
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-hidden select-none flex flex-col justify-between">
+        {/* Navbar esqueleto */}
+        <div className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-16 md:h-20 bg-transparent">
+          <div className="h-6 w-28 bg-neutral-900 rounded animate-pulse" />
+          <div className="h-8 w-20 bg-neutral-900 rounded-full animate-pulse" />
+        </div>
+
+        {/* Hero esqueleto */}
+        <div className="relative h-[80vh] flex items-center px-6 md:px-24">
+          <div className="space-y-6 max-w-2xl mt-16 w-full">
+            <div className="h-24 md:h-40 w-3/4 bg-neutral-900 rounded-lg animate-pulse" />
+            <div className="h-16 w-full max-w-md bg-neutral-900 rounded-lg animate-pulse" />
+          </div>
+        </div>
+
+        {/* Sección Filosofía esqueleto */}
+        <div className="py-24 px-6 md:px-24">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="space-y-4">
+              <div className="h-10 w-2/3 bg-neutral-900 rounded animate-pulse" />
+              <div className="h-24 w-full bg-neutral-900 rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-64 bg-neutral-900 rounded-2xl animate-pulse" />
+              <div className="h-64 bg-neutral-900 rounded-2xl mt-8 animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-x-hidden select-none">
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 overflow-x-hidden select-none animate-in fade-in duration-500">
       {/* Navbar */}
       <motion.nav
         className="fixed top-0 w-full z-50 flex items-center justify-between px-6 md:px-24 h-16 md:h-20 transition-all duration-300"
@@ -23,12 +74,12 @@ export default function HomePage() {
           backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
         }}
       >
-        <div className="text-24 md:text-3xl font-black text-white">
-          Rem<span className="text-sky-400">Ai</span>
+        <div className="text-2xl md:text-3xl font-black text-white">
+          Mangas<span className="text-sky-400">Rem</span>
         </div>
         <Link
           href="/discover"
-          className="flex items-center gap-2 px-4 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs md:text-sm font-medium transition-all"
+          className="flex items-center gap-2 px-4 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs md:text-sm font-medium transition-all cursor-pointer"
         >
           <BookOpen size={12} /> Explorar
         </Link>
@@ -51,13 +102,13 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Sección Filosofía - Sustituyendo la parte técnica */}
+      {/* Sección Filosofía */}
       <section className="py-24 px-6 md:px-24">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Más que páginas.</h2>
             <p className="text-neutral-400 text-lg leading-relaxed">
-              Cada manga es una ventana a un mundo distinto. En RemAi, nos enfocamos en respetar la visión del autor, permitiendo que el arte y la narrativa fluyan sin interrupciones. Creemos que una buena historia merece el mejor escenario posible para ser descubierta.
+              Cada manga es una ventana a un mundo distinto. En MangasRem, nos enfocamos en respetar la visión del autor, permitiendo que el arte y la narrativa fluyan sin interrupciones. Creemos que una buena historia merece el mejor escenario posible para ser descubierta.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -81,7 +132,7 @@ export default function HomePage() {
               <p className="text-neutral-400">Únete a miles de personas compartiendo su pasión por las grandes historias.</p>
             </div>
           </div>
-          <Link href="/discover" className="px-8 py-3 border border-neutral-700 hover:border-white transition-all rounded-full">
+          <Link href="/discover" className="px-8 py-3 border border-neutral-700 hover:border-white transition-all rounded-full cursor-pointer">
             Ver nuestra colección
           </Link>
         </div>

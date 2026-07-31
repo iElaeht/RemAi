@@ -5,6 +5,8 @@ import { esES } from '@clerk/localizations';
 import { Geist, Geist_Mono } from 'next/font/google';
 import SecurityGuard from '@/components/common/SecurityGuard';
 import ScrollManager from '@/components/common/ScrollManager';
+import { MaintenanceProvider } from '@/context/MaintenanceContext'; // <-- 1. Importamos el provider
+import MaintenanceModal from '@/components/errors/MaintenanceModal'; // <-- 2. Importamos el modal
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -38,6 +40,7 @@ export const viewport = {
   maximumScale: 5,
   userScalable: 'yes',
 };
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const isSecurityEnabled = process.env.NEXT_PUBLIC_SECURITY_ENABLED === 'true';
 
@@ -49,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         variables: { colorPrimary: '#3b82f6' },
         elements: {
           rootBox: "flex justify-center items-center w-full",
-          // Ajustado para armonizar con el fondo azul medianoche
           card: "border border-neutral-800 shadow-2xl rounded-2xl bg-[#1e293b] w-full max-w-md text-white",
           formButtonPrimary: "bg-blue-600 hover:bg-blue-500 text-white font-bold",
           formFieldInput: "border-neutral-700 bg-neutral-900 focus:ring-blue-500 text-white",
@@ -60,13 +62,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <html lang="es" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col bg-[#0b1120] text-[#f1f5f9]">
-          <SecurityGuard isEnabled={isSecurityEnabled}>
-            <main className="flex-1 w-full flex flex-col">
-              {children}
-            </main>
-          </SecurityGuard>
-          {/* El ScrollManager gestionará el efecto desde el cliente */}
-          <ScrollManager />
+          {/* 3. Envolvemos la app con el Provider global */}
+          <MaintenanceProvider>
+            <SecurityGuard isEnabled={isSecurityEnabled}>
+              <main className="flex-1 w-full flex flex-col">
+                {children}
+              </main>
+            </SecurityGuard>
+            
+            {/* 4. Colocamos el modal y el gestor de scroll aquí */}
+            <MaintenanceModal />
+            <ScrollManager />
+          </MaintenanceProvider>
         </body>
       </html>
     </ClerkProvider>
