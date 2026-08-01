@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Bookmark, BookOpen, Compass } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import FavoritesClientList from "@/components/favorites/FavoritesClientList"; // Importamos el componente de scroll infinito
+import FavoritesClientList from "@/components/favorites/FavoritesClientList";
 
 export const metadata = {
   title: "Tus Favoritos | Mangas Rem",
@@ -84,6 +84,6 @@ async function FavoritesWrapper({ userId }: { userId: string }) {
     );
   }
 
-  // Pasamos los favoritos al componente cliente con scroll infinito
+  // Pasamos los favoritos al componente cliente con paginación
   return <FavoritesClientList favorites={favorites} />;
 }
