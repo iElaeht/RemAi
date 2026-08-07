@@ -1,3 +1,4 @@
+// actions/Favorites.ts
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
@@ -108,4 +109,28 @@ export async function checkIsFavorite(userId: string, mangaId: string) {
   }
   
   return !!data;
+}
+
+// NUEVA FUNCIÓN PARA ELIMINAR DIRECTAMENTE DESDE LA VISTA DE FAVORITOS
+export async function removeFavorite(favoriteId: string | number) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  const supabaseAdmin = getSupabaseAdmin();
+
+  const { error } = await supabaseAdmin
+    .from("favorites")
+    .delete()
+    .eq("id", favoriteId)
+    .eq("user_id", userId); // Seguridad extra para que el usuario solo borre lo suyo
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/favorites");
+  return { success: true };
 }

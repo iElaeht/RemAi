@@ -231,14 +231,23 @@ export default function MangaView({
               {/* Botón Capítulos */}
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                disabled={chapters.length === 0}
+                disabled={loading || chapters.length === 0}
                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all w-full sm:w-auto ${
-                  chapters.length === 0
+                  loading || chapters.length === 0
                     ? "bg-white/5 text-gray-600 cursor-not-allowed"
                     : "bg-white/5 hover:bg-white/10 text-white"
                 }`}
               >
-                <List size={18} /> Capítulos
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Cargando...</span>
+                  </>
+                ) : (
+                  <>
+                    <List size={18} /> Capítulos
+                  </>
+                )}
               </button>
 
               {/* Botón Favorito */}
@@ -263,7 +272,16 @@ export default function MangaView({
                     : "bg-pink-600 hover:bg-pink-500 text-white"
                 }`}
               >
-                <BookOpen size={18} /> Leer
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Cargando...</span>
+                  </>
+                ) : (
+                  <>
+                    <BookOpen size={18} /> Leer
+                  </>
+                )}
               </button>
             </div>
 
