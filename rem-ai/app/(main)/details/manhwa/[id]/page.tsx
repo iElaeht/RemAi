@@ -1,4 +1,3 @@
-// rem-ai/app/(main)/details/manhwa/[id]/page.tsx
 import { getMangaById, getSimilarMangas } from "@/lib/mangadex";
 import { notFound } from "next/navigation";
 import MangaView from "@/components/manga/MangaView";
@@ -14,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const manga = await getMangaById(id);
   
   return {
-    title: manga ? `${manga.title} | MangasRem` : "Manhwa | MangasRem",
+    title: manga ? `${manga.title} | AI Mangas` : "Manhwa | AI Mangas",
     robots: {
       index: true,
       follow: true,
@@ -33,19 +32,19 @@ export default async function ManhwaPage({
   // 1. Obtenemos el usuario autenticado
   const { userId } = await auth();
 
-  // 2. Obtenemos el manhwa para tener sus tags y pasarle a la función de similares
+  // 2. Obtenemos el manhwa para validar su existencia
   const manga = await getMangaById(id);
   if (!manga) notFound();
 
-  // 3. Ejecutamos comentarios, búsqueda de similares y verificación de favoritos en paralelo
+  // 3. Ejecutamos comentarios, búsqueda de similares (solo con el id) y verificación de favoritos en paralelo
   const [commentsResponse, similarMangas, initialIsFavorite] = await Promise.all([
     supabasePublic
       .from("comments")
       .select("*")
       .eq("manga_id", id)
       .order("created_at", { ascending: true }),
-    getSimilarMangas(id, manga.tags || [], "manhwa"),
-    userId ? checkIsFavorite(userId, id) : Promise.resolve(false), // Verificamos si es favorito solo si hay usuario
+    getSimilarMangas(id),
+    userId ? checkIsFavorite(userId, id) : Promise.resolve(false),
   ]);
 
   const initialComments: Comment[] = commentsResponse.data || [];

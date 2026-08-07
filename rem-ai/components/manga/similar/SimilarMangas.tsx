@@ -4,7 +4,7 @@ import { MangaResponse } from "@/types/mangadex";
 
 interface SimilarMangasProps {
   mangas: MangaResponse[];
-  contentType?: string; // Recibe 'manga' o 'manhwa' desde la página de detalles
+  contentType?: string;
 }
 
 export default function SimilarMangas({ mangas, contentType = "manga" }: SimilarMangasProps) {

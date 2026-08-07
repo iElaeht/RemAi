@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps) {
   const manga = await getMangaById(resolvedParams.id);
   
   return {
-    title: manga ? `${manga.title} | Mangas Rem` : "Manga | Mangas Rem",
+    title: manga ? `${manga.title} | AI Mangas` : "Manga | AI Mangas",
     robots: {
       index: true,
       follow: true,
@@ -42,13 +42,14 @@ export default async function MangaPage({ params }: PageProps) {
   if (!manga) notFound();
 
   // 3. Ejecutamos comentarios y búsqueda de similares en paralelo
+  // Ahora getSimilarMangas solo requiere un argumento: (id)
   const [commentsResponse, similarMangas] = await Promise.all([
     supabasePublic
       .from("comments")
       .select("*")
       .eq("manga_id", id)
       .order("created_at", { ascending: true }),
-    getSimilarMangas(id, manga.tags || [], "manga"),
+    getSimilarMangas(id),
   ]);
 
   const initialComments: Comment[] = commentsResponse.data || [];

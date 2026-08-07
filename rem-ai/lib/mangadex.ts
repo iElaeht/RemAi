@@ -298,32 +298,43 @@ export const getFilterManga = cache(async (
 });
 
 export const getSimilarMangas = cache(async (
-  mangaId: string,
-  tags: string[],
-  contentType: "manga" | "manhwa" | "manhua" = "manga"
+  mangaId: string
 ): Promise<MangaResponse[]> => {
-  const searchTags = tags
-    .map((t) => TAG_DICTIONARY[t])
-    .filter((id) => id !== undefined)
-    .slice(0, 2);
+  try {
+    // 1. Consultamos el endpoint oficial de recomendaciones de MangaDex
+    const res = await fetch(`${MANGADEX_API_URL}/manga/${mangaId}/recommendation`, {
+      next: { revalidate: 3600 },
+    });
+    
+    if (!res.ok) return [];
+    
+    const json = await res.json();
+    const recommendationsData = json.data || [];
 
-  let allowedLanguages = ["ja"];
-  if (contentType === "manhwa") {
-    allowedLanguages = ["ko", "zh"];
-  } else if (contentType === "manhua") {
-    allowedLanguages = ["zh", "ko"];
+    // 2. Extraemos los IDs de los mangas recomendados por MangaDex de forma segura
+    const recommendedIds: string[] = [];
+    
+    recommendationsData.forEach((item: { relationships?: Array<{ type: string; id: string }> }) => {
+      if (item.relationships) {
+        item.relationships.forEach((rel) => {
+          if (rel.type === "manga" && rel.id !== mangaId) {
+            recommendedIds.push(rel.id);
+          }
+        });
+      }
+    });
+
+    const uniqueIds = Array.from(new Set(recommendedIds)).slice(0, 20);
+    if (uniqueIds.length === 0) return [];
+
+    // 3. Consultamos los detalles completos en lote usando fetchMangas
+    const query = new URLSearchParams();
+    uniqueIds.forEach((id) => query.append("ids[]", id));
+    query.append("limit", "20");
+
+    return await fetchMangas(query);
+  } catch (e) {
+    console.error("Error al obtener recomendaciones oficiales de MangaDex:", e);
+    return [];
   }
-
-  const results = await Promise.all(
-    searchTags.map((tagId) => getFilterManga(tagId, allowedLanguages)),
-  );
-
-  const flatResults = results.flat();
-  const uniqueResults = Array.from(
-    new Map(flatResults.map((m) => [m.id, m])).values(),
-  )
-    .filter((m) => m.id !== mangaId)
-    .slice(0, 10);
-
-  return uniqueResults;
 });
