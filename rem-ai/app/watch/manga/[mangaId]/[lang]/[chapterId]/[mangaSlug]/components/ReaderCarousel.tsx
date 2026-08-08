@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
 import { Grid, X } from "lucide-react";
 
-interface ReaderViewProps {
+interface ReaderCarouselProps {
   pages: string[];
   baseUrl: string;
   hash: string;
@@ -12,13 +12,13 @@ interface ReaderViewProps {
   onPrevChapter?: () => void;
 }
 
-export default function ReaderView({
+export default function ReaderCarousel({
   pages,
   baseUrl,
   hash,
   onNextChapter,
   onPrevChapter,
-}: ReaderViewProps) {
+}: ReaderCarouselProps) {
   const { isZoomed, setIsZoomed, offset, isTouch, handleInteraction, resetZoom } = useZoom();
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -41,6 +41,86 @@ export default function ReaderView({
       setIsPageModalOpen(false);
     }
   };
+
+  // Manejo de atajos de teclado para el carrusel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Evitar atajos si el usuario escribe en inputs
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      // Si el modal de páginas está abierto, permitir cerrarlo con Escape
+      if (isPageModalOpen && e.key === "Escape") {
+        setIsPageModalOpen(false);
+        return;
+      }
+
+      const currentIndex = currentPage - 1;
+
+      switch (e.key) {
+        case "ArrowRight":
+        case "d":
+        case "D":
+          e.preventDefault();
+          if (isZoomed) return; // Opcional: si está con zoom, prioriza mover el zoom o sal de él
+          if (currentIndex < pages.length - 1) {
+            jumpToPage(currentIndex + 1);
+          } else {
+            onNextChapter?.();
+          }
+          break;
+
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          e.preventDefault();
+          if (isZoomed) return;
+          if (currentIndex > 0) {
+            jumpToPage(currentIndex - 1);
+          } else {
+            onPrevChapter?.();
+          }
+          break;
+
+        case "x":
+        case "X":
+          e.preventDefault();
+          if (isZoomed) {
+            resetZoom();
+          } else if (!isTouch) {
+            setIsZoomed(true);
+          }
+          break;
+
+        case " ": // Barra espaciadora
+          e.preventDefault();
+          if (isZoomed) break;
+          if (e.shiftKey) {
+            if (currentIndex > 0) {
+              jumpToPage(currentIndex - 1);
+            } else {
+              onPrevChapter?.();
+            }
+          } else {
+            if (currentIndex < pages.length - 1) {
+              jumpToPage(currentIndex + 1);
+            } else {
+              onNextChapter?.();
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentPage, pages, isPageModalOpen, isZoomed, isTouch, onNextChapter, onPrevChapter]);
 
   // Bloquear el scroll del body cuando el modal de páginas está abierto
   useEffect(() => {
@@ -111,9 +191,9 @@ export default function ReaderView({
                 const relativeX = e.clientX - rect.left;
 
                 if (relativeX <= zone) {
-                  idx === 0 ? onPrevChapter?.() : document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+                  idx === 0 ? onPrevChapter?.() : jumpToPage(idx - 1);
                 } else if (relativeX >= zone * 2) {
-                  idx === pages.length - 1 ? onNextChapter?.() : document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+                  idx === pages.length - 1 ? onNextChapter?.() : jumpToPage(idx + 1);
                 } 
                 else if (!isTouch) {
                   setIsZoomed(true);

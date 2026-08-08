@@ -1,3 +1,4 @@
+// rem-ai/app/watch/manhwa/[manhwaId]/[lang]/[chapterId]/[manhwaSlug]/components/ReaderCarousel.tsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";
@@ -41,6 +42,84 @@ export default function ReaderCarousel({
       setIsPageModalOpen(false);
     }
   };
+
+  // Manejo de atajos de teclado para el carrusel de manhwas
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      if (isPageModalOpen && e.key === "Escape") {
+        setIsPageModalOpen(false);
+        return;
+      }
+
+      const currentIndex = currentPage - 1;
+
+      switch (e.key) {
+        case "ArrowRight":
+        case "d":
+        case "D":
+          e.preventDefault();
+          if (isZoomed) return;
+          if (currentIndex < pages.length - 1) {
+            jumpToPage(currentIndex + 1);
+          } else {
+            onNextChapter?.();
+          }
+          break;
+
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          e.preventDefault();
+          if (isZoomed) return;
+          if (currentIndex > 0) {
+            jumpToPage(currentIndex - 1);
+          } else {
+            onPrevChapter?.();
+          }
+          break;
+
+        case "x":
+        case "X":
+          e.preventDefault();
+          if (isZoomed) {
+            resetZoom();
+          } else if (!isTouch) {
+            setIsZoomed(true);
+          }
+          break;
+
+        case " ": // Barra espaciadora
+          e.preventDefault();
+          if (isZoomed) break;
+          if (e.shiftKey) {
+            if (currentIndex > 0) {
+              jumpToPage(currentIndex - 1);
+            } else {
+              onPrevChapter?.();
+            }
+          } else {
+            if (currentIndex < pages.length - 1) {
+              jumpToPage(currentIndex + 1);
+            } else {
+              onNextChapter?.();
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentPage, pages, isPageModalOpen, isZoomed, isTouch, onNextChapter, onPrevChapter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -99,9 +178,9 @@ export default function ReaderCarousel({
                 const relativeX = e.clientX - rect.left;
 
                 if (relativeX <= zone) {
-                  idx === 0 ? onPrevChapter?.() : document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+                  idx === 0 ? onPrevChapter?.() : jumpToPage(idx - 1);
                 } else if (relativeX >= zone * 2) {
-                  idx === pages.length - 1 ? onNextChapter?.() : document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+                  idx === pages.length - 1 ? onNextChapter?.() : jumpToPage(idx + 1);
                 } 
                 else if (!isTouch) {
                   setIsZoomed(true);

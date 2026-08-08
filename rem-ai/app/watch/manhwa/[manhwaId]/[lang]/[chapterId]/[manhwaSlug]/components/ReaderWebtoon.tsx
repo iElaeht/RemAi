@@ -1,3 +1,4 @@
+// rem-ai/app/watch/manhwa/[manhwaId]/[lang]/[chapterId]/[manhwaSlug]/components/ReaderWebtoon.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -25,6 +26,77 @@ export default function ReaderWebtoon({
       containerRef.current.scrollTop = 0;
     }
   }, [hash]);
+
+  // Manejo de atajos de teclado para el lector Webtoon
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      const scrollAmount = window.innerHeight * 0.75; // Distancia de scroll con espacio o flechas
+
+      switch (e.key) {
+        case "ArrowDown":
+        case "s":
+        case "S":
+          e.preventDefault();
+          container.scrollBy({ top: 150, behavior: "smooth" });
+          break;
+
+        case "ArrowUp":
+        case "w":
+        case "W":
+          e.preventDefault();
+          container.scrollBy({ top: -150, behavior: "smooth" });
+          break;
+
+        case "ArrowRight":
+        case "d":
+        case "D":
+          e.preventDefault();
+          onNextChapter?.();
+          break;
+
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          e.preventDefault();
+          onPrevChapter?.();
+          break;
+
+        case " ": // Barra espaciadora para lectura fluida de webtoon
+          e.preventDefault();
+          if (e.shiftKey) {
+            // Si está al inicio y presiona Shift + Space, va al capítulo anterior
+            if (container.scrollTop <= 10) {
+              onPrevChapter?.();
+            } else {
+              container.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+            }
+          } else {
+            // Si llega al final del contenedor y presiona Space, avanza al siguiente capítulo
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+              onNextChapter?.();
+            } else {
+              container.scrollBy({ top: scrollAmount, behavior: "smooth" });
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onNextChapter, onPrevChapter]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;

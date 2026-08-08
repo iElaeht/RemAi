@@ -1,3 +1,4 @@
+// rem-ai/app/watch/manhwa/[manhwaId]/[lang]/[chapterId]/[manhwaSlug]/components/ReaderVertical.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useZoom } from "@/Hooks/useZoom";
@@ -19,6 +20,7 @@ export default function ReaderVertical({
 }: ReaderVerticalProps) {
   const { isZoomed, setIsZoomed, offset, isTouch, handleInteraction, resetZoom } = useZoom();
   const [activeZoomIdx, setActiveZoomIdx] = useState<number | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +36,125 @@ export default function ReaderVertical({
     setActiveZoomIdx(null);
     setIsZoomed(false);
   };
+
+  // Detección de la página actual basada en el scroll vertical del contenedor
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const pageElements = pages.map((_, idx) => document.getElementById(`page-${idx}`));
+      const containerRect = container.getBoundingClientRect();
+      const scrollPosition = container.scrollTop + containerRect.height / 2;
+
+      pageElements.forEach((el, idx) => {
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setCurrentIndex(idx);
+          }
+        }
+      });
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [pages]);
+
+  // Manejo de atajos de teclado para el lector vertical
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowDown":
+        case "s":
+        case "S":
+          e.preventDefault();
+          if (isZoomed) return;
+          if (currentIndex < pages.length - 1) {
+            document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            onNextChapter?.();
+          }
+          break;
+
+        case "ArrowUp":
+        case "w":
+        case "W":
+          e.preventDefault();
+          if (isZoomed) return;
+          if (currentIndex > 0) {
+            document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            onPrevChapter?.();
+          }
+          break;
+
+        case "ArrowRight":
+        case "d":
+        case "D":
+          e.preventDefault();
+          if (currentIndex < pages.length - 1) {
+            document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            onNextChapter?.();
+          }
+          break;
+
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          e.preventDefault();
+          if (currentIndex > 0) {
+            document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            onPrevChapter?.();
+          }
+          break;
+
+        case "x":
+        case "X":
+          e.preventDefault();
+          if (isZoomed) {
+            handleCloseZoom();
+          } else if (!isTouch) {
+            setActiveZoomIdx(currentIndex);
+            setIsZoomed(true);
+          }
+          break;
+
+        case " ": // Barra espaciadora
+          e.preventDefault();
+          if (isZoomed) break;
+          if (e.shiftKey) {
+            if (currentIndex > 0) {
+              document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+              onPrevChapter?.();
+            }
+          } else {
+            if (currentIndex < pages.length - 1) {
+              document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+              onNextChapter?.();
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentIndex, pages, isZoomed, isTouch, onNextChapter, onPrevChapter]);
 
   return (
     <div 
