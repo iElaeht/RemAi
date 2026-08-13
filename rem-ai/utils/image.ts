@@ -4,11 +4,13 @@ export function getImageUrl(url: string): string {
     return url || '/images/NoImage/placeholder-manga.jpg';
   }
   
-  // Si la URL ya apunta al proxy, la dejamos igual
-  if (url.startsWith('/api/proxy/pages')) {
+  // Si ya pasa por el proxy o es una ruta interna local, la devolvemos tal cual
+  if (url.startsWith('/images/') || url.startsWith('/api/proxy') || url.startsWith('/')) {
     return url;
   }
 
-  // Enviamos al proxy
+  // Forzamos el uso del proxy asegurando que la URL externa esté bien codificada
   return `/api/proxy/pages?url=${encodeURIComponent(url)}`;
 }
+
+export default getImageUrl;
