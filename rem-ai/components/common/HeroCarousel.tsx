@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, User, Clock, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 import { MangaResponse } from "@/types/mangadex";
 
 interface HeroCarouselProps {
@@ -70,9 +72,12 @@ export default function HeroCarousel({
               prefetch={false}
               className="w-32 md:w-72 aspect-[2/3] shrink-0 shadow-2xl rounded-lg overflow-hidden border border-white/10 bg-neutral-900 group cursor-pointer block transition-transform duration-300 hover:scale-[1.01]"
             >
-              <img
-                src={current.coverUrl || "/images/NoImage/placeholder-manga.jpg"}
+              <Image
+                src={getImageUrl(current.coverUrl || "/images/NoImage/placeholder-manga.jpg")}
                 alt={current.title}
+                width={288}
+                height={432}
+                unoptimized
                 className="w-full h-full object-cover transition-transform duration-500"
               />
             </Link>
