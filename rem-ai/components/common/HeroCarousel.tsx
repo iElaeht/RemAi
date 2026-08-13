@@ -58,9 +58,12 @@ export default function HeroCarousel({
       <AnimatePresence mode="wait">
         <motion.div key={current.id} className="absolute inset-0">
           <div className="absolute inset-0 z-0">
-            <img
-              src={current.coverUrl || "/images/NoImage/placeholder-manga.jpg"}
+            <Image
+              src={getImageUrl(current.coverUrl || "/images/NoImage/placeholder-manga.jpg")}
               alt="Background"
+              fill
+              priority
+              unoptimized
               className="w-full h-full object-cover transition-all duration-700"
             />
             <div className="absolute inset-0 bg-neutral-950/90 backdrop-blur-3xl" />
