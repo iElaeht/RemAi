@@ -234,9 +234,8 @@ export default function ReaderCarousel({
               }}
             >
               <div
-                className={`relative flex items-center justify-center ${isCurrentPageZoomed ? "w-full h-full" : "w-full h-full max-h-[95dvh]"}`}
+                className={`relative flex items-center justify-center w-full ${isCurrentPageZoomed ? "h-full" : "h-[85vh] md:h-[92dvh]"}`}
               >
-                {/* Usamos next/image con fill y unoptimized para evitar sobrecarga en Vercel */}
                 <Image
                   src={pageImageUrl}
                   alt={`Página ${idx + 1}`}
