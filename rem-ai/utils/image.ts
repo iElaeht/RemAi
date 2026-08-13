@@ -4,6 +4,11 @@ export function getImageUrl(url: string): string {
     return url || '/images/NoImage/placeholder-manga.jpg';
   }
   
-  // Devolvemos la URL directa sin pasar por ningún proxy
-  return url;
+  // Si la URL ya apunta al proxy, la dejamos igual
+  if (url.startsWith('/api/proxy/pages')) {
+    return url;
+  }
+
+  // Enviamos al proxy
+  return `/api/proxy/pages?url=${encodeURIComponent(url)}`;
 }
