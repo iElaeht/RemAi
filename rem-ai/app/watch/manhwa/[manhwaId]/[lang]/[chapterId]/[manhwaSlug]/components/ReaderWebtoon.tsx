@@ -79,7 +79,10 @@ export default function ReaderWebtoon({
             }
           } else {
             // Si llega al final del contenedor y presiona Space, avanza al siguiente capítulo
-            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+            if (
+              container.scrollTop + container.clientHeight >=
+              container.scrollHeight - 20
+            ) {
               onNextChapter?.();
             } else {
               container.scrollBy({ top: scrollAmount, behavior: "smooth" });
@@ -101,7 +104,7 @@ export default function ReaderWebtoon({
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    
+
     // Opcional: Detectar si llegó al final del capítulo
     if (scrollTop + clientHeight >= scrollHeight - 20) {
       // onNextChapter?.();
@@ -109,7 +112,7 @@ export default function ReaderWebtoon({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       onScroll={handleScroll}
       className="w-full h-full overflow-y-auto bg-[#0a0f1a] flex flex-col items-center select-none custom-scrollbar"
@@ -119,7 +122,7 @@ export default function ReaderWebtoon({
         {pages?.map((page: string, idx: number) => (
           <div key={idx} className="w-full flex justify-center leading-none">
             <img
-              src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+              src={`${baseUrl}/data/${hash}/${page}`}
               alt={`Página ${idx + 1}`}
               draggable="false"
               loading="lazy"

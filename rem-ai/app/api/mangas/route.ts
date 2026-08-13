@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   // Solicitamos relaciones necesarias (autor y portada)
   query.append("includes[]", "author");
   query.append("includes[]", "cover_art");
-  
+
   // FILTRO CLAVE: Exclusivo para mangas de origen japonés ("ja")
   query.append("originalLanguage[]", "ja");
 
@@ -54,8 +54,8 @@ export async function GET(request: Request) {
   );
 
   // Idiomas de traducción admitidos
-  ["es", "en", "ja", "ko", "zh"].forEach((lang) => 
-    query.append("availableTranslatedLanguage[]", lang)
+  ["es", "en", "ja", "ko", "zh"].forEach((lang) =>
+    query.append("availableTranslatedLanguage[]", lang),
   );
 
   // Aplicar búsqueda por título si existe
@@ -82,12 +82,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 4. Petición principal a la API de MangaDex
+    // 4. Petición principal a la API de MangaDex con caché mejorada (ej. 5 minutos)
     const res = await fetch(
       `https://api.mangadex.org/manga?${query.toString()}`,
       {
         headers: { "User-Agent": "Rem-AI-App/1.0" },
-        next: { revalidate: 60 },
+        next: { revalidate: 300 },
       },
     );
 
@@ -95,15 +95,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ results: [] }, { status: res.status });
     const data = await res.json();
 
-    // Si no hay resultados, retornamos vacío
     if (!data.data || data.data.length === 0) {
       return NextResponse.json({ results: [], totalPages: 0 });
     }
 
-    // 5. Recolectar IDs para pedir estadísticas de calificaciones en lote
+    // 5. Recolectar IDs para pedir estadísticas con su propio caché
     const mangaIds = data.data.map((m: MangaData) => m.id);
     const statsRes = await fetch(
       `https://api.mangadex.org/statistics/manga?${mangaIds.map((id: string) => `manga[]=${id}`).join("&")}`,
+      {
+        headers: { "User-Agent": "Rem-AI-App/1.0" },
+        next: { revalidate: 300 },
+      },
     );
     const statsData = await statsRes.json();
 

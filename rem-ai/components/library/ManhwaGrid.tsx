@@ -1,8 +1,9 @@
+// components/library/ManhwaGrid.tsx
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Star, Bookmark } from 'lucide-react';
-import { getProxiedImageUrl } from '@/utils/image';
+import { getImageUrl } from '@/utils/image';
 
 interface Manhwa {
   id: string;
@@ -63,7 +64,7 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
         manhwas.map((manhwa) => {
           const hasError = imageErrors[manhwa.id];
           const rawCover = !hasError && manhwa.cover ? manhwa.cover : "";
-          const coverSource = getProxiedImageUrl(rawCover);
+          const coverSource = getImageUrl(rawCover);
 
           return (
             <Link 

@@ -57,8 +57,7 @@ export const fetchMangaCovers = cache(async (mangaId: string): Promise<MangaCove
       const fileName = cover.attributes.fileName;
       const volume = cover.attributes.volume;
       const locale = cover.attributes.locale;
-      const rawImageUrl = `${MANGADEX_COVERS_URL}/covers/${mangaId}/${fileName}.512.jpg`;
-      const imageUrl = `/api/proxy/pages?url=${encodeURIComponent(rawImageUrl)}`;
+      const imageUrl = `${MANGADEX_COVERS_URL}/covers/${mangaId}/${fileName}.512.jpg`;
 
       return {
         id: cover.id,
@@ -216,12 +215,9 @@ function mapMangaData(
   const authorName = manga.relationships.find((r) => r.type === "author")
     ?.attributes?.name;
 
-  const rawCoverUrl = coverFile
-    ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}.256.jpg`
-    : "";
-  const coverUrl = rawCoverUrl 
-    ? `/api/proxy/pages?url=${encodeURIComponent(rawCoverUrl)}` 
-    : "/placeholder.jpg";
+  const coverUrl = coverFile
+  ? `${MANGADEX_COVERS_URL}/covers/${manga.id}/${coverFile}.256.jpg`
+  : "/placeholder.jpg";
 
   // Normalizamos a minúsculas para que coincida de forma segura con las claves del statusMap
   const mangaStatus = attrs.status ? attrs.status.toLowerCase() : "ongoing";

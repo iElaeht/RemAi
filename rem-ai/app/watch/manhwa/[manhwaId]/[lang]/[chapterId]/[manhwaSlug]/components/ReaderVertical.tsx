@@ -18,7 +18,14 @@ export default function ReaderVertical({
   onNextChapter,
   onPrevChapter,
 }: ReaderVerticalProps) {
-  const { isZoomed, setIsZoomed, offset, isTouch, handleInteraction, resetZoom } = useZoom();
+  const {
+    isZoomed,
+    setIsZoomed,
+    offset,
+    isTouch,
+    handleInteraction,
+    resetZoom,
+  } = useZoom();
   const [activeZoomIdx, setActiveZoomIdx] = useState<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,7 +33,8 @@ export default function ReaderVertical({
   useEffect(() => {
     const timer = setTimeout(() => {
       const firstPage = document.getElementById("page-0");
-      if (firstPage) firstPage.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (firstPage)
+        firstPage.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
     return () => clearTimeout(timer);
   }, [hash]);
@@ -43,7 +51,9 @@ export default function ReaderVertical({
     if (!container) return;
 
     const handleScroll = () => {
-      const pageElements = pages.map((_, idx) => document.getElementById(`page-${idx}`));
+      const pageElements = pages.map((_, idx) =>
+        document.getElementById(`page-${idx}`),
+      );
       const containerRect = container.getBoundingClientRect();
       const scrollPosition = container.scrollTop + containerRect.height / 2;
 
@@ -76,7 +86,9 @@ export default function ReaderVertical({
           e.preventDefault();
           if (isZoomed) return;
           if (currentIndex < pages.length - 1) {
-            document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            document
+              .getElementById(`page-${currentIndex + 1}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
             onNextChapter?.();
           }
@@ -88,7 +100,9 @@ export default function ReaderVertical({
           e.preventDefault();
           if (isZoomed) return;
           if (currentIndex > 0) {
-            document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            document
+              .getElementById(`page-${currentIndex - 1}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
             onPrevChapter?.();
           }
@@ -99,7 +113,9 @@ export default function ReaderVertical({
         case "D":
           e.preventDefault();
           if (currentIndex < pages.length - 1) {
-            document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            document
+              .getElementById(`page-${currentIndex + 1}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
             onNextChapter?.();
           }
@@ -110,7 +126,9 @@ export default function ReaderVertical({
         case "A":
           e.preventDefault();
           if (currentIndex > 0) {
-            document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            document
+              .getElementById(`page-${currentIndex - 1}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
             onPrevChapter?.();
           }
@@ -132,13 +150,17 @@ export default function ReaderVertical({
           if (isZoomed) break;
           if (e.shiftKey) {
             if (currentIndex > 0) {
-              document.getElementById(`page-${currentIndex - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+              document
+                .getElementById(`page-${currentIndex - 1}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
             } else {
               onPrevChapter?.();
             }
           } else {
             if (currentIndex < pages.length - 1) {
-              document.getElementById(`page-${currentIndex + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+              document
+                .getElementById(`page-${currentIndex + 1}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
             } else {
               onNextChapter?.();
             }
@@ -157,7 +179,7 @@ export default function ReaderVertical({
   }, [currentIndex, pages, isZoomed, isTouch, onNextChapter, onPrevChapter]);
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`relative w-full h-full bg-[#0a0f1a] flex flex-col select-none overflow-y-auto custom-scrollbar ${isZoomed ? "overflow-hidden" : ""}`}
     >
@@ -176,8 +198,19 @@ export default function ReaderVertical({
                 ${isDimmed ? "opacity-20 pointer-events-none" : "opacity-100"}
               `}
               style={{ touchAction: "auto" }}
-              onMouseMove={(e) => !isTouch && isThisPageZoomed && handleInteraction(e.clientX, e.clientY, e.currentTarget)}
-              onTouchMove={(e) => isThisPageZoomed && handleInteraction(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget)}
+              onMouseMove={(e) =>
+                !isTouch &&
+                isThisPageZoomed &&
+                handleInteraction(e.clientX, e.clientY, e.currentTarget)
+              }
+              onTouchMove={(e) =>
+                isThisPageZoomed &&
+                handleInteraction(
+                  e.touches[0].clientX,
+                  e.touches[0].clientY,
+                  e.currentTarget,
+                )
+              }
               onClick={(e) => {
                 if (isZoomed) {
                   handleCloseZoom();
@@ -186,7 +219,7 @@ export default function ReaderVertical({
 
                 const target = e.currentTarget;
                 const clientX = e.clientX;
-                
+
                 target.scrollIntoView({ behavior: "smooth", block: "center" });
 
                 setTimeout(() => {
@@ -195,9 +228,23 @@ export default function ReaderVertical({
                   const relativeX = clientX - rect.left;
 
                   if (relativeX <= zone) {
-                    idx === 0 ? onPrevChapter?.() : document.getElementById(`page-${idx - 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    idx === 0
+                      ? onPrevChapter?.()
+                      : document
+                          .getElementById(`page-${idx - 1}`)
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
                   } else if (relativeX >= zone * 2) {
-                    idx === pages.length - 1 ? onNextChapter?.() : document.getElementById(`page-${idx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    idx === pages.length - 1
+                      ? onNextChapter?.()
+                      : document
+                          .getElementById(`page-${idx + 1}`)
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
                   } else if (!isTouch) {
                     setActiveZoomIdx(idx);
                     setIsZoomed(true);
@@ -206,7 +253,7 @@ export default function ReaderVertical({
               }}
             >
               <img
-                src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+                src={`${baseUrl}/data/${hash}/${page}`}
                 alt={`Página ${idx + 1}`}
                 loading="lazy"
                 draggable="false"

@@ -20,7 +20,14 @@ export default function ReaderCarousel({
   onNextChapter,
   onPrevChapter,
 }: ReaderCarouselProps) {
-  const { isZoomed, setIsZoomed, offset, isTouch, handleInteraction, resetZoom } = useZoom();
+  const {
+    isZoomed,
+    setIsZoomed,
+    offset,
+    isTouch,
+    handleInteraction,
+    resetZoom,
+  } = useZoom();
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,7 +37,9 @@ export default function ReaderCarousel({
     if (containerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
       const totalScrollable = scrollWidth - clientWidth;
-      setProgress(totalScrollable > 0 ? (scrollLeft / totalScrollable) * 100 : 0);
+      setProgress(
+        totalScrollable > 0 ? (scrollLeft / totalScrollable) * 100 : 0,
+      );
       setCurrentPage(Math.round(scrollLeft / clientWidth) + 1);
     }
   };
@@ -38,7 +47,11 @@ export default function ReaderCarousel({
   const jumpToPage = (index: number) => {
     const targetPage = document.getElementById(`page-${index}`);
     if (targetPage) {
-      targetPage.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      targetPage.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
       setIsPageModalOpen(false);
     }
   };
@@ -119,22 +132,31 @@ export default function ReaderCarousel({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [currentPage, pages, isPageModalOpen, isZoomed, isTouch, onNextChapter, onPrevChapter]);
+  }, [
+    currentPage,
+    pages,
+    isPageModalOpen,
+    isZoomed,
+    isTouch,
+    onNextChapter,
+    onPrevChapter,
+  ]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const firstPage = document.getElementById("page-0");
-      if (firstPage) firstPage.scrollIntoView({ behavior: "instant", block: "start" });
+      if (firstPage)
+        firstPage.scrollIntoView({ behavior: "instant", block: "start" });
     }, 100);
     return () => clearTimeout(timer);
   }, [hash]);
 
   return (
     <div className="relative w-full h-full bg-[#0a0f1a] flex flex-col select-none overflow-hidden">
-      
       {/* Header Interactivo del Carrusel */}
-      <div className={`w-full h-14 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-md gap-1 shrink-0 z-30 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-        
+      <div
+        className={`w-full h-14 flex flex-col items-center justify-center bg-[#0a0f1a]/90 backdrop-blur-md gap-1 shrink-0 z-30 top-0 border-b border-white/5 transition-opacity ${isZoomed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      >
         <button
           onClick={() => setIsPageModalOpen(true)}
           className="group flex items-center gap-1.5 px-3 py-0.5 rounded-full transition-all cursor-pointer"
@@ -146,7 +168,10 @@ export default function ReaderCarousel({
         </button>
 
         <div className="w-1/3 sm:w-1/4 h-0.5 bg-gray-800 rounded-full overflow-hidden">
-          <div className="h-full bg-red-500 transition-all duration-100" style={{ width: `${progress}%` }} />
+          <div
+            className="h-full bg-red-500 transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
@@ -166,12 +191,19 @@ export default function ReaderCarousel({
               id={`page-${idx}`}
               className={`flex justify-center items-center shrink-0 transition-all duration-300 ${
                 isCurrentPageZoomed
-                  ? `fixed inset-0 z-[100] bg-[#0a0f1a] w-screen h-screen ${isTouch ? 'overflow-auto' : 'cursor-crosshair'}`
+                  ? `fixed inset-0 z-[100] bg-[#0a0f1a] w-screen h-screen ${isTouch ? "overflow-auto" : "cursor-crosshair"}`
                   : "w-full h-full snap-center cursor-default p-2"
               }`}
-              onMouseMove={(e) => !isTouch && isCurrentPageZoomed && handleInteraction(e.clientX, e.clientY, e.currentTarget)}
+              onMouseMove={(e) =>
+                !isTouch &&
+                isCurrentPageZoomed &&
+                handleInteraction(e.clientX, e.clientY, e.currentTarget)
+              }
               onClick={(e) => {
-                if (isZoomed) { resetZoom(); return; }
+                if (isZoomed) {
+                  resetZoom();
+                  return;
+                }
 
                 const rect = e.currentTarget.getBoundingClientRect();
                 const zone = rect.width / 3;
@@ -180,26 +212,32 @@ export default function ReaderCarousel({
                 if (relativeX <= zone) {
                   idx === 0 ? onPrevChapter?.() : jumpToPage(idx - 1);
                 } else if (relativeX >= zone * 2) {
-                  idx === pages.length - 1 ? onNextChapter?.() : jumpToPage(idx + 1);
-                } 
-                else if (!isTouch) {
+                  idx === pages.length - 1
+                    ? onNextChapter?.()
+                    : jumpToPage(idx + 1);
+                } else if (!isTouch) {
                   setIsZoomed(true);
                 }
               }}
             >
-              <div className={`relative flex items-center justify-center w-full h-full`}>
+              <div
+                className={`relative flex items-center justify-center w-full h-full`}
+              >
                 <img
-                  src={`/api/proxy/pages?url=${encodeURIComponent(`${baseUrl}/data/${hash}/${page}`)}`}
+                  src={`${baseUrl}/data/${hash}/${page}`}
                   alt={`Página ${idx + 1}`}
                   draggable="false"
                   className={`object-contain select-none transition-transform duration-100 ease-linear max-w-full max-h-full ${
-                    isCurrentPageZoomed && isTouch ? "w-[200%] max-w-none h-auto" : ""
+                    isCurrentPageZoomed && isTouch
+                      ? "w-[200%] max-w-none h-auto"
+                      : ""
                   }`}
                   style={{
-                    transform: (isCurrentPageZoomed && !isTouch) 
-                      ? `scale(1.8) translate(${50 - offset.x}%, ${50 - offset.y}%)` 
-                      : "scale(1) translate(0%, 0%)",
-                    pointerEvents: "none"
+                    transform:
+                      isCurrentPageZoomed && !isTouch
+                        ? `scale(1.8) translate(${50 - offset.x}%, ${50 - offset.y}%)`
+                        : "scale(1) translate(0%, 0%)",
+                    pointerEvents: "none",
                   }}
                 />
               </div>
@@ -212,14 +250,15 @@ export default function ReaderCarousel({
       {isPageModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="relative w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-[#0e1422] border border-red-500/30 shadow-2xl p-6">
-            
             {/* Cabecera del Modal */}
             <div className="flex items-center justify-between pb-4 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Grid size={18} className="text-red-400" />
-                <h3 className="text-sm font-bold text-white tracking-wide">Seleccionar Página</h3>
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Seleccionar Página
+                </h3>
               </div>
-              <button 
+              <button
                 onClick={() => setIsPageModalOpen(false)}
                 className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all cursor-pointer"
                 aria-label="Cerrar modal"
@@ -251,14 +290,14 @@ export default function ReaderCarousel({
             {/* Pie del Modal */}
             <div className="pt-3 border-t border-white/5 text-center">
               <span className="text-[11px] text-neutral-400">
-                Página actual: <strong className="text-white">{currentPage}</strong> de {pages.length}
+                Página actual:{" "}
+                <strong className="text-white">{currentPage}</strong> de{" "}
+                {pages.length}
               </span>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

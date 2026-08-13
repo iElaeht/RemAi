@@ -77,7 +77,7 @@ export async function GET(request: Request) {
         'User-Agent': 'Rem-AI-App/1.0',
         'Accept': 'application/json' 
       },
-      next: { revalidate: 0 }
+      next: { revalidate: 3600 }
     });
 
     if (!res.ok) {

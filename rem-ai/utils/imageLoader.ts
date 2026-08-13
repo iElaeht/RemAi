@@ -1,5 +1,6 @@
-import { getProxiedImageUrl } from './image';
+// utils/imageLoader.ts
+import { getImageUrl } from './image';
 
 export default function mangadexLoader({ src }: { src: string }) {
-  return getProxiedImageUrl(src);
+  return getImageUrl(src);
 }

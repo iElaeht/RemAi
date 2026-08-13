@@ -1,7 +1,8 @@
+// rem-ai/Hooks/useMangas.ts
 import { useState, useCallback } from "react";
 import { TAG_DICTIONARY } from "@/data/tagDictionary";
 import { SortOption, StatusOption } from "@/types/mangadex";
-import { getProxiedImageUrl } from "@/utils/image"; // <--- Importamos la utilidad unificada
+import { getImageUrl } from "@/utils/image";
 
 export interface Manga {
   id: string;
@@ -81,7 +82,7 @@ export function useMangas(): UseMangasReturn {
           return {
             id: String(m.id || ""),
             title: m.title || "Sin título",
-            cover: getProxiedImageUrl(m.cover || ""), // <--- Aplicamos el proxy aquí
+            cover: getImageUrl(m.cover || ""), // <--- Aplicamos la función directa aquí
             genres: Array.isArray(m.tags) ? m.tags : [],
             author: m.author || "Autor desconocido",
             rating: m.rating || "0.0",
