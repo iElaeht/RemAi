@@ -3,6 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
 import { Grid, X } from "lucide-react";
+import Image from "next/image"; // <--- Importamos Image de Next.js
+import { getImageUrl } from "@/utils/image"; // <--- Importamos el helper de imágenes
 
 interface ReaderCarouselProps {
   pages: string[];
@@ -58,12 +60,10 @@ export default function ReaderCarousel({
   // Manejo de atajos de teclado para el carrusel
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Evitar atajos si el usuario escribe en inputs
       if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
         return;
       }
 
-      // Si el modal de páginas está abierto, permitir cerrarlo con Escape
       if (isPageModalOpen && e.key === "Escape") {
         setIsPageModalOpen(false);
         return;
@@ -76,7 +76,7 @@ export default function ReaderCarousel({
         case "d":
         case "D":
           e.preventDefault();
-          if (isZoomed) return; // Opcional: si está con zoom, prioriza mover el zoom o sal de él
+          if (isZoomed) return;
           if (currentIndex < pages.length - 1) {
             jumpToPage(currentIndex + 1);
           } else {
@@ -106,7 +106,7 @@ export default function ReaderCarousel({
           }
           break;
 
-        case " ": // Barra espaciadora
+        case " ":
           e.preventDefault();
           if (isZoomed) break;
           if (e.shiftKey) {
@@ -143,7 +143,6 @@ export default function ReaderCarousel({
     onPrevChapter,
   ]);
 
-  // Bloquear el scroll del body cuando el modal de páginas está abierto
   useEffect(() => {
     if (isPageModalOpen) {
       document.body.style.overflow = "hidden";
@@ -197,6 +196,7 @@ export default function ReaderCarousel({
       >
         {pages?.map((page: string, idx: number) => {
           const isCurrentPageZoomed = isZoomed && currentPage === idx + 1;
+          const pageImageUrl = getImageUrl(`${baseUrl}/data/${hash}/${page}`);
 
           return (
             <div
@@ -234,16 +234,19 @@ export default function ReaderCarousel({
               }}
             >
               <div
-                className={`relative flex items-center justify-center ${isCurrentPageZoomed ? "w-full h-full" : ""}`}
+                className={`relative flex items-center justify-center ${isCurrentPageZoomed ? "w-full h-full" : "w-full h-full max-h-[95dvh]"}`}
               >
-                <img
-                  src={`${baseUrl}/data/${hash}/${page}`}
+                {/* Usamos next/image con fill y unoptimized para evitar sobrecarga en Vercel */}
+                <Image
+                  src={pageImageUrl}
                   alt={`Página ${idx + 1}`}
+                  fill
+                  unoptimized
                   draggable="false"
                   className={`object-contain select-none transition-transform duration-100 ease-linear ${
                     isCurrentPageZoomed && isTouch
                       ? "w-[200%] max-w-none h-auto"
-                      : "max-h-[95dvh]"
+                      : ""
                   }`}
                   style={{
                     transform:
@@ -269,7 +272,6 @@ export default function ReaderCarousel({
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg max-h-[80vh] flex flex-col rounded-2xl bg-[#0e1422] border border-blue-500/30 shadow-2xl p-6"
           >
-            {/* Cabecera del Modal */}
             <div className="flex items-center justify-between pb-4 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Grid size={18} className="text-blue-400" />
@@ -286,7 +288,6 @@ export default function ReaderCarousel({
               </button>
             </div>
 
-            {/* Cuadrícula de Páginas */}
             <div className="flex-1 overflow-y-auto py-4 grid grid-cols-5 sm:grid-cols-6 gap-2.5 pr-1 custom-scrollbar">
               {pages.map((_, idx) => {
                 const isSelected = currentPage === idx + 1;
@@ -306,7 +307,6 @@ export default function ReaderCarousel({
               })}
             </div>
 
-            {/* Pie del Modal */}
             <div className="pt-3 border-t border-white/5 text-center">
               <span className="text-[11px] text-neutral-400">
                 Página actual:{" "}
