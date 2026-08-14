@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Paperclip, X, Loader2, Send } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { addCommentAction } from '@/app/actions/Comments';
@@ -24,6 +25,11 @@ export default function ReplyBox({ parentId, parentUsername, mangaId, onCancel, 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Estados para control de errores de imágenes
+  const [avatarError, setAvatarError] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [modalImageError, setModalImageError] = useState(false);
+
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.innerHTML = `<b>@${parentUsername}</b>&nbsp;`;
@@ -42,6 +48,7 @@ export default function ReplyBox({ parentId, parentUsername, mangaId, onCancel, 
     if (!file) return;
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+    setPreviewError(false);
   };
 
   const handleSend = async () => {
@@ -81,20 +88,46 @@ export default function ReplyBox({ parentId, parentUsername, mangaId, onCancel, 
       <div className="bg-[#0a0f1d] border border-white/[0.08] rounded-xl p-3 shadow-2xl relative">
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
-            <img src={user.imageUrl} className="w-8 h-8 rounded-full border border-white/[0.1]" alt="Avatar" />
+            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/[0.1] flex-shrink-0">
+              {!avatarError && user.imageUrl ? (
+                <Image 
+                  src={user.imageUrl} 
+                  alt="Avatar" 
+                  fill 
+                  unoptimized
+                  className="object-cover" 
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-[9px] text-neutral-400 bg-neutral-800">
+                  U
+                </div>
+              )}
+            </div>
             <span className="text-sm font-bold text-white tracking-wide">
               {user.username || user.firstName || 'Usuario'}
             </span>
           </div>
 
           <div className="flex gap-1">
-            <button onClick={() => fileInputRef.current?.click()} className="p-2 text-neutral-400 hover:text-white transition-colors">
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              className="p-2 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              disabled={isSubmitting}
+            >
               <Paperclip size={16} />
             </button>
-            <button onClick={onCancel} className="p-2 text-neutral-400 hover:text-red-400 transition-colors">
+            <button 
+              onClick={onCancel} 
+              className="p-2 text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
+            >
               <X size={16} />
             </button>
-            <button onClick={handleSend} disabled={isSubmitting} className="ml-2 flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-30 transition-all text-white">
+            <button 
+              onClick={handleSend} 
+              disabled={isSubmitting} 
+              className="ml-2 flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 disabled:opacity-30 transition-all text-white cursor-pointer"
+            >
               {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             </button>
           </div>
@@ -111,13 +144,29 @@ export default function ReplyBox({ parentId, parentUsername, mangaId, onCancel, 
 
         {previewUrl && (
           <div 
-            className="mt-2 relative w-16 h-16 rounded-lg overflow-hidden border border-white/[0.1] cursor-pointer" 
-            onClick={() => setPreviewImage(previewUrl)}
+            className="mt-2 relative w-16 h-16 rounded-lg overflow-hidden border border-white/[0.1] cursor-pointer bg-neutral-900" 
+            onClick={() => {
+              setPreviewImage(previewUrl);
+              setModalImageError(false);
+            }}
           >
-            <img src={previewUrl} alt="adjunto" className="w-full h-full object-cover" />
+            {!previewError ? (
+              <Image 
+                src={previewUrl} 
+                alt="adjunto" 
+                fill 
+                unoptimized
+                className="object-cover"
+                onError={() => setPreviewError(true)}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-[9px] text-neutral-500 text-center p-1">
+                Error
+              </div>
+            )}
             <button 
-              onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setPreviewUrl(null); }} 
-              className="absolute top-0 right-0 p-1 bg-black/50 text-white"
+              onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setPreviewUrl(null); setPreviewError(false); }} 
+              className="absolute top-0 right-0 p-1 bg-black/50 text-white cursor-pointer hover:bg-red-500 transition-colors"
             >
               <X size={10}/>
             </button>
@@ -126,8 +175,32 @@ export default function ReplyBox({ parentId, parentUsername, mangaId, onCancel, 
       </div>
 
       {previewImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewImage(null)}>
-          <img src={previewImage} alt="Preview" className="max-w-full max-h-[80vh] rounded-lg shadow-2xl" />
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" 
+          onClick={() => {
+            setPreviewImage(null);
+            setModalImageError(false);
+          }}
+        >
+          <div 
+            className="relative max-w-full max-h-[80vh] w-[400px] h-[500px] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {!modalImageError ? (
+              <Image 
+                src={previewImage} 
+                alt="Preview" 
+                fill
+                unoptimized
+                className="object-contain rounded-lg shadow-2xl"
+                onError={() => setModalImageError(true)}
+              />
+            ) : (
+              <div className="text-xs text-neutral-400 p-4 text-center">
+                No se pudo cargar la imagen
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

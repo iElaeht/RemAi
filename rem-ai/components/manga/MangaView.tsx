@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import MangaDetailsContainer from "./MangaDetailsContainer";
 import ChapterSidebar from "./ChapterSidebar";
@@ -40,6 +41,8 @@ export default function MangaView({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAllTitles, setShowAllTitles] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [modalImageError, setModalImageError] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -103,14 +106,23 @@ export default function MangaView({
         {/* PORTADA Y TÍTULOS ALTERNOS */}
         <div className="flex flex-col gap-8">
           <div
-            className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+            className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity bg-neutral-900"
             onClick={() => setIsModalOpen(true)}
           >
-            <img
-              src={manga.coverUrl}
-              alt={manga.title}
-              className="w-full h-full object-cover"
-            />
+            {!imageError && manga.coverUrl ? (
+              <Image
+                src={manga.coverUrl}
+                alt={manga.title}
+                fill
+                unoptimized
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-xs text-neutral-500 text-center p-2">
+                Sin imagen
+              </div>
+            )}
           </div>
           {/* TÍTULOS ALTERNOS */}
           {manga.altTitles && manga.altTitles.length > 0 && (
@@ -306,11 +318,22 @@ export default function MangaView({
           <button className="absolute top-6 right-6 text-white">
             <X size={32} />
           </button>
-          <img
-            src={manga.coverUrl}
-            alt="Preview"
-            className="max-w-[400px] max-h-[600px] object-contain rounded-lg shadow-2xl"
-          />
+          <div className="relative w-full max-w-[400px] h-[600px]">
+            {!modalImageError && manga.coverUrl ? (
+              <Image
+                src={manga.coverUrl}
+                alt="Preview"
+                fill
+                unoptimized
+                className="object-contain rounded-lg shadow-2xl"
+                onError={() => setModalImageError(true)}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-neutral-400">
+                No se pudo cargar la imagen
+              </div>
+            )}
+          </div>
         </div>
       )}
 

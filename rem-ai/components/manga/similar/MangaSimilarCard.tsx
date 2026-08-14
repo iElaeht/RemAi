@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import Link from "next/link";
+import Image from "next/image";
 import { MangaResponse } from "@/types/mangadex";
 import { detectContentType } from "@/utils/mangaTypeDetector";
 
@@ -9,6 +13,7 @@ interface MangaSimilarCardProps {
 
 export default function MangaSimilarCard({ manga, currentType }: MangaSimilarCardProps) {
   const contentType = currentType || detectContentType(manga);
+  const [hasError, setHasError] = useState(false);
 
   return (
     <Link 
@@ -20,15 +25,24 @@ export default function MangaSimilarCard({ manga, currentType }: MangaSimilarCar
       {/* Contenedor Principal tipo Poster con Borde y Sombra Azul */}
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-900 border border-white/10 shadow-lg group-hover:border-blue-500 group-hover:shadow-[0_8px_25px_-4px_rgba(59,130,246,0.4)] transition-all duration-300">
         
-        {/* Imagen de Portada fija */}
-        <img
-          src={manga.coverUrl}
-          alt={manga.title}
-          className="w-full h-full object-cover transition-opacity duration-300"
-        />
+        {/* Imagen de Portada con Next/Image */}
+        {!hasError && manga.coverUrl ? (
+          <Image
+            src={manga.coverUrl}
+            alt={manga.title}
+            fill
+            unoptimized
+            className="w-full h-full object-cover transition-opacity duration-300"
+            onError={() => setHasError(true)}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
+            Sin imagen
+          </div>
+        )}
 
         {/* Degradado superior para el Rating */}
-        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/60 via-black/20 to-transparent opacity-80" />
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/60 via-black/20 to-transparent opacity-80 pointer-events-none" />
 
         {/* Badge de Rating */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 shadow-sm">

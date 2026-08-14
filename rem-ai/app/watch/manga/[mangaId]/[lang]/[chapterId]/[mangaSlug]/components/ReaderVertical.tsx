@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
+import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 
 interface ReaderVerticalProps {
   pages: string[];
@@ -180,6 +182,7 @@ export default function ReaderVertical({
         {pages?.map((page: string, idx: number) => {
           const isThisPageZoomed = isZoomed && activeZoomIdx === idx;
           const isDimmed = isZoomed && !isThisPageZoomed;
+          const pageImageUrl = getImageUrl(`${baseUrl}/data/${hash}/${page}`);
 
           return (
             <div
@@ -245,19 +248,25 @@ export default function ReaderVertical({
                 }, 200);
               }}
             >
-              <img
-                src={`${baseUrl}/data/${hash}/${page}`}
-                alt={`Página ${idx + 1}`}
-                loading="lazy"
-                draggable="false"
-                className="max-h-[95dvh] object-contain select-none pointer-events-none transition-transform duration-100 ease-linear"
-                style={{
-                  transform: isThisPageZoomed
-                    ? `scale(1.8) translate(${50 - offset.x}%, ${50 - offset.y}%)`
-                    : "scale(1) translate(0%, 0%)",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              />
+              <div
+                className={`relative w-full flex items-center justify-center ${isThisPageZoomed ? "h-full" : "h-[95dvh]"}`}
+              >
+                <Image
+                  src={pageImageUrl}
+                  alt={`Página ${idx + 1}`}
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  draggable="false"
+                  className="object-contain select-none pointer-events-none transition-transform duration-100 ease-linear"
+                  style={{
+                    transform: isThisPageZoomed
+                      ? `scale(1.8) translate(${50 - offset.x}%, ${50 - offset.y}%)`
+                      : "scale(1) translate(0%, 0%)",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                />
+              </div>
             </div>
           );
         })}

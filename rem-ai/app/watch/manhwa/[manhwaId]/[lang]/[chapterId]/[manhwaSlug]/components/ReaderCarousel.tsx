@@ -1,9 +1,10 @@
-// rem-ai/app/watch/manhwa/[manhwaId]/[lang]/[chapterId]/[manhwaSlug]/components/ReaderCarousel.tsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
 import { Grid, X } from "lucide-react";
+import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 
 interface ReaderCarouselProps {
   pages: string[];
@@ -184,6 +185,7 @@ export default function ReaderCarousel({
       >
         {pages?.map((page: string, idx: number) => {
           const isCurrentPageZoomed = isZoomed && currentPage === idx + 1;
+          const pageImageUrl = getImageUrl(`${baseUrl}/data/${hash}/${page}`);
 
           return (
             <div
@@ -223,11 +225,13 @@ export default function ReaderCarousel({
               <div
                 className={`relative flex items-center justify-center w-full h-full`}
               >
-                <img
-                  src={`${baseUrl}/data/${hash}/${page}`}
+                <Image
+                  src={pageImageUrl}
                   alt={`Página ${idx + 1}`}
+                  fill
+                  unoptimized
                   draggable="false"
-                  className={`object-contain select-none transition-transform duration-100 ease-linear max-w-full max-h-full ${
+                  className={`object-contain select-none transition-transform duration-100 ease-linear ${
                     isCurrentPageZoomed && isTouch
                       ? "w-[200%] max-w-none h-auto"
                       : ""

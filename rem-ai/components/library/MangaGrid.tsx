@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star, Bookmark } from 'lucide-react';
 
 interface Manga {
@@ -73,9 +74,11 @@ export default function MangaGrid({ mangas, isLoading }: MangaGridProps) {
               {/* Contenedor de Imagen */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
                 {coverSource ? (
-                  <img 
+                  <Image 
                     src={coverSource} 
                     alt={manga.title} 
+                    fill
+                    unoptimized
                     className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                     onError={() => handleImageError(manga.id)}
                   />

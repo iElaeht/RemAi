@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 import { Edit2, CornerUpLeft, Trash2 } from "lucide-react";
 import { Comment } from "@/types/comment";
 import DOMPurify from "dompurify";
@@ -24,6 +26,9 @@ export default function CommentView({
 }: CommentViewProps) {
   const { user } = useUser();
   const isOwner = user?.id === comment.user_id;
+  
+  const [avatarError, setAvatarError] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const sanitizedContent =
     typeof window !== "undefined"
@@ -35,11 +40,22 @@ export default function CommentView({
       {/* CABECERA */}
       <div className="flex justify-between items-start gap-4">
         <div className="flex items-center gap-3">
-          <img
-            src={comment.avatar_url}
-            className="w-9 h-9 rounded-full object-cover ring-2 ring-white/5"
-            alt={comment.username}
-          />
+          <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/5 flex-shrink-0">
+            {!avatarError && comment.avatar_url ? (
+              <Image
+                src={comment.avatar_url}
+                alt={comment.username}
+                fill
+                unoptimized
+                className="object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-[10px] text-neutral-400 bg-neutral-800">
+                {comment.username.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
           <span className="text-sm font-semibold text-white tracking-wide">
             {comment.username}
           </span>
@@ -47,19 +63,17 @@ export default function CommentView({
 
         {isOwner && (
           <div className="flex items-center gap-4">
-            {/* Botón Editar */}
             <button
               onClick={onEdit}
-              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
             >
               <Edit2 size={14} />
               <span className="hidden sm:inline">Editar</span>
             </button>
 
-            {/* Botón Eliminar */}
             <button
               onClick={onDelete}
-              className="flex items-center gap-1.5 text-xs text-red-400/70 hover:text-red-400 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-red-400/70 hover:text-red-400 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
               <span className="hidden sm:inline">Eliminar</span>
@@ -75,14 +89,18 @@ export default function CommentView({
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
 
-        {comment.image_url && (
-          <div className="relative overflow-hidden rounded-xl border border-white/10 mt-1 max-w-[280px]">
-            <img
+        {comment.image_url && !imageError && (
+          <div 
+            className="relative overflow-hidden rounded-xl border border-white/10 mt-1 max-w-[280px] aspect-[4/3] cursor-pointer group"
+            onClick={onOpenImage}
+          >
+            <Image
               src={comment.image_url}
-              onClick={onOpenImage}
-              className="w-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500"
               alt="Adjunto"
-              loading="lazy"
+              fill
+              unoptimized
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={() => setImageError(true)}
             />
           </div>
         )}
@@ -96,7 +114,7 @@ export default function CommentView({
         <span className="text-neutral-700">•</span>
         <button
           onClick={onReply}
-          className="flex items-center gap-1.5 text-[12px] font-semibold text-blue-400/80 hover:text-blue-300 transition-colors"
+          className="flex items-center gap-1.5 text-[12px] font-semibold text-blue-400/80 hover:text-blue-300 transition-colors cursor-pointer"
         >
           <CornerUpLeft size={13} />
           Responder

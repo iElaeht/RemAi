@@ -1,9 +1,9 @@
-// rem-ai/components/favorites/FavoritesClientList.tsx
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, Trash2, AlertTriangle, X } from "lucide-react";
 import FavoritesFilters from "./FavoritesFilters";
 import FavoritesPagination from "./FavoritesPagination";
@@ -96,19 +96,13 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
     setIsDeleting(true);
 
     try {
-      // Llamada real a la Server Action que creamos en actions/Favorites.ts
       await removeFavorite(itemToDelete.id);
       
-      // Si todo sale bien, cerramos el modal
       setIsDeleting(false);
       setItemToDelete(null);
-      
-      // NOTA: No hace falta router.refresh() porque revalidatePath en la action 
-      // ya le avisó a Next.js que la ruta /favorites debe actualizarse.
     } catch (error) {
       console.error("Error al eliminar favorito:", error);
       setIsDeleting(false);
-      // Aquí podrías añadir una notificación de error si tienes alguna librería (como toast)
       alert("Hubo un error al eliminar el favorito. Inténtalo de nuevo.");
     }
   };
@@ -192,9 +186,12 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
                     prefetch={false}
                     className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-neutral-950 shadow-inner block"
                   >
-                    <img
+                    {/* 1. Imagen Portada Grid */}
+                    <Image
                       src={fav.cover_image}
                       alt={fav.title}
+                      fill
+                      unoptimized
                       className="object-cover w-full h-full opacity-95 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
@@ -208,7 +205,6 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
                     </span>
                   </Link>
 
-                  {/* Botón de papelera: visible siempre en móviles (opacity-100), y solo en hover en pantallas md en adelante */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -243,9 +239,12 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
                     prefetch={false}
                     className="relative aspect-[3/4] w-20 rounded-xl overflow-hidden bg-neutral-950 flex-shrink-0 shadow-inner block"
                   >
-                    <img
+                    {/* 2. Imagen Portada Lista */}
+                    <Image
                       src={fav.cover_image}
                       alt={fav.title}
+                      fill
+                      unoptimized
                       className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity duration-300"
                     />
                   </Link>
@@ -266,7 +265,6 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
                     </Link>
                   </div>
 
-                  {/* Botón de papelera en Modo Lista */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -316,10 +314,16 @@ export default function FavoritesClientList({ favorites }: { favorites: Favorite
             </p>
 
             <div className="flex items-center gap-3 w-full bg-neutral-950/50 border border-white/5 rounded-2xl p-2.5 mb-6 text-left">
-              <img 
-              src={itemToDelete.cover_image} 
-              alt={itemToDelete.title} 
-              className="w-10 h-12 object-cover rounded-lg flex-shrink-0" />
+              <div className="relative w-10 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                {/* 3. Imagen del Modal de Confirmación */}
+                <Image 
+                  src={itemToDelete.cover_image} 
+                  alt={itemToDelete.title} 
+                  fill
+                  unoptimized
+                  className="object-cover" 
+                />
+              </div>
               <div className="flex flex-col overflow-hidden">
                 <span className="text-[10px] uppercase font-bold text-neutral-500">{itemToDelete.type}</span>
                 <span className="text-xs font-medium text-neutral-300 truncate">{itemToDelete.title}</span>

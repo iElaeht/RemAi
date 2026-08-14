@@ -3,8 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import { useZoom } from "@/Hooks/useZoom";
 import { Grid, X } from "lucide-react";
-import Image from "next/image"; // <--- Importamos Image de Next.js
-import { getImageUrl } from "@/utils/image"; // <--- Importamos el helper de imágenes
+import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 
 interface ReaderCarouselProps {
   pages: string[];

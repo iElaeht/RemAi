@@ -1,7 +1,8 @@
-// rem-ai/app/watch/manhwa/[manhwaId]/[lang]/[chapterId]/[manhwaSlug]/components/ReaderWebtoon.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 
 interface ReaderWebtoonProps {
   pages: string[];
@@ -103,12 +104,7 @@ export default function ReaderWebtoon({
 
   const handleScroll = () => {
     if (!containerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-    // Opcional: Detectar si llegó al final del capítulo
-    if (scrollTop + clientHeight >= scrollHeight - 20) {
-      // onNextChapter?.();
-    }
+    // Lógica opcional para detectar fin de capítulo
   };
 
   return (
@@ -119,17 +115,24 @@ export default function ReaderWebtoon({
     >
       {/* Contenedor con ancho optimizado para Webtoon */}
       <div className="w-full max-w-3xl flex flex-col items-center bg-black">
-        {pages?.map((page: string, idx: number) => (
-          <div key={idx} className="w-full flex justify-center leading-none">
-            <img
-              src={`${baseUrl}/data/${hash}/${page}`}
-              alt={`Página ${idx + 1}`}
-              draggable="false"
-              loading="lazy"
-              className="w-full h-auto object-contain block m-0 p-0"
-            />
-          </div>
-        ))}
+        {pages?.map((page: string, idx: number) => {
+          const pageImageUrl = getImageUrl(`${baseUrl}/data/${hash}/${page}`);
+          
+          return (
+            <div key={idx} className="w-full flex justify-center leading-none relative aspect-[auto]">
+              <Image
+                src={pageImageUrl}
+                alt={`Página ${idx + 1}`}
+                width={800} // Ajuste sugerido para base
+                height={1200}
+                unoptimized
+                draggable="false"
+                className="w-full h-auto object-contain block m-0 p-0"
+                style={{ height: 'auto' }}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Botones de navegación inferior */}

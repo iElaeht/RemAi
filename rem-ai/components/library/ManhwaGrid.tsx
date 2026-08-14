@@ -2,6 +2,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star, Bookmark } from 'lucide-react';
 import { getImageUrl } from '@/utils/image';
 
@@ -73,12 +74,14 @@ export default function ManhwaGrid({ manhwas, isLoading }: ManhwaGridProps) {
               prefetch={false}
               className="group relative flex flex-col gap-1.5 p-2 rounded-xl bg-[#170a0d] border border-white/5 hover:border-red-500/40 hover:bg-[#200d11] transition-all duration-300 shadow-lg select-none"
             >
-              {/* Contenedor de Imagen con <img> nativo */}
+              {/* Contenedor de Imagen con Next/Image */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-900">
                 {coverSource ? (
-                  <img 
+                  <Image 
                     src={coverSource} 
                     alt={manhwa.title} 
+                    fill
+                    unoptimized
                     className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                     onError={() => handleImageError(manhwa.id)}
                   />

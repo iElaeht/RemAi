@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { MangaCover } from "@/types/mangadex";
 
 interface ArtTabProps {
@@ -13,6 +14,7 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCover, setSelectedCover] = useState<MangaCover | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [modalImageError, setModalImageError] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -24,6 +26,7 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
       }
       if (modalContentRef.current && !modalContentRef.current.contains(event.target as Node)) {
         setSelectedCover(null);
+        setModalImageError(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -45,7 +48,7 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
       
       const safeTitle = mangaTitle.replace(/[^a-zA-Z0-9]/g, "_");
       const volText = cover.volume ? `Vol_${cover.volume}` : "Art";
-      link.download = `RemCoverArt_${safeTitle}_${volText}.jpg`;
+      link.download = `AI_MangasCover_${safeTitle}_${volText}.jpg`;
       
       document.body.appendChild(link);
       link.click();
@@ -169,15 +172,20 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
           return (
             <div
               key={cover.id}
-              onClick={() => setSelectedCover(cover)}
+              onClick={() => {
+                setSelectedCover(cover);
+                setModalImageError(false);
+              }}
               className="flex flex-col bg-[#121929] rounded-xl border border-white/5 overflow-hidden group hover:border-white/15 transition-all duration-300 shadow-md cursor-pointer"
             >
               <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
-                {!hasError ? (
-                  <img
+                {!hasError && cover.imageUrl ? (
+                  <Image
                     src={cover.imageUrl}
                     alt={`Volumen ${cover.volume}`}
-                    className="w-full h-full object-cover transition-transform duration-500"
+                    fill
+                    unoptimized
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={() => handleImageError(cover.id)}
                   />
                 ) : (
@@ -203,7 +211,13 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
       </div>
 
       {selectedCover && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+          onClick={() => {
+            setSelectedCover(null);
+            setModalImageError(false);
+          }}
+        >
           <div
             ref={modalContentRef}
             className="relative flex flex-col items-center justify-center max-w-[90vw] max-h-[85vh]"
@@ -221,7 +235,10 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
               </button>
 
               <button
-                onClick={() => setSelectedCover(null)}
+                onClick={() => {
+                  setSelectedCover(null);
+                  setModalImageError(false);
+                }}
                 title="Cerrar"
                 className="text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-colors flex items-center justify-center cursor-pointer"
               >
@@ -231,12 +248,21 @@ export default function ArtTab({ covers = [], mangaTitle = "Manga" }: ArtTabProp
               </button>
             </div>
 
-            <div className="relative w-[300px] sm:w-[400px] md:w-[450px] aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black/40">
-              <img
-                src={selectedCover.imageUrl}
-                alt={`Volumen ${selectedCover.volume}`}
-                className="w-full h-full object-contain"
-              />
+            <div className="relative w-[300px] sm:w-[400px] md:w-[450px] aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black/40 flex items-center justify-center">
+              {!modalImageError && selectedCover.imageUrl ? (
+                <Image
+                  src={selectedCover.imageUrl}
+                  alt={`Volumen ${selectedCover.volume}`}
+                  fill
+                  unoptimized
+                  className="object-contain"
+                  onError={() => setModalImageError(true)}
+                />
+              ) : (
+                <div className="text-xs text-neutral-400 p-4 text-center">
+                  No se pudo cargar la imagen
+                </div>
+              )}
             </div>
             
             <div className="mt-4 text-center">
