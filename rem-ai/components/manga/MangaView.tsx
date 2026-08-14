@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 import { fetchAllChapters, Chapter } from "@/service/mangaService";
 import MangaDetailsContainer from "./MangaDetailsContainer";
 import ChapterSidebar from "./ChapterSidebar";
@@ -30,6 +31,7 @@ export default function MangaView({
   userId,
   initialIsFavorite,
 }: MangaViewProps) {
+  const coverImage = getImageUrl(manga.coverUrl || "");
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<string>(() =>
@@ -109,9 +111,9 @@ export default function MangaView({
             className="relative w-full md:w-64 aspect-[2/3] overflow-hidden rounded-2xl cursor-pointer hover:opacity-90 transition-opacity bg-neutral-900"
             onClick={() => setIsModalOpen(true)}
           >
-            {!imageError && manga.coverUrl ? (
+            {!imageError && coverImage ? (
               <Image
-                src={manga.coverUrl}
+                src={coverImage}
                 alt={manga.title}
                 fill
                 unoptimized
@@ -268,7 +270,7 @@ export default function MangaView({
                   userId={userId}
                   mangaId={manga.id}
                   title={manga.title}
-                  coverImage={manga.coverUrl}
+                  coverImage={coverImage}
                   type={contentType}
                   initialIsFavorite={initialIsFavorite}
                 />
@@ -319,9 +321,9 @@ export default function MangaView({
             <X size={32} />
           </button>
           <div className="relative w-full max-w-[400px] h-[600px]">
-            {!modalImageError && manga.coverUrl ? (
+            {!modalImageError && coverImage ? (
               <Image
-                src={manga.coverUrl}
+                src={coverImage}
                 alt="Preview"
                 fill
                 unoptimized
