@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,15 +17,18 @@ interface MangaCardProps {
 export default function MangaCard({ id, title, coverUrl, author, tags, rating }: MangaCardProps) {
   const [hasError, setHasError] = useState(false);
 
+  // Validación para asegurar que la URL sea válida y no apunte a vistas previas de la web de MangaDex
+  const isValidCover = coverUrl && !coverUrl.includes('mangadex.org/title') && !hasError;
+
   return (
     <Link 
       href={`/details/manga/${id}`}
       prefetch={false}
-      className="block w-full space-y-3 group cursor-pointer"
+      className="block w-full space-y-3 group cursor-pointer select-none"
     >
       {/* Contenedor Imagen */}
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-neutral-900 ring-1 ring-white/10">
-        {!hasError && coverUrl ? (
+        {isValidCover ? (
           <Image
             src={coverUrl}
             alt={title}
@@ -33,8 +38,8 @@ export default function MangaCard({ id, title, coverUrl, author, tags, rating }:
             onError={() => setHasError(true)}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2">
-            Sin imagen
+          <div className="flex flex-col items-center justify-center h-full text-[10px] text-neutral-500 text-center p-2 bg-neutral-900">
+            <span>Sin portada</span>
           </div>
         )}
         {/* Degradado inferior sutil */}
@@ -43,7 +48,7 @@ export default function MangaCard({ id, title, coverUrl, author, tags, rating }:
 
       {/* Detalles del Manga */}
       <div className="flex flex-col gap-1.5">
-        <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-blue-400 transition-colors">
+        <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-blue-400 transition-colors" title={title}>
           {title}
         </h3>
         
