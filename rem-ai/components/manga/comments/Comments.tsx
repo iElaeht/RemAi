@@ -90,7 +90,7 @@ export default function Comments({ initialComments, mangaId }: CommentsProps) {
             <span className="text-blue-400 font-semibold underline">Inicia sesión</span> para dejar un comentario
           </p>
         </div>
-      )}
+      )}git
 
       <div className="flex flex-col gap-4 mt-6">
         {commentTree.map((c) => (

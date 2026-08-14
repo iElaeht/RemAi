@@ -26,7 +26,7 @@ export default function SimilarMangas({ mangas, contentType = "manga" }: Similar
           <MangaSimilarCard 
             key={manga.id} 
             manga={manga} 
-            currentType={contentType} // Inyectamos el contexto exacto a la tarjeta
+            currentType={contentType}
           />
         ))}
       </div>

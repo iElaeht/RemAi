@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image";
+import { getImageUrl } from "@/utils/image";
 import { MangaResponse } from "@/types/mangadex";
 import { detectContentType } from "@/utils/mangaTypeDetector";
 
@@ -15,6 +16,8 @@ export default function MangaSimilarCard({ manga, currentType }: MangaSimilarCar
   const contentType = currentType || detectContentType(manga);
   const [hasError, setHasError] = useState(false);
 
+  const coverImage = getImageUrl(manga.coverUrl || "");
+  
   return (
     <Link 
       href={`/details/${contentType}/${manga.id}`}
@@ -26,9 +29,9 @@ export default function MangaSimilarCard({ manga, currentType }: MangaSimilarCar
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-900 border border-white/10 shadow-lg group-hover:border-blue-500 group-hover:shadow-[0_8px_25px_-4px_rgba(59,130,246,0.4)] transition-all duration-300">
         
         {/* Imagen de Portada con Next/Image */}
-        {!hasError && manga.coverUrl ? (
+        {!hasError && coverImage ? (
           <Image
-            src={manga.coverUrl}
+            src={coverImage}
             alt={manga.title}
             fill
             unoptimized
