@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { MangaCover } from "@/types/mangadex";
+import { getImageUrl } from "@/utils/image";
 
 interface ArtTabProps {
   covers?: MangaCover[];
@@ -48,8 +49,9 @@ export default function ArtTab({
 
   const handleDownload = async (cover: MangaCover, e: React.MouseEvent) => {
     e.stopPropagation();
+    const processedUrl = getImageUrl(cover.imageUrl || "");
     try {
-      const response = await fetch(cover.imageUrl);
+      const response = await fetch(processedUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -65,7 +67,7 @@ export default function ArtTab({
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error al descargar la imagen:", error);
-      window.open(cover.imageUrl, "_blank");
+      window.open(processedUrl, "_blank");
     }
   };
 
@@ -205,6 +207,7 @@ export default function ArtTab({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {filteredCovers.map((cover) => {
           const hasError = imageErrors[cover.id];
+          const coverImage = getImageUrl(cover.imageUrl || "");
           return (
             <div
               key={cover.id}
@@ -215,9 +218,9 @@ export default function ArtTab({
               className="flex flex-col bg-[#121929] rounded-xl border border-white/5 overflow-hidden group hover:border-white/15 transition-all duration-300 shadow-md cursor-pointer"
             >
               <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
-                {!hasError && cover.imageUrl ? (
+                {!hasError && coverImage ? (
                   <Image
-                    src={cover.imageUrl}
+                    src={coverImage}
                     alt={`Volumen ${cover.volume}`}
                     fill
                     unoptimized
@@ -322,7 +325,7 @@ export default function ArtTab({
             <div className="relative w-[300px] sm:w-[400px] md:w-[450px] aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black/40 flex items-center justify-center">
               {!modalImageError && selectedCover.imageUrl ? (
                 <Image
-                  src={selectedCover.imageUrl}
+                  src={getImageUrl(selectedCover.imageUrl)}
                   alt={`Volumen ${selectedCover.volume}`}
                   fill
                   unoptimized
